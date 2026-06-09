@@ -1,0 +1,97 @@
+name: Release
+
+# Loest aus, sobald ein Tag wie v1.0.0 gepusht wird.
+# workflow_dispatch erlaubt zusaetzlich manuelles Starten zum Testen.
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: write   # noetig, damit der Release-Job das Release anlegen/aktualisieren darf
+
+jobs:
+  # ---------------------------------------------------------------- Windows
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Version aus Tag ableiten
+        id: ver
+        shell: bash
+        run: echo "v=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish (win-x64, self-contained)
+        # Kein PublishSingleFile: die nativen libvlc-DLLs (VideoLAN.LibVLC.Windows)
+        # bleiben so verlaesslich neben der EXE. Die Bedingung im csproj greift,
+        # weil dieser Job auf einem Windows-Runner laeuft.
+        run: >
+          dotnet publish NetScanner.csproj -c Release -r win-x64 --self-contained
+          -p:Version=${{ steps.ver.outputs.v }} -o publish/win
+
+      - name: ZIP packen
+        shell: pwsh
+        run: Compress-Archive -Path publish/win/* -DestinationPath "NetScanner-${{ github.ref_name }}-win-x64.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win
+          path: NetScanner-*-win-x64.zip
+          retention-days: 1
+
+  # ------------------------------------------------------------------ Linux
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Version aus Tag ableiten
+        id: ver
+        run: echo "v=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish (linux-x64, self-contained)
+        # libvlc ist hier KEINE Build-Abhaengigkeit; zur Laufzeit wird System-libvlc
+        # erwartet (Paket vlc / libvlc5) — oder in der AppImage gebuendelt.
+        run: >
+          dotnet publish NetScanner.csproj -c Release -r linux-x64 --self-contained
+          -p:Version=${{ steps.ver.outputs.v }} -o publish/linux
+
+      - name: Tarball packen
+        run: tar -czf "NetScanner-${{ github.ref_name }}-linux-x64.tar.gz" -C publish/linux .
+
+      - name: AppImage bauen
+        run: bash packaging/linux/build-appimage.sh "${{ github.ref_name }}" publish/linux
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: |
+            NetScanner-*-linux-x64.tar.gz
+            NetScanner-*-x86_64.AppImage
+          retention-days: 1
+
+  # ---------------------------------------------------------------- Release
+  release:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    # Beim manuellen Start (workflow_dispatch ohne Tag) ueberspringen.
+    if: github.ref_type == 'tag'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: GitHub-Release anlegen/aktualisieren
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/**/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true

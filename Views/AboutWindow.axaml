@@ -6,7 +6,7 @@
         WindowStartupLocation="CenterOwner"
         RequestedThemeVariant="Dark"
         Background="{StaticResource Bg}"
-        Title="Über NetScanner">
+        Title="Über NetScanner · v1.0">
 
   <Window.Styles>
     <Style Selector="Button.coffee">

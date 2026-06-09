@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NetScanner
+Comment=LAN-Discovery, Portscan und ONVIF/RTSP-Kameraerkennung
+Exec=NetScanner
+Icon=netscanner
+Categories=Network;Utility;
+Terminal=false
