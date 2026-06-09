@@ -45,6 +45,15 @@ public sealed class NativeVideoView : NativeControlHost
         // Reconnect & geringe Latenz fuer Kamerastreams.
         "--network-caching=300", "--rtsp-tcp", "--no-audio");
 
+    /// <summary>Gibt die gemeinsame LibVLC-Instanz frei. Beim App-Shutdown aufrufen,
+    /// sonst halten die nativen libvlc-Threads den Prozess am Leben.</summary>
+    public static void Shutdown()
+    {
+        try { _sharedLibVlc?.Dispose(); }
+        catch { /* beim Beenden ignorieren */ }
+        _sharedLibVlc = null;
+    }
+
     protected override IPlatformHandle CreateNativeControlCore(IPlatformHandle parent)
     {
         // base erzeugt ein leeres natives Child-Window; dessen Handle nutzt LibVLC.

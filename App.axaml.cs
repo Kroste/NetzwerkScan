@@ -33,7 +33,10 @@ public partial class App : Application
             desktop.ShutdownRequested += (_, _) =>
             {
                 log.LogInformation("Anwendung wird beendet");
-                NLog.LogManager.Shutdown();
+                Controls.NativeVideoView.Shutdown();   // native libvlc-Threads freigeben
+                NLog.LogManager.Shutdown();            // Logpuffer leeren
+                // Sicherheitsnetz: libvlc kann den Prozess sonst offen halten.
+                Environment.Exit(0);
             };
         }
 
