@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 
 namespace NetScanner.Views;
@@ -31,22 +30,13 @@ public partial class MainWindow : Window
             restore.IsVisible = state == WindowState.Maximized;
     }
 
-    // --- Titelleiste: ziehen & per Doppelklick maximieren ---
-    private void OnTitleBarPressed(object? sender, PointerPressedEventArgs e)
-    {
-        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
-            BeginMoveDrag(e);
-    }
-
-    private void OnTitleBarDoubleTapped(object? sender, TappedEventArgs e) => ToggleMaximize();
+    // Ziehen & Doppelklick-Maximieren uebernimmt das OS via WindowDecorationProperties.ElementRole="TitleBar".
 
     // --- Fenster-Buttons ---
     private void OnMinimize(object? sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
-    private void OnMaximizeRestore(object? sender, RoutedEventArgs e) => ToggleMaximize();
-    private void OnClose(object? sender, RoutedEventArgs e) => Close();
-
-    private void ToggleMaximize() =>
+    private void OnMaximizeRestore(object? sender, RoutedEventArgs e) =>
         WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+    private void OnClose(object? sender, RoutedEventArgs e) => Close();
 
     // --- About-Dialog ---
     private async void OnAboutClick(object? sender, RoutedEventArgs e)

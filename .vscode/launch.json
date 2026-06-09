@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET: NetScanner (Debug)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/bin/Debug/net10.0/NetScanner.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      // GUI-App: Ausgaben (NLog-Console-Target) landen in der Debug-Konsole.
+      "console": "internalConsole",
+      "stopAtEntry": false,
+      "env": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    },
+    {
+      "name": ".NET: An laufenden Prozess anhängen",
+      "type": "coreclr",
+      "request": "attach"
+    }
+  ]
+}

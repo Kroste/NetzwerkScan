@@ -1,0 +1,43 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/NetScanner.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "clean",
+      "command": "dotnet",
+      "type": "process",
+      "args": [ "clean", "${workspaceFolder}/NetScanner.csproj" ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "rebuild",
+      "dependsOrder": "sequence",
+      "dependsOn": [ "clean", "build" ],
+      "problemMatcher": []
+    },
+    {
+      // Loescht bin/ und obj/ wirklich vom Datentraeger — noetig, wenn die
+      // vorkompilierte Avalonia-XAML im obj/-Cache haengt. Cross-platform.
+      "label": "clean-hard",
+      "type": "shell",
+      "command": "rm -rf bin obj",
+      "windows": {
+        "command": "if exist bin rmdir /s /q bin & if exist obj rmdir /s /q obj"
+      },
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    }
+  ]
+}
