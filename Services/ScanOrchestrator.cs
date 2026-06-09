@@ -152,7 +152,7 @@ public sealed class ScanOrchestrator(
         {
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
             timeout.CancelAfter(500);
-            var entry = await Dns.GetHostEntryAsync(ip, timeout.Token);
+            var entry = await Dns.GetHostEntryAsync(ip.ToString(), timeout.Token);
             return string.IsNullOrWhiteSpace(entry.HostName) ? null : entry.HostName;
         }
         catch { return null; }
