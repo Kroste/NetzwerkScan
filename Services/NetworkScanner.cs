@@ -2,7 +2,6 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using NetScanner.Models;
 
@@ -26,15 +25,13 @@ public interface INetworkScanner
 /// </summary>
 public sealed class NetworkScanner(ILogger<NetworkScanner> log) : INetworkScanner
 {
-    private static bool IsWindows => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-
     public async IAsyncEnumerable<HostResult> SweepAsync(
         string cidr, int timeoutMs, int maxParallel,
         [EnumeratorCancellation] CancellationToken ct)
     {
         var targets = IpRangeHelper.ExpandCidr(cidr);
         log.LogInformation("Sweep gestartet: {Cidr} ({Count} Hosts, {Mode}, Timeout {Timeout} ms, Parallel {Par})",
-            cidr, targets.Count, IsWindows ? "ICMP+ARP/SendARP" : "ICMP + Neighbor-Tabelle",
+            cidr, targets.Count, OperatingSystem.IsWindows() ? "ICMP+ARP/SendARP" : "ICMP + Neighbor-Tabelle",
             timeoutMs, maxParallel);
 
         using var gate = new SemaphoreSlim(maxParallel);
@@ -78,7 +75,7 @@ public sealed class NetworkScanner(ILogger<NetworkScanner> log) : INetworkScanne
         await producer;
 
         // Nicht-Windows: ICMP-stumme, aber per ARP sichtbare Geraete (z. B. Handys) ergaenzen.
-        if (!IsWindows)
+        if (!OperatingSystem.IsWindows())
         {
             var table = await IpRangeHelper.ReadArpTableAsync(ct);
             var inRange = targets.Select(t => t.ToString()).ToHashSet();
@@ -118,7 +115,7 @@ public sealed class NetworkScanner(ILogger<NetworkScanner> log) : INetworkScanne
 
         // Windows: aktiver ARP-Request faengt ICMP-stumme Geraete + liefert die MAC.
         string? mac = null;
-        if (IsWindows && ArpResolver.IsSupported)
+        if (OperatingSystem.IsWindows())
         {
             try { mac = await ArpResolver.ResolveAsync(ip, ct); }
             catch (OperationCanceledException) { throw; }

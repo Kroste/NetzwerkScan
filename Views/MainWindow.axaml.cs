@@ -10,17 +10,25 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        UpdateChrome(WindowState);   // Initialzustand setzen
+    }
 
-        // Custom-Chrome: bei maximiertem Fenster oben etwas Luft lassen, damit der
-        // Inhalt nicht am Bildschirmrand klebt, und das Max/Restore-Glyph umschalten.
-        this.GetObservable(WindowStateProperty).Subscribe(state =>
-        {
-            Padding = state == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
-            if (this.FindControl<Control>("MaxGlyph") is { } max)
-                max.IsVisible = state != WindowState.Maximized;
-            if (this.FindControl<Control>("RestoreGlyph") is { } restore)
-                restore.IsVisible = state == WindowState.Maximized;
-        });
+    // Avalonia 12: kein Subscribe(Action<T>) ohne System.Reactive -> Property-Override nutzen.
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == WindowStateProperty)
+            UpdateChrome(WindowState);
+    }
+
+    /// <summary>Bei maximiertem Fenster oben Luft lassen (Custom-Chrome) und Max/Restore-Glyph umschalten.</summary>
+    private void UpdateChrome(WindowState state)
+    {
+        Padding = state == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
+        if (this.FindControl<Control>("MaxGlyph") is { } max)
+            max.IsVisible = state != WindowState.Maximized;
+        if (this.FindControl<Control>("RestoreGlyph") is { } restore)
+            restore.IsVisible = state == WindowState.Maximized;
     }
 
     // --- Titelleiste: ziehen & per Doppelklick maximieren ---
