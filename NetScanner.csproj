@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>14</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- nlog.config wird neben die EXE kopiert -->
+    <AssemblyName>NetScanner</AssemblyName>
+    <RootNamespace>NetScanner</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- UI -->
+    <PackageReference Include="Avalonia" Version="12.0.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.0.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.4" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.4" />
+    <!-- nur im Debug: Diagnostics-Overlay (F12) -->
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.17"
+                      Condition="'$(Configuration)' == 'Debug'" />
+
+    <!-- MVVM -->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+
+    <!-- DI + Logging -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+    <PackageReference Include="NLog" Version="5.5.1" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="5.5.0" />
+
+    <!-- Video: NUR der UI-neutrale Core. KEIN LibVLCSharp.Avalonia (haengt an Avalonia 11). -->
+    <PackageReference Include="LibVLCSharp" Version="3.9.4" />
+    <!-- Windows-native libvlc-Binaries. Auf Linux: System-libvlc verwenden (siehe README). -->
+    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.21"
+                      Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets/**" />
+    <None Update="nlog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

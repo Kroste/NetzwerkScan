@@ -1,0 +1,89 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:NetScanner.ViewModels"
+        xmlns:models="using:NetScanner.Models"
+        xmlns:ctrl="using:NetScanner.Controls"
+        x:Class="NetScanner.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Width="1100" Height="720"
+        Title="NetScanner — LAN- &amp; Kamera-Discovery">
+
+  <DockPanel Margin="12">
+
+    <!-- Eingabe-Leiste -->
+    <Border DockPanel.Dock="Top" Padding="12" CornerRadius="8"
+            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+      <StackPanel Spacing="8">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Text="Netzbereich (CIDR):" VerticalAlignment="Center" Width="140"/>
+          <TextBox Text="{Binding Cidr}" Width="200" Watermark="192.168.10.0/24"/>
+          <CheckBox Content="Alle Ports (1–65535)" IsChecked="{Binding ScanFullPorts}"/>
+          <CheckBox Content="RTSP prüfen" IsChecked="{Binding ProbeRtsp}"/>
+          <TextBlock Text="ONVIF-Wartezeit (ms):" VerticalAlignment="Center"/>
+          <NumericUpDown Value="{Binding OnvifListenMs}" Minimum="500" Maximum="10000"
+                         Increment="500" Width="120"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Text="RTSP-Login (optional):" VerticalAlignment="Center" Width="140"/>
+          <TextBox Text="{Binding RtspUser}" Width="160" Watermark="Benutzer"/>
+          <TextBox Text="{Binding RtspPass}" Width="160" Watermark="Passwort" PasswordChar="•"/>
+          <Button Content="Scan starten" Command="{Binding StartScanCommand}"
+                  IsEnabled="{Binding !IsScanning}"/>
+          <Button Content="Abbrechen" Command="{Binding CancelScanCommand}"
+                  IsEnabled="{Binding IsScanning}"/>
+          <ProgressBar IsIndeterminate="{Binding IsScanning}" Width="120"
+                       IsVisible="{Binding IsScanning}" VerticalAlignment="Center"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- Statuszeile unten -->
+    <TextBlock DockPanel.Dock="Bottom" Text="{Binding Status}" Margin="4,8,0,0"
+               Foreground="{DynamicResource SystemAccentColor}"/>
+
+    <!-- Hauptbereich: Liste links, Video rechts -->
+    <Grid ColumnDefinitions="*,8,1.1*" Margin="0,12,0,0">
+
+      <ListBox Grid.Column="0" ItemsSource="{Binding Hosts}"
+               SelectedItem="{Binding SelectedHost}">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="models:HostResult">
+            <Border Padding="8" CornerRadius="6" Margin="0,2">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Spacing="2">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding Address}" FontWeight="Bold"/>
+                    <Border Background="#E0303F" CornerRadius="4" Padding="6,1"
+                            IsVisible="{Binding IsCamera}">
+                      <TextBlock Text="KAMERA" Foreground="White" FontSize="11"/>
+                    </Border>
+                    <TextBlock Text="{Binding Vendor}" Opacity="0.7" FontSize="12"/>
+                  </StackPanel>
+                  <TextBlock Text="{Binding Hostname}" Opacity="0.7" FontSize="12"/>
+                  <TextBlock Text="{Binding OpenPortsDisplay}" FontSize="12" Opacity="0.85"/>
+                  <TextBlock Text="{Binding MacAddress}" FontSize="11" Opacity="0.5"/>
+                </StackPanel>
+                <Button Grid.Column="1" Content="▶ Stream" VerticalAlignment="Center"
+                        IsVisible="{Binding IsCamera}"
+                        Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).OpenStreamCommand}"
+                        CommandParameter="{Binding}"/>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+
+      <GridSplitter Grid.Column="1" Background="Transparent"/>
+
+      <Border Grid.Column="2" CornerRadius="8" Background="Black" ClipToBounds="True">
+        <Panel>
+          <TextBlock Text="Kein Stream ausgewählt" Foreground="#888"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     IsVisible="{Binding SelectedStreamUrl, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
+          <ctrl:NativeVideoView MediaUrl="{Binding SelectedStreamUrl}"/>
+        </Panel>
+      </Border>
+    </Grid>
+  </DockPanel>
+</Window>
