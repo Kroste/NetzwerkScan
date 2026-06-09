@@ -50,4 +50,17 @@ public static class OuiLookup
             vendor.Contains("ACTi", StringComparison.OrdinalIgnoreCase) ||
             vendor.Contains("Reolink", StringComparison.OrdinalIgnoreCase) ||
             vendor.Contains("Amcrest", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// True, wenn die MAC "locally administered" ist (Bit 0x02 im ersten Oktett).
+    /// Bei WLAN-Clients praktisch immer eine randomisierte MAC (Privacy-Feature) —
+    /// starker Hinweis auf ein Smartphone/Tablet. OUI-Lookup ist dann sinnlos.
+    /// </summary>
+    public static bool IsRandomizedMac(string? mac)
+    {
+        if (string.IsNullOrWhiteSpace(mac)) return false;
+        var firstOctet = mac.Replace('-', ':').Split(':')[0];
+        return byte.TryParse(firstOctet, System.Globalization.NumberStyles.HexNumber, null, out var b)
+               && (b & 0x02) != 0;
+    }
 }

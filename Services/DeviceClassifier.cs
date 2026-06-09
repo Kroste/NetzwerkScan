@@ -62,6 +62,10 @@ public static class DeviceClassifier
         var ports = h.OpenPorts.Select(p => p.Port).ToHashSet();
         var vendor = h.Vendor ?? "";
 
+        // Randomisierte MAC ohne offene Ports -> sehr wahrscheinlich Smartphone/Tablet.
+        if (ports.Count == 0 && OuiLookup.IsRandomizedMac(h.MacAddress))
+            return "Mobilgerät (rand. MAC)";
+
         // Drucker
         if (ports.Contains(9100) || ports.Contains(515) || ports.Contains(631)) return "Drucker";
         // NAS
