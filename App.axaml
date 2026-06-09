@@ -1,7 +1,24 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="NetScanner.App"
-             RequestedThemeVariant="Default">
+             RequestedThemeVariant="Dark">
+
+  <Application.Resources>
+    <SolidColorBrush x:Key="Bg"            Color="#0E141B"/>
+    <SolidColorBrush x:Key="Surface"       Color="#172029"/>
+    <SolidColorBrush x:Key="SurfaceAlt"    Color="#1E2A35"/>
+    <SolidColorBrush x:Key="Line"          Color="#2A3742"/>
+    <SolidColorBrush x:Key="TextPrimary"   Color="#E6EDF3"/>
+    <SolidColorBrush x:Key="TextMuted"     Color="#8593A0"/>
+    <SolidColorBrush x:Key="Accent"        Color="#3FB6A8"/>
+    <SolidColorBrush x:Key="AccentSoft"    Color="#1E3A38"/>
+    <SolidColorBrush x:Key="Online"        Color="#3FB6A8"/>
+    <SolidColorBrush x:Key="ArpOnly"       Color="#D9A441"/>
+    <SolidColorBrush x:Key="Camera"        Color="#F0883E"/>
+    <SolidColorBrush x:Key="CameraSoft"    Color="#3A2A1C"/>
+    <SolidColorBrush x:Key="Coffee"        Color="#FFDD00"/>
+  </Application.Resources>
+
   <Application.Styles>
     <FluentTheme />
   </Application.Styles>

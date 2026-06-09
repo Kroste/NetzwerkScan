@@ -50,4 +50,10 @@ public sealed class HostResult
     public string OpenPortsDisplay => OpenPorts.Count == 0
         ? "—"
         : string.Join(", ", OpenPorts.Select(p => $"{p.Port}/{p.Service}"));
+
+    /// <summary>True = hat auf ICMP geantwortet; False = nur per ARP gesehen (z. B. Handy im Doze).</summary>
+    public bool IsIcmpAlive => RoundtripMs >= 0;
+    public string LatencyDisplay => RoundtripMs >= 0 ? $"{RoundtripMs} ms" : "nur ARP";
+    public bool HasHostname => !string.IsNullOrWhiteSpace(Hostname);
+    public bool HasMac => !string.IsNullOrWhiteSpace(MacAddress);
 }

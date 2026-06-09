@@ -1,0 +1,89 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="NetScanner.Views.AboutWindow"
+        Width="440" Height="430"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        RequestedThemeVariant="Dark"
+        Background="{StaticResource Bg}"
+        Title="Über NetScanner">
+
+  <Window.Styles>
+    <Style Selector="Button.coffee">
+      <Setter Property="Background" Value="{StaticResource Coffee}"/>
+      <Setter Property="Foreground" Value="#1A1400"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="CornerRadius" Value="10"/>
+      <Setter Property="Height" Value="46"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.coffee:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#FFE74D"/>
+      <Setter Property="Foreground" Value="#1A1400"/>
+    </Style>
+    <Style Selector="Button.link">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="4,2"/>
+    </Style>
+    <Style Selector="Button.link:pointerover /template/ ContentPresenter">
+      <Setter Property="Foreground" Value="#4FCBBC"/>
+    </Style>
+    <Style Selector="Button.close">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{StaticResource TextMuted}"/>
+      <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Height" Value="38"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.close:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource SurfaceAlt}"/>
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+    </Style>
+  </Window.Styles>
+
+  <StackPanel Margin="28" Spacing="16">
+
+    <!-- Logo + Titel -->
+    <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" Margin="0,8,0,0">
+      <Panel Width="44" Height="44">
+        <Ellipse Width="44" Height="44" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.3"/>
+        <Ellipse Width="30" Height="30" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.6"/>
+        <Ellipse Width="9"  Height="9"  Fill="{StaticResource Accent}"/>
+      </Panel>
+      <StackPanel VerticalAlignment="Center">
+        <TextBlock Text="NetScanner" FontSize="22" FontWeight="Bold"
+                   Foreground="{StaticResource TextPrimary}"/>
+        <TextBlock Text="Version 1.0 · .NET 10 · Avalonia 12" FontSize="12"
+                   Foreground="{StaticResource TextMuted}"/>
+      </StackPanel>
+    </StackPanel>
+
+    <Border Height="1" Background="{StaticResource Line}" Margin="0,4"/>
+
+    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="20"
+               Foreground="{StaticResource TextMuted}" HorizontalAlignment="Center"
+               TextAlignment="Center"
+               Text="LAN-Discovery (ICMP + ARP), Portscan und ONVIF/RTSP-Kameraerkennung mit eingebettetem Live-Video."/>
+
+    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+      <TextBlock Text="von" FontSize="13" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+      <Button Classes="link" Content="github.com/Kroste" Click="OnGitHubClick"/>
+    </StackPanel>
+
+    <Border Height="1" Background="{StaticResource Line}" Margin="0,4"/>
+
+    <TextBlock Text="Gefällt dir das Tool?" FontSize="13" HorizontalAlignment="Center"
+               Foreground="{StaticResource TextPrimary}"/>
+
+    <Button Classes="coffee" Content="☕  Buy me a coffee" Click="OnCoffeeClick"/>
+
+    <Button Classes="close" Content="Schließen" Click="OnCloseClick"/>
+  </StackPanel>
+</Window>

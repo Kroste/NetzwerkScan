@@ -5,85 +5,337 @@
         xmlns:ctrl="using:NetScanner.Controls"
         x:Class="NetScanner.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Width="1100" Height="720"
-        Title="NetScanner — LAN- &amp; Kamera-Discovery">
+        Width="1180" Height="760" MinWidth="900" MinHeight="560"
+        RequestedThemeVariant="Dark"
+        Background="{StaticResource Bg}"
+        Title="NetScanner — LAN &amp; Camera Discovery">
 
-  <DockPanel Margin="12">
+  <Window.Styles>
+    <!-- Eingabefelder -->
+    <Style Selector="TextBox">
+      <Setter Property="Background" Value="{StaticResource Bg}"/>
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+      <Setter Property="CaretBrush" Value="{StaticResource Accent}"/>
+      <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Height" Value="36"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+      <Setter Property="BorderBrush" Value="{StaticResource Accent}"/>
+    </Style>
+    <Style Selector="TextBox.mono">
+      <Setter Property="FontFamily" Value="Cascadia Code,JetBrains Mono,Consolas,Menlo,monospace"/>
+    </Style>
 
-    <!-- Eingabe-Leiste -->
-    <Border DockPanel.Dock="Top" Padding="12" CornerRadius="8"
-            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
-      <StackPanel Spacing="8">
-        <StackPanel Orientation="Horizontal" Spacing="8">
-          <TextBlock Text="Netzbereich (CIDR):" VerticalAlignment="Center" Width="140"/>
-          <TextBox Text="{Binding Cidr}" Width="200" Watermark="192.168.10.0/24"/>
-          <CheckBox Content="Alle Ports (1–65535)" IsChecked="{Binding ScanFullPorts}"/>
-          <CheckBox Content="RTSP prüfen" IsChecked="{Binding ProbeRtsp}"/>
-          <TextBlock Text="ONVIF-Wartezeit (ms):" VerticalAlignment="Center"/>
-          <NumericUpDown Value="{Binding OnvifListenMs}" Minimum="500" Maximum="10000"
-                         Increment="500" Width="120"/>
+    <!-- Primaerbutton -->
+    <Style Selector="Button.primary">
+      <Setter Property="Background" Value="{StaticResource Accent}"/>
+      <Setter Property="Foreground" Value="#04201D"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Height" Value="36"/>
+      <Setter Property="Padding" Value="18,0"/>
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#4FCBBC"/>
+      <Setter Property="Foreground" Value="#04201D"/>
+    </Style>
+    <Style Selector="Button.primary:disabled /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource Line}"/>
+      <Setter Property="Foreground" Value="{StaticResource TextMuted}"/>
+    </Style>
+
+    <!-- Ghost-Button -->
+    <Style Selector="Button.ghost">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{StaticResource TextMuted}"/>
+      <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Height" Value="36"/>
+      <Setter Property="Padding" Value="16,0"/>
+    </Style>
+    <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource SurfaceAlt}"/>
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+    </Style>
+
+    <!-- Header-Button (Über) -->
+    <Style Selector="Button.header">
+      <Setter Property="Background" Value="{StaticResource Surface}"/>
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+      <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Height" Value="34"/>
+      <Setter Property="Padding" Value="16,0"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style Selector="Button.header:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource SurfaceAlt}"/>
+      <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+    </Style>
+
+    <!-- Stream-Button (Kamera-Akzent) -->
+    <Style Selector="Button.stream">
+      <Setter Property="Background" Value="{StaticResource CameraSoft}"/>
+      <Setter Property="Foreground" Value="{StaticResource Camera}"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="CornerRadius" Value="7"/>
+      <Setter Property="Padding" Value="12,6"/>
+    </Style>
+    <Style Selector="Button.stream:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource Camera}"/>
+      <Setter Property="Foreground" Value="#1A0E04"/>
+    </Style>
+
+    <!-- Host-Karte: Hover -->
+    <Style Selector="Border.host-card:pointerover">
+      <Setter Property="Background" Value="{StaticResource SurfaceAlt}"/>
+    </Style>
+
+    <!-- ListBox: Default-Item-Chrome entfernen, Karte uebernimmt die Optik -->
+    <Style Selector="ListBox">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="Margin" Value="0,0,0,8"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="CornerRadius" Value="12"/>
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ListBoxItem:selected Border.host-card">
+      <Setter Property="BorderBrush" Value="{StaticResource Accent}"/>
+      <Setter Property="Background" Value="{StaticResource SurfaceAlt}"/>
+    </Style>
+
+    <!-- Port-Chip -->
+    <Style Selector="Border.chip">
+      <Setter Property="Background" Value="{StaticResource Bg}"/>
+      <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="6"/>
+      <Setter Property="Padding" Value="7,2"/>
+      <Setter Property="Margin" Value="0,0,6,6"/>
+    </Style>
+
+    <Style Selector="CheckBox">
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+    <!-- ===== Kopfzeile ===== -->
+    <Border Grid.Row="0" Padding="20,14" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
+      <Grid ColumnDefinitions="*,Auto">
+
+        <!-- Marke -->
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="13" VerticalAlignment="Center">
+          <Panel Width="30" Height="30" VerticalAlignment="Center">
+            <Ellipse Width="30" Height="30" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.3"/>
+            <Ellipse Width="20" Height="20" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.6"/>
+            <Ellipse Width="7"  Height="7"  Fill="{StaticResource Accent}"/>
+          </Panel>
+          <TextBlock Text="NetScanner" FontSize="19" FontWeight="Bold"
+                     Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
+          <Border Background="{StaticResource Surface}" CornerRadius="5" Padding="7,3" VerticalAlignment="Center">
+            <TextBlock Text="LAN · Ports · ONVIF/RTSP" FontSize="11"
+                       Foreground="{StaticResource TextMuted}"/>
+          </Border>
         </StackPanel>
 
-        <StackPanel Orientation="Horizontal" Spacing="8">
-          <TextBlock Text="RTSP-Login (optional):" VerticalAlignment="Center" Width="140"/>
-          <TextBox Text="{Binding RtspUser}" Width="160" Watermark="Benutzer"/>
-          <TextBox Text="{Binding RtspPass}" Width="160" Watermark="Passwort" PasswordChar="•"/>
-          <Button Content="Scan starten" Command="{Binding StartScanCommand}"
-                  IsEnabled="{Binding !IsScanning}"/>
-          <Button Content="Abbrechen" Command="{Binding CancelScanCommand}"
-                  IsEnabled="{Binding IsScanning}"/>
-          <ProgressBar IsIndeterminate="{Binding IsScanning}" Width="120"
-                       IsVisible="{Binding IsScanning}" VerticalAlignment="Center"/>
+        <!-- Stats + Aktionen -->
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="20" VerticalAlignment="Center">
+          <StackPanel Orientation="Horizontal" Spacing="20" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+              <TextBlock Text="{Binding HostCount}" FontSize="19" FontWeight="Bold"
+                         Foreground="{StaticResource TextPrimary}"/>
+              <TextBlock Text="Hosts" FontSize="13" VerticalAlignment="Center"
+                         Foreground="{StaticResource TextMuted}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+              <TextBlock Text="{Binding CameraCount}" FontSize="19" FontWeight="Bold"
+                         Foreground="{StaticResource Camera}"/>
+              <TextBlock Text="Kameras" FontSize="13" VerticalAlignment="Center" Opacity="0.85"
+                         Foreground="{StaticResource Camera}"/>
+            </StackPanel>
+          </StackPanel>
+
+          <Border Width="1" Height="22" Background="{StaticResource Line}"/>
+
+          <Button Classes="header" Content="Über" Click="OnAboutClick"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- ===== Steuerleiste ===== -->
+    <Border Grid.Row="1" Margin="20,16,20,0" Padding="16" CornerRadius="12"
+            Background="{StaticResource Surface}">
+      <StackPanel Spacing="12">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <StackPanel Spacing="4">
+            <TextBlock Text="NETZBEREICH (CIDR)" FontSize="10" FontWeight="SemiBold"
+                       Foreground="{StaticResource TextMuted}"/>
+            <TextBox Classes="mono" Text="{Binding Cidr}" Width="210" Watermark="192.168.10.0/24"/>
+          </StackPanel>
+          <StackPanel Spacing="4">
+            <TextBlock Text="ONVIF-WARTEZEIT (MS)" FontSize="10" FontWeight="SemiBold"
+                       Foreground="{StaticResource TextMuted}"/>
+            <NumericUpDown Value="{Binding OnvifListenMs}" Minimum="500" Maximum="10000"
+                           Increment="500" Width="130" Height="36"/>
+          </StackPanel>
+          <StackPanel Spacing="8" VerticalAlignment="Bottom" Margin="6,0,0,6">
+            <CheckBox Content="Alle Ports (1–65535)" IsChecked="{Binding ScanFullPorts}"/>
+            <CheckBox Content="RTSP prüfen" IsChecked="{Binding ProbeRtsp}"/>
+          </StackPanel>
+        </StackPanel>
+
+        <Border Height="1" Background="{StaticResource Line}"/>
+
+        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+          <StackPanel Spacing="4">
+            <TextBlock Text="RTSP-LOGIN (OPTIONAL)" FontSize="10" FontWeight="SemiBold"
+                       Foreground="{StaticResource TextMuted}"/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBox Text="{Binding RtspUser}" Width="150" Watermark="Benutzer"/>
+              <TextBox Text="{Binding RtspPass}" Width="150" Watermark="Passwort" PasswordChar="•"/>
+            </StackPanel>
+          </StackPanel>
+
+          <Button Classes="primary" Content="Scan starten" VerticalAlignment="Bottom"
+                  Command="{Binding StartScanCommand}" IsEnabled="{Binding !IsScanning}"/>
+          <Button Classes="ghost" Content="Abbrechen" VerticalAlignment="Bottom"
+                  Command="{Binding CancelScanCommand}" IsEnabled="{Binding IsScanning}"/>
+          <ProgressBar IsIndeterminate="{Binding IsScanning}" IsVisible="{Binding IsScanning}"
+                       Width="160" Height="4" VerticalAlignment="Bottom" Margin="4,0,0,16"
+                       Foreground="{StaticResource Accent}"/>
         </StackPanel>
       </StackPanel>
     </Border>
 
-    <!-- Statuszeile unten -->
-    <TextBlock DockPanel.Dock="Bottom" Text="{Binding Status}" Margin="4,8,0,0"
-               Foreground="{DynamicResource SystemAccentColor}"/>
+    <!-- ===== Inhalt: Liste | Video ===== -->
+    <Grid Grid.Row="2" Margin="20,16,20,0" ColumnDefinitions="*,12,1.05*">
 
-    <!-- Hauptbereich: Liste links, Video rechts -->
-    <Grid ColumnDefinitions="*,8,1.1*" Margin="0,12,0,0">
+      <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Disabled">
+        <ListBox ItemsSource="{Binding Hosts}" SelectedItem="{Binding SelectedHost}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="models:HostResult">
+              <Border Classes="host-card" Background="{StaticResource Surface}"
+                      BorderBrush="{StaticResource Line}" BorderThickness="1"
+                      CornerRadius="12" Padding="0">
+                <Grid ColumnDefinitions="3,16,Auto,*,Auto">
 
-      <ListBox Grid.Column="0" ItemsSource="{Binding Hosts}"
-               SelectedItem="{Binding SelectedHost}">
-        <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="models:HostResult">
-            <Border Padding="8" CornerRadius="6" Margin="0,2">
-              <Grid ColumnDefinitions="*,Auto">
-                <StackPanel Grid.Column="0" Spacing="2">
-                  <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBlock Text="{Binding Address}" FontWeight="Bold"/>
-                    <Border Background="#E0303F" CornerRadius="4" Padding="6,1"
-                            IsVisible="{Binding IsCamera}">
-                      <TextBlock Text="KAMERA" Foreground="White" FontSize="11"/>
-                    </Border>
-                    <TextBlock Text="{Binding Vendor}" Opacity="0.7" FontSize="12"/>
+                  <!-- Kamera-Akzentstreifen (Spalte immer 3px -> kein Layout-Shift) -->
+                  <Border Grid.Column="0" Background="{StaticResource Camera}"
+                          CornerRadius="12,0,0,12" IsVisible="{Binding IsCamera}"/>
+
+                  <!-- Status-Punkt: Teal=ICMP, Gelb=nur ARP -->
+                  <Panel Grid.Column="2" VerticalAlignment="Center" Width="12" Height="12">
+                    <Ellipse Width="10" Height="10" Fill="{StaticResource Online}"
+                             IsVisible="{Binding IsIcmpAlive}"/>
+                    <Ellipse Width="10" Height="10" Fill="{StaticResource ArpOnly}"
+                             IsVisible="{Binding !IsIcmpAlive}"/>
+                  </Panel>
+
+                  <!-- Infoblock -->
+                  <StackPanel Grid.Column="3" Spacing="5" Margin="14,12" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <TextBlock Text="{Binding Address}" FontWeight="Bold" FontSize="15"
+                                 FontFamily="Cascadia Code,JetBrains Mono,Consolas,monospace"
+                                 Foreground="{StaticResource TextPrimary}"/>
+                      <Border Background="{StaticResource CameraSoft}" CornerRadius="4" Padding="6,1"
+                              VerticalAlignment="Center" IsVisible="{Binding IsCamera}">
+                        <TextBlock Text="KAMERA" FontSize="10" FontWeight="Bold"
+                                   Foreground="{StaticResource Camera}"/>
+                      </Border>
+                      <TextBlock Text="{Binding Vendor}" FontSize="12" VerticalAlignment="Center"
+                                 Foreground="{StaticResource TextMuted}"/>
+                      <TextBlock Text="{Binding LatencyDisplay}" FontSize="11" VerticalAlignment="Center"
+                                 Foreground="{StaticResource TextMuted}"/>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding Hostname}" FontSize="12" IsVisible="{Binding HasHostname}"
+                               Foreground="{StaticResource TextMuted}"/>
+
+                    <ItemsControl ItemsSource="{Binding OpenPorts}" Margin="0,2,0,0">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:PortResult">
+                          <Border Classes="chip">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                              <TextBlock Text="{Binding Port}" FontSize="11" FontWeight="SemiBold"
+                                         FontFamily="Cascadia Code,Consolas,monospace"
+                                         Foreground="{StaticResource TextPrimary}"/>
+                              <TextBlock Text="{Binding Service}" FontSize="11"
+                                         Foreground="{StaticResource TextMuted}"/>
+                            </StackPanel>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="{Binding MacAddress}" FontSize="11" IsVisible="{Binding HasMac}"
+                               FontFamily="Cascadia Code,Consolas,monospace"
+                               Foreground="{StaticResource TextMuted}" Opacity="0.7"/>
                   </StackPanel>
-                  <TextBlock Text="{Binding Hostname}" Opacity="0.7" FontSize="12"/>
-                  <TextBlock Text="{Binding OpenPortsDisplay}" FontSize="12" Opacity="0.85"/>
-                  <TextBlock Text="{Binding MacAddress}" FontSize="11" Opacity="0.5"/>
-                </StackPanel>
-                <Button Grid.Column="1" Content="▶ Stream" VerticalAlignment="Center"
-                        IsVisible="{Binding IsCamera}"
-                        Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).OpenStreamCommand}"
-                        CommandParameter="{Binding}"/>
-              </Grid>
-            </Border>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
 
-      <GridSplitter Grid.Column="1" Background="Transparent"/>
+                  <!-- Stream-Aktion -->
+                  <Button Grid.Column="4" Classes="stream" Content="▶  Stream"
+                          VerticalAlignment="Center" Margin="0,0,14,0"
+                          IsVisible="{Binding IsCamera}"
+                          Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).OpenStreamCommand}"
+                          CommandParameter="{Binding}"/>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </ScrollViewer>
 
-      <Border Grid.Column="2" CornerRadius="8" Background="Black" ClipToBounds="True">
+      <GridSplitter Grid.Column="1" Background="Transparent" ResizeDirection="Columns"/>
+
+      <Border Grid.Column="2" CornerRadius="12" Background="#05080B" ClipToBounds="True"
+              BorderBrush="{StaticResource Line}" BorderThickness="1">
         <Panel>
-          <TextBlock Text="Kein Stream ausgewählt" Foreground="#888"
-                     HorizontalAlignment="Center" VerticalAlignment="Center"
-                     IsVisible="{Binding SelectedStreamUrl, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10"
+                      IsVisible="{Binding SelectedStreamUrl, Converter={x:Static StringConverters.IsNullOrEmpty}}">
+            <Border Width="56" Height="56" CornerRadius="28" Background="{StaticResource Surface}"
+                    HorizontalAlignment="Center">
+              <TextBlock Text="▣" FontSize="26" Foreground="{StaticResource TextMuted}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Text="Kein Stream ausgewählt" Foreground="{StaticResource TextMuted}"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="Wähle eine Kamera und klicke ▶ Stream" FontSize="12"
+                       Foreground="{StaticResource TextMuted}" Opacity="0.6"
+                       HorizontalAlignment="Center"/>
+          </StackPanel>
           <ctrl:NativeVideoView MediaUrl="{Binding SelectedStreamUrl}"/>
         </Panel>
       </Border>
     </Grid>
-  </DockPanel>
+
+    <!-- ===== Statusleiste ===== -->
+    <Border Grid.Row="3" Padding="20,12" Margin="0,16,0,0"
+            BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0">
+      <StackPanel Orientation="Horizontal" Spacing="10">
+        <Ellipse Width="7" Height="7" VerticalAlignment="Center"
+                 Fill="{StaticResource Accent}" IsVisible="{Binding IsScanning}"/>
+        <TextBlock Text="{Binding Status}" Foreground="{StaticResource TextMuted}"
+                   FontFamily="Cascadia Code,Consolas,monospace" FontSize="12"
+                   VerticalAlignment="Center"/>
+      </StackPanel>
+    </Border>
+  </Grid>
 </Window>

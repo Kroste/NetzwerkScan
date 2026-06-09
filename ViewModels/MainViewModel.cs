@@ -26,6 +26,8 @@ public sealed partial class MainViewModel : ViewModelBase
 
     [ObservableProperty] private bool _isScanning;
     [ObservableProperty] private string _status = "Bereit.";
+    [ObservableProperty] private int _hostCount;
+    [ObservableProperty] private int _cameraCount;
 
     [ObservableProperty] private HostResult? _selectedHost;
 
@@ -50,6 +52,8 @@ public sealed partial class MainViewModel : ViewModelBase
             string.IsNullOrEmpty(RtspUser) ? "(leer)" : RtspUser);   // Passwort NICHT loggen
 
         Hosts.Clear();
+        HostCount = 0;
+        CameraCount = 0;
         SelectedStreamUrl = null;
         IsScanning = true;
         _cts = new CancellationTokenSource();
@@ -66,15 +70,17 @@ public sealed partial class MainViewModel : ViewModelBase
 
         try
         {
-            int count = 0, cams = 0;
             await foreach (var host in _orchestrator.RunAsync(opt, _cts.Token))
             {
-                Dispatcher.UIThread.Post(() => Hosts.Add(host));
-                count++;
-                if (host.IsCamera) cams++;
-                Status = $"Läuft … {count} Host(s), {cams} Kamera(s)";
+                Dispatcher.UIThread.Post(() =>
+                {
+                    Hosts.Add(host);
+                    HostCount = Hosts.Count;
+                    if (host.IsCamera) CameraCount++;
+                    Status = $"Läuft … {HostCount} Host(s), {CameraCount} Kamera(s)";
+                });
             }
-            Status = $"Fertig: {count} Host(s), {cams} Kamera(s).";
+            Status = $"Fertig: {HostCount} Host(s), {CameraCount} Kamera(s).";
         }
         catch (OperationCanceledException)
         {
