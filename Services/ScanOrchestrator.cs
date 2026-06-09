@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
@@ -40,6 +41,9 @@ public sealed class ScanOrchestrator(
     ICameraDiscovery onvif,
     RtspProbe rtsp,
     BannerGrabber banner,
+    MdnsDiscovery mdns,
+    SsdpDiscovery ssdp,
+    NetBiosProbe netbios,
     ILogger<ScanOrchestrator> log) : IScanOrchestrator
 {
     private static readonly int[] RtspPorts = [554, 8554];
@@ -50,27 +54,42 @@ public sealed class ScanOrchestrator(
     {
         log.LogInformation("=== Scan-Lauf START === {Opt}", opt);
 
-        // ONVIF parallel anstossen; Ergebnisse stehen i. d. R. vor Sweep-Ende bereit.
+        // Alle Multicast-Discoverer parallel anstossen. mDNS/SSDP befuellen ihre Sinks
+        // live, sodass spaeter gesweepte Hosts bereits Treffer sehen koennen.
+        var mdnsSink = new ConcurrentDictionary<string, MdnsRecord>();
+        var ssdpSink = new ConcurrentDictionary<string, SsdpRecord>();
         var onvifTask = onvif.DiscoverAsync(opt.OnvifListenMs, ct);
+        var mdnsTask = mdns.DiscoverAsync(mdnsSink, opt.OnvifListenMs, ct);
+        var ssdpTask = ssdp.DiscoverAsync(ssdpSink, opt.OnvifListenMs, ct);
 
         var seen = new HashSet<string>();
         await foreach (var host in sweeper.SweepAsync(opt.Cidr, opt.PingTimeoutMs, opt.PingParallel, ct))
         {
             ct.ThrowIfCancellationRequested();
             var onvifMap = onvifTask.IsCompletedSuccessfully ? onvifTask.Result : null;
-            await EnrichAsync(host, opt, onvifMap, ct);
+            await EnrichAsync(host, opt, onvifMap, mdnsSink, ssdpSink, ct);
             seen.Add(host.Address.ToString());
             yield return host;
         }
 
-        // ONVIF-only: Geraete, die nicht auf Ping geantwortet haben (manche Kameras blocken ICMP).
+        // Alle Discovery-Tasks abwarten -> vollstaendige Sinks fuer die "nur-Discovery"-Hosts.
         var cams = await onvifTask;
-        foreach (var cam in cams)
+        await Task.WhenAll(mdnsTask, ssdpTask);
+
+        // Geraete, die nicht auf Ping geantwortet haben, aber per ONVIF/mDNS/SSDP sichtbar sind
+        // (z. B. ICMP-stumme Kameras, Smart-TVs, Drucker).
+        var extra = new HashSet<string>();
+        foreach (var ip in cams.Select(c => c.Address.ToString())
+                                .Concat(mdnsSink.Keys).Concat(ssdpSink.Keys))
+            if (!seen.Contains(ip)) extra.Add(ip);
+
+        foreach (var ipStr in extra)
         {
-            if (seen.Contains(cam.Address.ToString())) continue;
-            var host = new HostResult { Address = cam.Address, Camera = cam, Vendor = cam.Vendor };
-            await EnrichAsync(host, opt, cams, ct);
-            log.LogInformation("ONVIF-only Host ergaenzt: {Ip}", cam.Address);
+            var ip = IPAddress.Parse(ipStr);
+            var cam = cams.FirstOrDefault(c => c.Address.ToString() == ipStr);
+            var host = new HostResult { Address = ip, Camera = cam, Vendor = cam?.Vendor };
+            await EnrichAsync(host, opt, cams, mdnsSink, ssdpSink, ct);
+            log.LogInformation("Discovery-only Host ergaenzt: {Ip}", ip);
             yield return host;
         }
 
@@ -78,23 +97,65 @@ public sealed class ScanOrchestrator(
     }
 
     private async Task EnrichAsync(
-        HostResult host, ScanOptions opt, IReadOnlyList<CameraInfo>? onvifMatches, CancellationToken ct)
+        HostResult host, ScanOptions opt, IReadOnlyList<CameraInfo>? onvifMatches,
+        ConcurrentDictionary<string, MdnsRecord> mdnsSink,
+        ConcurrentDictionary<string, SsdpRecord> ssdpSink,
+        CancellationToken ct)
     {
-        // Portscan
-        var open = await portScanner.ScanAsync(host.Address, opt.Ports, opt.PortTimeoutMs, opt.PortParallel, ct);
+        string ipKey = host.Address.ToString();
+
+        // Portscan, NetBIOS und Reverse-DNS NEBENLAEUFIG starten — ihre Timeouts
+        // ueberlappen so, statt sich pro Host zu summieren.
+        var portTask = portScanner.ScanAsync(host.Address, opt.Ports, opt.PortTimeoutMs, opt.PortParallel, ct);
+        var nbTask = netbios.QueryAsync(host.Address, opt.PortTimeoutMs, ct);
+        var dnsTask = string.IsNullOrWhiteSpace(host.Hostname)
+            ? ReverseDnsAsync(host.Address, ct)
+            : Task.FromResult<string?>(host.Hostname);
+
+        var open = await portTask;
         host.OpenPorts.AddRange(open);
 
         // Banner grabben (OS-/Geraete-Hinweise) — nur wenn passende Ports offen sind.
         await GrabBannersAsync(host, open, opt, ct);
 
+        // NetBIOS-Ergebnis (Windows/Samba-Hostname + Arbeitsgruppe).
+        (host.NetbiosName, host.NetbiosGroup) = await nbTask;
+
+        // Reverse-DNS (best effort).
+        host.Hostname = await dnsTask;
+
+        // mDNS-/SSDP-Treffer aus den live befuellten Sinks uebernehmen.
+        if (mdnsSink.TryGetValue(ipKey, out var m))
+        {
+            host.MdnsName = m.Name;
+            host.MdnsServices.AddRange(m.Services);
+        }
+        if (ssdpSink.TryGetValue(ipKey, out var s))
+        {
+            host.UpnpServer = s.Server;
+            host.UpnpDeviceType = s.DeviceType;
+        }
+
         // Kamera-Erkennung (kann ohne Treffer früh aussteigen).
         await ClassifyCameraAsync(host, opt, onvifMatches, open, ct);
 
-        // Geraetetyp + OS einschaetzen (nutzt Ports, TTL, Vendor, Banner, IsCamera).
+        // Geraetetyp + OS einschaetzen (nutzt Ports, TTL, Vendor, Banner, Discovery, IsCamera).
         DeviceClassifier.Classify(host);
         if (host.HasDeviceInfo)
             log.LogInformation("{Ip} erkannt als: {Summary} (TTL {Ttl})",
                 host.Address, host.DeviceSummary, host.Ttl?.ToString() ?? "?");
+    }
+
+    private static async Task<string?> ReverseDnsAsync(IPAddress ip, CancellationToken ct)
+    {
+        try
+        {
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeout.CancelAfter(500);
+            var entry = await Dns.GetHostEntryAsync(ip, timeout.Token);
+            return string.IsNullOrWhiteSpace(entry.HostName) ? null : entry.HostName;
+        }
+        catch { return null; }
     }
 
     private async Task GrabBannersAsync(HostResult host, IReadOnlyList<PortResult> open, ScanOptions opt, CancellationToken ct)

@@ -34,6 +34,11 @@ public static class DeviceClassifier
             if (srv.Contains("IIS", StringComparison.OrdinalIgnoreCase)) return "Windows";
             if (srv.Contains("Microsoft", StringComparison.OrdinalIgnoreCase)) return "Windows";
         }
+        if (h.UpnpServer is { } usrv)
+        {
+            if (usrv.Contains("Windows", StringComparison.OrdinalIgnoreCase)) return "Windows";
+            if (usrv.Contains("Linux", StringComparison.OrdinalIgnoreCase)) return "Linux";
+        }
 
         // Eindeutige Port-Signale.
         var ports = h.OpenPorts.Select(p => p.Port).ToHashSet();
@@ -59,12 +64,33 @@ public static class DeviceClassifier
     {
         if (h.IsCamera) return "IP-Kamera";
 
+        // Discovery-Signale haben hohe Konfidenz und kommen zuerst.
+        if (h.UpnpDeviceType is { } up) return up;                 // Router, Media-Server, Smart-TV
+        foreach (var svc in h.MdnsServices)
+        {
+            switch (svc)
+            {
+                case "Chromecast":      return "Chromecast/Google TV";
+                case "AirPlay":
+                case "AirPlay-Audio":   return "Apple TV/AirPlay";
+                case "Drucker":         return "Drucker";
+                case "Sonos":           return "Sonos-Speaker";
+                case "Spotify":         return "Smart-Speaker";
+                case "HomeKit":         return "Smart-Home-Geraet";
+                case "Android TV":      return "Android TV";
+            }
+        }
+
         var ports = h.OpenPorts.Select(p => p.Port).ToHashSet();
         var vendor = h.Vendor ?? "";
 
         // Randomisierte MAC ohne offene Ports -> sehr wahrscheinlich Smartphone/Tablet.
         if (ports.Count == 0 && OuiLookup.IsRandomizedMac(h.MacAddress))
             return "Mobilgerät (rand. MAC)";
+
+        // NetBIOS-Name vorhanden, aber sonst wenig -> Windows-Rechner/Samba.
+        if (!string.IsNullOrWhiteSpace(h.NetbiosName) && ports.Count == 0)
+            return "Windows/Samba-Host";
 
         // Drucker
         if (ports.Contains(9100) || ports.Contains(515) || ports.Contains(631)) return "Drucker";

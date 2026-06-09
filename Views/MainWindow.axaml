@@ -330,8 +330,12 @@
                                  Foreground="{StaticResource Accent}"/>
                     </Border>
 
-                    <TextBlock Text="{Binding Hostname}" FontSize="12" IsVisible="{Binding HasHostname}"
+                    <TextBlock Text="{Binding BestName}" FontSize="12" IsVisible="{Binding HasBestName}"
                                Foreground="{StaticResource TextMuted}"/>
+
+                    <TextBlock Text="{Binding DiscoveryDisplay}" FontSize="11" IsVisible="{Binding HasDiscovery}"
+                               Foreground="{StaticResource Accent}" Opacity="0.85"
+                               TextWrapping="Wrap"/>
 
                     <TextBlock Text="{Binding BannerDisplay}" FontSize="11" IsVisible="{Binding HasBanner}"
                                FontFamily="Cascadia Code,Consolas,monospace"

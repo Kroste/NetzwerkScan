@@ -60,6 +60,9 @@ public partial class App : Application
         sc.AddSingleton<ICameraDiscovery, OnvifDiscovery>();
         sc.AddSingleton<RtspProbe>();
         sc.AddSingleton<BannerGrabber>();
+        sc.AddSingleton<MdnsDiscovery>();
+        sc.AddSingleton<SsdpDiscovery>();
+        sc.AddSingleton<NetBiosProbe>();
         sc.AddSingleton<IScanOrchestrator, ScanOrchestrator>();
 
         // ViewModels

@@ -57,6 +57,19 @@ public sealed class HostResult
     /// <summary>SSH-Banner (z. B. "SSH-2.0-OpenSSH_9.6 Ubuntu").</summary>
     public string? SshBanner { get; set; }
 
+    /// <summary>Per mDNS/Bonjour gemeldeter Hostname (z. B. "Wohnzimmer-TV.local").</summary>
+    public string? MdnsName { get; set; }
+    /// <summary>Per mDNS gefundene Service-Typen in Klartext (z. B. "Chromecast", "Drucker").</summary>
+    public List<string> MdnsServices { get; } = [];
+    /// <summary>NetBIOS-Workstation-Name (Windows/Samba).</summary>
+    public string? NetbiosName { get; set; }
+    /// <summary>NetBIOS-Arbeitsgruppe oder Domaene.</summary>
+    public string? NetbiosGroup { get; set; }
+    /// <summary>UPnP/SSDP-Server-Kennung (enthaelt oft OS + Produkt).</summary>
+    public string? UpnpServer { get; set; }
+    /// <summary>Aus SSDP abgeleiteter UPnP-Geraetetyp (z. B. "Router", "Media-Server").</summary>
+    public string? UpnpDeviceType { get; set; }
+
     public List<PortResult> OpenPorts { get; } = [];
     public CameraInfo? Camera { get; set; }
 
@@ -68,8 +81,30 @@ public sealed class HostResult
     /// <summary>True = hat auf ICMP geantwortet; False = nur per ARP gesehen (z. B. Handy im Doze).</summary>
     public bool IsIcmpAlive => RoundtripMs >= 0;
     public string LatencyDisplay => RoundtripMs >= 0 ? $"{RoundtripMs} ms" : "nur ARP";
-    public bool HasHostname => !string.IsNullOrWhiteSpace(Hostname);
+
+    /// <summary>Bester verfuegbarer Name: DNS &gt; mDNS &gt; NetBIOS.</summary>
+    public string? BestName => !string.IsNullOrWhiteSpace(Hostname) ? Hostname
+                             : !string.IsNullOrWhiteSpace(MdnsName) ? MdnsName
+                             : NetbiosName;
+    public bool HasBestName => !string.IsNullOrWhiteSpace(BestName);
+    // Rueckwaertskompatibel zur bestehenden UI-Bindung:
+    public bool HasHostname => HasBestName;
+
     public bool HasMac => !string.IsNullOrWhiteSpace(MacAddress);
+
+    /// <summary>Kompakte Discovery-Zeile: mDNS-Dienste, UPnP-Typ, NetBIOS-Gruppe.</summary>
+    public string? DiscoveryDisplay
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (MdnsServices.Count > 0) parts.Add(string.Join(", ", MdnsServices));
+            if (!string.IsNullOrWhiteSpace(UpnpDeviceType)) parts.Add($"UPnP: {UpnpDeviceType}");
+            if (!string.IsNullOrWhiteSpace(NetbiosGroup)) parts.Add($"Gruppe: {NetbiosGroup}");
+            return parts.Count == 0 ? null : string.Join("  ·  ", parts);
+        }
+    }
+    public bool HasDiscovery => DiscoveryDisplay is not null;
 
     /// <summary>Kurze Zusammenfassung "Geraetetyp · OS" fuer die Anzeige.</summary>
     public string DeviceSummary
