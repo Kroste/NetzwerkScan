@@ -8,6 +8,9 @@
         Width="1180" Height="760" MinWidth="900" MinHeight="560"
         RequestedThemeVariant="Dark"
         Background="{StaticResource Bg}"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
         Title="NetScanner — LAN &amp; Camera Discovery">
 
   <Window.Styles>
@@ -78,6 +81,24 @@
       <Setter Property="Foreground" Value="{StaticResource Accent}"/>
     </Style>
 
+    <!-- Fenster-Steuerbuttons (Custom Chrome) -->
+    <Style Selector="Button.win">
+      <Setter Property="Width" Value="44"/>
+      <Setter Property="Height" Value="32"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="CornerRadius" Value="7"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.win:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource SurfaceAlt}"/>
+    </Style>
+    <Style Selector="Button.win-close:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#E0303F"/>
+    </Style>
+
     <!-- Stream-Button (Kamera-Akzent) -->
     <Style Selector="Button.stream">
       <Setter Property="Background" Value="{StaticResource CameraSoft}"/>
@@ -134,18 +155,19 @@
 
   <Grid RowDefinitions="Auto,Auto,*,Auto">
 
-    <!-- ===== Kopfzeile ===== -->
-    <Border Grid.Row="0" Padding="20,14" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
+    <!-- ===== Kopfzeile / Custom-Titlebar ===== -->
+    <Border Grid.Row="0" Padding="18,10,10,10" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1"
+            PointerPressed="OnTitleBarPressed" DoubleTapped="OnTitleBarDoubleTapped">
       <Grid ColumnDefinitions="*,Auto">
 
         <!-- Marke -->
         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="13" VerticalAlignment="Center">
-          <Panel Width="30" Height="30" VerticalAlignment="Center">
-            <Ellipse Width="30" Height="30" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.3"/>
-            <Ellipse Width="20" Height="20" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.6"/>
+          <Panel Width="28" Height="28" VerticalAlignment="Center">
+            <Ellipse Width="28" Height="28" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.3"/>
+            <Ellipse Width="19" Height="19" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.6"/>
             <Ellipse Width="7"  Height="7"  Fill="{StaticResource Accent}"/>
           </Panel>
-          <TextBlock Text="NetScanner" FontSize="19" FontWeight="Bold"
+          <TextBlock Text="NetScanner" FontSize="18" FontWeight="Bold"
                      Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
           <Border Background="{StaticResource Surface}" CornerRadius="5" Padding="7,3" VerticalAlignment="Center">
             <TextBlock Text="LAN · Ports · ONVIF/RTSP" FontSize="11"
@@ -153,17 +175,17 @@
           </Border>
         </StackPanel>
 
-        <!-- Stats + Aktionen -->
-        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="20" VerticalAlignment="Center">
-          <StackPanel Orientation="Horizontal" Spacing="20" VerticalAlignment="Center">
+        <!-- Stats + Aktionen + Fenstersteuerung -->
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+          <StackPanel Orientation="Horizontal" Spacing="18" VerticalAlignment="Center">
             <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
-              <TextBlock Text="{Binding HostCount}" FontSize="19" FontWeight="Bold"
+              <TextBlock Text="{Binding HostCount}" FontSize="18" FontWeight="Bold"
                          Foreground="{StaticResource TextPrimary}"/>
               <TextBlock Text="Hosts" FontSize="13" VerticalAlignment="Center"
                          Foreground="{StaticResource TextMuted}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
-              <TextBlock Text="{Binding CameraCount}" FontSize="19" FontWeight="Bold"
+              <TextBlock Text="{Binding CameraCount}" FontSize="18" FontWeight="Bold"
                          Foreground="{StaticResource Camera}"/>
               <TextBlock Text="Kameras" FontSize="13" VerticalAlignment="Center" Opacity="0.85"
                          Foreground="{StaticResource Camera}"/>
@@ -173,6 +195,32 @@
           <Border Width="1" Height="22" Background="{StaticResource Line}"/>
 
           <Button Classes="header" Content="Über" Click="OnAboutClick"/>
+
+          <Border Width="1" Height="22" Background="{StaticResource Line}"/>
+
+          <!-- Eigene Fenster-Buttons -->
+          <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+            <Button Classes="win" Click="OnMinimize" ToolTip.Tip="Minimieren">
+              <Border Width="11" Height="1.4" Background="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+            </Button>
+            <Button Classes="win" Click="OnMaximizeRestore" ToolTip.Tip="Maximieren">
+              <Panel Width="12" Height="12">
+                <Border x:Name="MaxGlyph" BorderBrush="{StaticResource TextMuted}"
+                        BorderThickness="1.4" CornerRadius="2"/>
+                <Panel x:Name="RestoreGlyph" IsVisible="False">
+                  <Border Width="8" Height="8" BorderBrush="{StaticResource TextMuted}" BorderThickness="1.4"
+                          CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                  <Border Width="8" Height="8" BorderBrush="{StaticResource TextMuted}" BorderThickness="1.4"
+                          CornerRadius="1.5" Background="{StaticResource Bg}"
+                          HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+                </Panel>
+              </Panel>
+            </Button>
+            <Button Classes="win win-close" Click="OnClose" ToolTip.Tip="Schließen">
+              <Path Stroke="{StaticResource TextPrimary}" StrokeThickness="1.4"
+                    Data="M0,0 L11,11 M0,11 L11,0"/>
+            </Button>
+          </StackPanel>
         </StackPanel>
       </Grid>
     </Border>
