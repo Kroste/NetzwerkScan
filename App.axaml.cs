@@ -59,6 +59,7 @@ public partial class App : Application
         sc.AddSingleton<IPortScanner, PortScanner>();
         sc.AddSingleton<ICameraDiscovery, OnvifDiscovery>();
         sc.AddSingleton<RtspProbe>();
+        sc.AddSingleton<BannerGrabber>();
         sc.AddSingleton<IScanOrchestrator, ScanOrchestrator>();
 
         // ViewModels

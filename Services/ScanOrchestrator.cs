@@ -39,9 +39,11 @@ public sealed class ScanOrchestrator(
     IPortScanner portScanner,
     ICameraDiscovery onvif,
     RtspProbe rtsp,
+    BannerGrabber banner,
     ILogger<ScanOrchestrator> log) : IScanOrchestrator
 {
     private static readonly int[] RtspPorts = [554, 8554];
+    private static readonly int[] HttpPorts = [80, 8080, 8000, 8081];
 
     public async IAsyncEnumerable<HostResult> RunAsync(
         ScanOptions opt, [EnumeratorCancellation] CancellationToken ct)
@@ -82,9 +84,34 @@ public sealed class ScanOrchestrator(
         var open = await portScanner.ScanAsync(host.Address, opt.Ports, opt.PortTimeoutMs, opt.PortParallel, ct);
         host.OpenPorts.AddRange(open);
 
-        // ONVIF-Treffer fuer genau diese IP?
-        var onvifHit = onvifMatches?.FirstOrDefault(c => c.Address.Equals(host.Address));
+        // Banner grabben (OS-/Geraete-Hinweise) — nur wenn passende Ports offen sind.
+        await GrabBannersAsync(host, open, opt, ct);
 
+        // Kamera-Erkennung (kann ohne Treffer früh aussteigen).
+        await ClassifyCameraAsync(host, opt, onvifMatches, open, ct);
+
+        // Geraetetyp + OS einschaetzen (nutzt Ports, TTL, Vendor, Banner, IsCamera).
+        DeviceClassifier.Classify(host);
+        if (host.HasDeviceInfo)
+            log.LogInformation("{Ip} erkannt als: {Summary} (TTL {Ttl})",
+                host.Address, host.DeviceSummary, host.Ttl?.ToString() ?? "?");
+    }
+
+    private async Task GrabBannersAsync(HostResult host, IReadOnlyList<PortResult> open, ScanOptions opt, CancellationToken ct)
+    {
+        if (open.Any(p => p.Port == 22))
+            host.SshBanner = await banner.GrabSshAsync(host.Address, 22, opt.PortTimeoutMs, ct);
+
+        var httpPort = open.Select(p => p.Port).FirstOrDefault(HttpPorts.Contains, 0);
+        if (httpPort != 0)
+            host.HttpServer = await banner.GrabHttpServerAsync(host.Address, httpPort, opt.PortTimeoutMs, ct);
+    }
+
+    private async Task ClassifyCameraAsync(
+        HostResult host, ScanOptions opt, IReadOnlyList<CameraInfo>? onvifMatches,
+        IReadOnlyList<PortResult> open, CancellationToken ct)
+    {
+        var onvifHit = onvifMatches?.FirstOrDefault(c => c.Address.Equals(host.Address));
         bool hasRtspPort = open.Any(p => RtspPorts.Contains(p.Port));
         bool vendorIsCamera = OuiLookup.IsLikelyCameraVendor(host.Vendor);
 
@@ -100,7 +127,6 @@ public sealed class ScanOrchestrator(
         if (onvifHit is not null && (hasRtspPort || vendorIsCamera))
             cam = cam with { Source = CameraSource.Both };
 
-        // RTSP-Port bestimmen (offener Port bevorzugt, sonst Default 554).
         int rtspPort = open.Select(p => p.Port).FirstOrDefault(RtspPorts.Contains, 554);
 
         if (opt.ProbeRtsp)

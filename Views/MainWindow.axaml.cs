@@ -39,6 +39,18 @@ public partial class MainWindow : Window
     private void OnClose(object? sender, RoutedEventArgs e) => Close();
 
     // --- About-Dialog ---
+    private static readonly NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
+
     private async void OnAboutClick(object? sender, RoutedEventArgs e)
-        => await new AboutWindow().ShowDialog(this);
+    {
+        Log.Info("Info-Button geklickt → About-Dialog wird geoeffnet");
+        try
+        {
+            await new AboutWindow().ShowDialog(this);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "About-Dialog konnte nicht geoeffnet werden");
+        }
+    }
 }

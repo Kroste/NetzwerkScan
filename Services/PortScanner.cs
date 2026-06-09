@@ -17,12 +17,12 @@ public interface IPortScanner
 /// </summary>
 public sealed class PortScanner(ILogger<PortScanner> log) : IPortScanner
 {
-    /// <summary>Pragmatische Default-Portliste inkl. typischer Kamera-/DVR-Ports.</summary>
+    /// <summary>Pragmatische Default-Portliste inkl. typischer Kamera-/DVR-, Drucker-, NAS- und OS-Ports.</summary>
     public static readonly int[] CommonPorts =
     [
-        21, 22, 23, 53, 80, 443, 554, 1935, 3389,
-        8000, 8080, 8081, 8443, 8554, 9000,
-        34567, 37777   // gaengige DVR/NVR-Ports (Dahua & Co.)
+        21, 22, 23, 53, 80, 139, 443, 445, 515, 548, 554, 631,
+        1935, 3389, 5000, 5001, 8000, 8080, 8081, 8443, 8554, 9000, 9100,
+        32400, 34567, 37777, 62078
     ];
 
     public async Task<IReadOnlyList<PortResult>> ScanAsync(

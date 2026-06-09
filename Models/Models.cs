@@ -9,9 +9,12 @@ public sealed record PortResult(int Port, bool IsOpen, string? Banner = null)
     public string Service => Port switch
     {
         21 => "FTP", 22 => "SSH", 23 => "Telnet", 53 => "DNS",
-        80 => "HTTP", 443 => "HTTPS", 554 => "RTSP", 1935 => "RTMP",
-        3389 => "RDP", 8000 => "HTTP-alt", 8080 => "HTTP-proxy",
-        8554 => "RTSP-alt", 37777 => "Dahua", 34567 => "DVR", _ => "?"
+        80 => "HTTP", 139 => "NetBIOS", 443 => "HTTPS", 445 => "SMB",
+        515 => "LPD", 548 => "AFP", 554 => "RTSP", 631 => "IPP",
+        1935 => "RTMP", 3389 => "RDP", 5000 => "Synology", 5001 => "Synology-S",
+        8000 => "HTTP-alt", 8080 => "HTTP-proxy", 8081 => "HTTP-alt", 8443 => "HTTPS-alt",
+        8554 => "RTSP-alt", 9000 => "HTTP-alt", 9100 => "JetDirect",
+        32400 => "Plex", 34567 => "DVR", 37777 => "Dahua", 62078 => "iOS-lockdown", _ => "?"
     };
 }
 
@@ -43,6 +46,17 @@ public sealed class HostResult
     public string? Vendor { get; set; }
     public long RoundtripMs { get; set; }
 
+    /// <summary>TTL aus dem ICMP-Reply (Basis fuer die OS-Heuristik).</summary>
+    public int? Ttl { get; set; }
+    /// <summary>Geschaetzte OS-Familie (z. B. "Windows", "Linux/Unix", "Netzwerkgeraet").</summary>
+    public string? OsGuess { get; set; }
+    /// <summary>Geschaetzter Geraetetyp (z. B. "Drucker", "Kamera", "NAS", "Router").</summary>
+    public string? DeviceType { get; set; }
+    /// <summary>HTTP-Server-Header (z. B. "nginx", "Microsoft-IIS/10.0").</summary>
+    public string? HttpServer { get; set; }
+    /// <summary>SSH-Banner (z. B. "SSH-2.0-OpenSSH_9.6 Ubuntu").</summary>
+    public string? SshBanner { get; set; }
+
     public List<PortResult> OpenPorts { get; } = [];
     public CameraInfo? Camera { get; set; }
 
@@ -56,4 +70,21 @@ public sealed class HostResult
     public string LatencyDisplay => RoundtripMs >= 0 ? $"{RoundtripMs} ms" : "nur ARP";
     public bool HasHostname => !string.IsNullOrWhiteSpace(Hostname);
     public bool HasMac => !string.IsNullOrWhiteSpace(MacAddress);
+
+    /// <summary>Kurze Zusammenfassung "Geraetetyp · OS" fuer die Anzeige.</summary>
+    public string DeviceSummary
+    {
+        get
+        {
+            var parts = new List<string>(2);
+            if (!string.IsNullOrWhiteSpace(DeviceType)) parts.Add(DeviceType!);
+            if (!string.IsNullOrWhiteSpace(OsGuess)) parts.Add(OsGuess!);
+            return string.Join(" · ", parts);
+        }
+    }
+    public bool HasDeviceInfo => !string.IsNullOrWhiteSpace(DeviceType) || !string.IsNullOrWhiteSpace(OsGuess);
+
+    /// <summary>Banner-Zeile (SSH/HTTP) fuer die Anzeige, falls vorhanden.</summary>
+    public string? BannerDisplay => SshBanner ?? (HttpServer is not null ? $"HTTP: {HttpServer}" : null);
+    public bool HasBanner => !string.IsNullOrWhiteSpace(BannerDisplay);
 }

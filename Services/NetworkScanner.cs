@@ -101,14 +101,20 @@ public sealed class NetworkScanner(ILogger<NetworkScanner> log) : INetworkScanne
     /// <summary>Prueft einen einzelnen Host. Liefert HostResult, wenn er per ICMP ODER ARP lebt.</summary>
     private async Task<HostResult?> ProbeAsync(IPAddress ip, int timeoutMs, CancellationToken ct)
     {
-        // ICMP-Ping (alle Plattformen) — liefert RTT.
+        // ICMP-Ping (alle Plattformen) — liefert RTT und TTL (Basis fuer OS-Heuristik).
         long rtt = -1;
+        int? ttl = null;
         bool pingOk = false;
         try
         {
             using var ping = new Ping();
             var reply = await ping.SendPingAsync(ip, TimeSpan.FromMilliseconds(timeoutMs), cancellationToken: ct);
-            if (reply.Status == IPStatus.Success) { pingOk = true; rtt = reply.RoundtripTime; }
+            if (reply.Status == IPStatus.Success)
+            {
+                pingOk = true;
+                rtt = reply.RoundtripTime;
+                ttl = reply.Options?.Ttl;   // auf manchen Plattformen null
+            }
         }
         catch (OperationCanceledException) { throw; }
         catch { /* Ping nicht moeglich -> evtl. trotzdem per ARP erreichbar */ }
@@ -129,6 +135,7 @@ public sealed class NetworkScanner(ILogger<NetworkScanner> log) : INetworkScanne
         {
             Address = ip,
             RoundtripMs = rtt,
+            Ttl = ttl,
             MacAddress = mac,
             Vendor = OuiLookup.Resolve(mac)
         };
