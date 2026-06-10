@@ -9,9 +9,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Testversion ohne fuehrendes v (z.B. 1.2.5). Nur fuer manuelle Laeufe."
+        description: "Testversion ohne fuehrendes v (z.B. 1.2.6). Nur fuer manuelle Laeufe."
         required: false
-        default: "1.2.5"
+        default: "1.2.6"
 
 permissions:
   contents: write   # noetig, damit der Release-Job das Release anlegen/aktualisieren darf
@@ -40,9 +40,10 @@ jobs:
       - name: Publish (win-x64, framework-dependent)
         # Framework-dependent: die .NET-Runtime wird NICHT gebundelt (~80 MB kleiner).
         # Der Installer (Setup.exe) zieht die .NET 10 Desktop Runtime bei Bedarf nach.
-        # Kein PublishSingleFile: die nativen libvlc-DLLs (VideoLAN.LibVLC.Windows)
-        # bleiben so verlaesslich neben der EXE. Die csproj-Bedingung greift,
-        # weil dieser Job auf einem Windows-Runner laeuft.
+        # libvlc wird ebenfalls nicht gebundelt — die Kamera-Vorschau nutzt zur Laufzeit
+        # eine vorhandene VLC-Installation (siehe Services/VlcLocator.cs). Das drueckt das
+        # Paket von ~116 MB auf ~30 MB. Kein PublishSingleFile (NativeControlHost +
+        # native Handles laufen ausgepackt am verlaesslichsten).
         run: >
           dotnet publish NetScanner.csproj -c Release -r win-x64 --no-self-contained
           -p:Version=${{ steps.ver.outputs.v }} -p:DebugType=none -p:DebugSymbols=false -o publish/win

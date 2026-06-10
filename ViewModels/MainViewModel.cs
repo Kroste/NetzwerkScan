@@ -37,6 +37,24 @@ public sealed partial class MainViewModel : ViewModelBase
     /// <summary>Wird an NativeVideoView.MediaUrl gebunden.</summary>
     [ObservableProperty] private string? _selectedStreamUrl;
 
+    /// <summary>True, wenn libvlc (aus einer vorhandenen VLC-Installation) bereitsteht.</summary>
+    public bool IsPreviewAvailable => VlcLocator.IsAvailable;
+
+    /// <summary>Eingebettete Vorschau zeigen: Stream gewaehlt UND libvlc verfuegbar.</summary>
+    public bool ShowVideoPreview =>
+        IsPreviewAvailable && !string.IsNullOrWhiteSpace(SelectedStreamUrl);
+
+    /// <summary>Hinweis "VLC installieren" zeigen: Stream gewaehlt, aber kein libvlc da.</summary>
+    public bool ShowVlcMissingHint =>
+        !IsPreviewAvailable && !string.IsNullOrWhiteSpace(SelectedStreamUrl);
+
+    // Beide abgeleiteten Flags neu auswerten, sobald sich die Stream-URL aendert.
+    partial void OnSelectedStreamUrlChanged(string? value)
+    {
+        OnPropertyChanged(nameof(ShowVideoPreview));
+        OnPropertyChanged(nameof(ShowVlcMissingHint));
+    }
+
     public MainViewModel(IScanOrchestrator orchestrator, WolSender wol, ILogger<MainViewModel> log, ILoggerFactory factory)
     {
         _orchestrator = orchestrator;

@@ -56,10 +56,11 @@ Ein schlankes Desktop-Werkzeug, um das eigene Netz sichtbar zu machen: Welche Ge
 
 Über die [Releases](../../releases)-Seite gibt es vorgebaute Pakete (vom GitHub-Actions-Workflow erzeugt):
 
-- **Windows (empfohlen):** `NetScanner-…-Setup.exe` — Installer mit Startmenü-Eintrag. Er bringt die **.NET 10 Desktop Runtime mit** und installiert sie bei Bedarf automatisch; ist sie schon vorhanden, wird dieser Schritt übersprungen. libvlc ist enthalten.
+- **Windows (empfohlen):** `NetScanner-…-Setup.exe` — Installer mit Startmenü-Eintrag. Er bringt die **.NET 10 Desktop Runtime mit** und installiert sie bei Bedarf automatisch; ist sie schon vorhanden, wird dieser Schritt übersprungen.
 - **Windows (portabel):** `NetScanner-…-win-x64.zip` — entpacken, `NetScanner.exe` starten. Dieses Paket ist framework-dependent, setzt also eine installierte **.NET 10 Desktop Runtime** voraus (sonst startet die App nicht).
 - **Linux:** `NetScanner-…-linux-x64.tar.gz` **oder** `NetScanner-…-x86_64.AppImage`.
-  libvlc ist hier eine **Laufzeit-Abhängigkeit** (siehe unten).
+
+Die eingebettete Kamera-Vorschau nutzt eine vorhandene **VLC-Installation** (libvlc wird **nicht** mitgeliefert — das hält die Pakete klein). Scan, Portscan, Erkennung und Netzwerkkarte funktionieren auch ohne VLC; nur das Live-Video bleibt dann aus und die App zeigt stattdessen einen Hinweis. Details unten.
 
 ### Aus dem Quellcode bauen
 
@@ -72,15 +73,19 @@ dotnet run
 
 Voraussetzung: **.NET 10 SDK** (≥ 10.0.300, in `global.json` gepinnt).
 
-### libvlc (für das Kamera-Video)
+### libvlc / VLC (für die Kamera-Vorschau)
 
-- **Windows:** kommt automatisch über das NuGet `VideoLAN.LibVLC.Windows` — nichts zu tun.
-- **Linux:** die System-libvlc installieren. Auf immutable Fedora/Bazzite gehört das **in den `dotnet10`-Distrobox-Container**, nicht aufs Host-System:
+NetScanner bündelt libvlc **nicht** mehr selbst — das sparte rund 85 MB pro Windows-Paket. Stattdessen lädt die App libvlc zur Laufzeit aus einer vorhandenen VLC-Installation. Fehlt sie, läuft alles außer dem eingebetteten Video normal weiter; im Videobereich erscheint dann ein Hinweis mit Download-Link.
+
+- **Windows:** Den [VLC media player](https://www.videolan.org/vlc/) in der **64-bit-Variante** installieren (Standard-Download). NetScanner sucht ihn unter `%ProgramFiles%\VideoLAN\VLC`. Eine 32-bit-VLC wird bewusst ignoriert, weil sie nicht zur 64-bit-App passt. Für eine Installation an einem anderen Ort kann die Umgebungsvariable `NETSCANNER_VLC_DIR` auf das VLC-Verzeichnis (mit `libvlc.dll`) gesetzt werden.
+- **Linux:** Die System-libvlc installieren. Auf immutable Fedora/Bazzite gehört das **in den `dotnet10`-Distrobox-Container**, nicht aufs Host-System:
   ```bash
   sudo dnf install vlc-libs      # Fedora: liefert libvlc.so + Plugins
   # Debian/Ubuntu:  sudo apt install libvlc-dev vlc-plugin-base
   ```
-  `Core.Initialize()` findet die System-libvlc dann automatisch. Discovery, Portscan und die Netzwerkkarte funktionieren auch **ohne** libvlc — nur das eingebettete Video bleibt dann schwarz.
+  `Core.Initialize()` findet die System-libvlc dann automatisch.
+
+Discovery, Portscan und die Netzwerkkarte funktionieren auch **ohne** VLC — nur das eingebettete Video entfällt dann.
 
 ---
 

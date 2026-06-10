@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform;
 using LibVLCSharp.Shared;
+using NetScanner.Services;
 
 namespace NetScanner.Controls;
 
@@ -15,10 +16,13 @@ namespace NetScanner.Controls;
 ///   Linux   -> MediaPlayer.XWindow    (X11 XID; unter Wayland via XWayland)
 ///   macOS   -> MediaPlayer.NsObject   (NSView)
 /// Genau das macht das offizielle Paket intern auch.
+///
+/// libvlc selbst wird NICHT gebundelt, sondern via <see cref="VlcLocator"/> aus einer
+/// vorhandenen VLC-Installation geladen. Fehlt sie, bleibt der Player schlicht inaktiv
+/// (die UI zeigt dann statt des Videos einen Hinweis).
 /// </summary>
 public sealed class NativeVideoView : NativeControlHost
 {
-    private static LibVLC? _sharedLibVlc;
     private MediaPlayer? _player;
     private IPlatformHandle? _handle;
 
@@ -34,35 +38,27 @@ public sealed class NativeVideoView : NativeControlHost
 
     static NativeVideoView()
     {
-        // libvlc-Native einmalig initialisieren. Auf Windows liefert das NuGet
-        // VideoLAN.LibVLC.Windows die Binaries; auf Linux wird System-libvlc genutzt.
-        Core.Initialize();
+        // libvlc aus vorhandener Installation initialisieren (idempotent, fehlertolerant).
+        VlcLocator.EnsureInitialized();
         MediaUrlProperty.Changed.AddClassHandler<NativeVideoView>((c, e) =>
             c.OnMediaUrlChanged(e.GetNewValue<string?>()));
     }
 
-    private static LibVLC SharedLibVlc => _sharedLibVlc ??= new LibVLC(
-        // Reconnect & geringe Latenz fuer Kamerastreams.
-        "--network-caching=300", "--rtsp-tcp", "--no-audio");
-
-    /// <summary>Gibt die gemeinsame LibVLC-Instanz frei. Beim App-Shutdown aufrufen,
-    /// sonst halten die nativen libvlc-Threads den Prozess am Leben.</summary>
-    public static void Shutdown()
-    {
-        try { _sharedLibVlc?.Dispose(); }
-        catch { /* beim Beenden ignorieren */ }
-        _sharedLibVlc = null;
-    }
+    /// <summary>Gibt die gemeinsame LibVLC-Instanz frei. Beim App-Shutdown aufrufen.</summary>
+    public static void Shutdown() => VlcLocator.Shutdown();
 
     protected override IPlatformHandle CreateNativeControlCore(IPlatformHandle parent)
     {
         // base erzeugt ein leeres natives Child-Window; dessen Handle nutzt LibVLC.
         _handle = base.CreateNativeControlCore(parent);
-        _player = new MediaPlayer(SharedLibVlc);
-        AttachHandle(_handle, _player);
 
-        if (!string.IsNullOrWhiteSpace(MediaUrl))
-            Play(MediaUrl!);
+        if (VlcLocator.Shared is { } vlc)   // nur wenn libvlc verfuegbar
+        {
+            _player = new MediaPlayer(vlc);
+            AttachHandle(_handle, _player);
+            if (!string.IsNullOrWhiteSpace(MediaUrl))
+                Play(MediaUrl!);
+        }
         return _handle;
     }
 
@@ -102,15 +98,15 @@ public sealed class NativeVideoView : NativeControlHost
 
     private void OnMediaUrlChanged(string? url)
     {
-        if (_player is null) return;            // Control noch nicht realisiert
+        if (_player is null) return;            // Control noch nicht realisiert / kein libvlc
         if (string.IsNullOrWhiteSpace(url)) { _player.Stop(); return; }
         Play(url);
     }
 
     private void Play(string url)
     {
-        if (_player is null) return;
-        using var media = new Media(SharedLibVlc, new Uri(url));
+        if (_player is null || VlcLocator.Shared is not { } vlc) return;
+        using var media = new Media(vlc, new Uri(url));
         _player.Play(media);
     }
 }

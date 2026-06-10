@@ -14,7 +14,7 @@
     <RootNamespace>NetScanner</RootNamespace>
     <!-- Zentrale Versionsquelle. Die About-Box liest sie zur Laufzeit aus.
          Bei jeder Aenderung hochzaehlen; der Release-Workflow ueberschreibt sie per Tag. -->
-    <Version>1.2.5</Version>
+    <Version>1.2.6</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,33 +38,11 @@
     <PackageReference Include="NLog" Version="5.5.1" />
     <PackageReference Include="NLog.Extensions.Logging" Version="5.5.0" />
 
-    <!-- Video: NUR der UI-neutrale Core. KEIN LibVLCSharp.Avalonia (haengt an Avalonia 11). -->
+    <!-- Video: NUR der UI-neutrale Core. KEIN LibVLCSharp.Avalonia (haengt an Avalonia 11).
+         libvlc selbst wird NICHT mehr gebundelt (sparte ~85 MB pro Windows-Build) — die
+         Vorschau nutzt zur Laufzeit eine vorhandene VLC-Installation (siehe VlcLocator).
+         Windows: VLC 64-bit unter %ProgramFiles%\VideoLAN\VLC; Linux: System-libvlc. -->
     <PackageReference Include="LibVLCSharp" Version="3.9.4" />
-    <!-- Windows-native libvlc-Binaries. Auf Linux: System-libvlc verwenden (siehe README). -->
-    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.21"
-                      Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
-  </ItemGroup>
-
-  <!-- libvlc-Plugins ausduennen (nur Windows-Build): Ein eingebetteter RTSP-Viewer braucht
-       weder VLCs eigene Qt-Oberflaeche, Lua-Skripte, Audio-Visualisierungen, DVD/Blu-ray
-       noch Streaming-/Mux-Ausgabe. Spart mehrere hundert MB im self-contained Publish.
-       VideoLAN.LibVLC.Windows wertet diese Item-Group aus — Wildcards muessen als %2A
-       geschrieben und Backslashes (\) verwendet werden. Decoder (libavcodec), RTSP
-       (live555), RTP/HTTP/TCP-Access und der D3D-Video-Output bleiben erhalten. -->
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
-    <VlcWindowsX64ExcludeFiles Include="plugins\gui\%2A" />
-    <VlcWindowsX64ExcludeFiles Include="Qt%2A" />
-    <VlcWindowsX64ExcludeFiles Include="plugins\lua\%2A" />
-    <VlcWindowsX64ExcludeFiles Include="plugins\visualization\%2A" />
-    <VlcWindowsX64ExcludeFiles Include="plugins\services_discovery\%2A" />
-    <VlcWindowsX64ExcludeFiles Include="plugins\stream_out\%2A" />
-    <VlcWindowsX64ExcludeFiles Include="plugins\mux\%2A" />
-    <VlcWindowsX64ExcludeFiles Include="plugins\access_output\%2A" />
-    <VlcWindowsX64ExcludeFiles Include="plugins\meta_engine\%2A" />
-    <VlcWindowsX64ExcludeFiles Include="plugins\access\libdvd%2A" />
-    <VlcWindowsX64ExcludeFiles Include="plugins\access\libbluray%2A" />
-    <VlcWindowsX64ExcludeFiles Include="plugins\access\libvcd%2A" />
-    <VlcWindowsX64ExcludeFiles Include="plugins\access\libcdda%2A" />
   </ItemGroup>
 
   <ItemGroup>

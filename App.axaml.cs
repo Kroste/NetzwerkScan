@@ -21,10 +21,17 @@ public partial class App : Application
     {
         Services = BuildServices();
 
+        // libvlc-Verfuegbarkeit frueh klaeren (laedt aus vorhandener VLC-Installation),
+        // damit das ViewModel/die UI sofort wissen, ob die Vorschau angeboten werden kann.
+        NetScanner.Services.VlcLocator.EnsureInitialized();
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var log = Services.GetRequiredService<ILogger<App>>();
             log.LogInformation("Anwendung gestartet (PID {Pid})", Environment.ProcessId);
+            log.LogInformation("Kamera-Vorschau (libvlc) verfuegbar: {Avail}{From}",
+                NetScanner.Services.VlcLocator.IsAvailable,
+                NetScanner.Services.VlcLocator.LoadedFrom is { } p ? $" (aus {p})" : "");
 
             desktop.MainWindow = new MainWindow
             {
@@ -33,8 +40,8 @@ public partial class App : Application
             desktop.ShutdownRequested += (_, _) =>
             {
                 log.LogInformation("Anwendung wird beendet");
-                Controls.NativeVideoView.Shutdown();   // native libvlc-Threads freigeben
-                NLog.LogManager.Shutdown();            // Logpuffer leeren
+                NetScanner.Services.VlcLocator.Shutdown();   // native libvlc-Threads freigeben
+                NLog.LogManager.Shutdown();                  // Logpuffer leeren
                 // Sicherheitsnetz: libvlc kann den Prozess sonst offen halten.
                 Environment.Exit(0);
             };

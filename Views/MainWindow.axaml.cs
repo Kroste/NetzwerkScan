@@ -158,6 +158,10 @@ public partial class MainWindow : Window
         Vm?.ReportAction($"Kopiert: {text}");
     }
 
+    /// <summary>Oeffnet die VLC-Download-Seite (fuer die eingebettete Kamera-Vorschau).</summary>
+    private void OnDownloadVlc(object? sender, RoutedEventArgs e) =>
+        GetTopLevel(this)?.Launcher.LaunchUriAsync(new Uri("https://www.videolan.org/vlc/"));
+
     private async void OnHostWol(object? sender, RoutedEventArgs e)
     {
         if (HostOf(sender) is { } h && Vm is { } vm)
