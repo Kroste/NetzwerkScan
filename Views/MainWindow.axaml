@@ -200,6 +200,21 @@
 
           <Border Width="1" Height="22" Background="{StaticResource Line}" IsHitTestVisible="False"/>
 
+          <Border Width="1" Height="22" Background="{StaticResource Line}" IsHitTestVisible="False"/>
+
+          <Button Classes="info" Click="OnMapClick" ToolTip.Tip="Netzwerkkarte"
+                  WindowDecorationProperties.ElementRole="User">
+            <Canvas Width="18" Height="18">
+              <Line StartPoint="9,9" EndPoint="3.5,4.5" Stroke="{StaticResource TextMuted}" StrokeThickness="1.2"/>
+              <Line StartPoint="9,9" EndPoint="14.5,5"  Stroke="{StaticResource TextMuted}" StrokeThickness="1.2"/>
+              <Line StartPoint="9,9" EndPoint="9,15.5"  Stroke="{StaticResource TextMuted}" StrokeThickness="1.2"/>
+              <Ellipse Canvas.Left="6"  Canvas.Top="6"  Width="6" Height="6" Fill="{StaticResource Accent}"/>
+              <Ellipse Canvas.Left="1.5" Canvas.Top="2.5" Width="4" Height="4" Fill="{StaticResource TextMuted}"/>
+              <Ellipse Canvas.Left="13" Canvas.Top="3"  Width="4" Height="4" Fill="{StaticResource TextMuted}"/>
+              <Ellipse Canvas.Left="7"  Canvas.Top="14" Width="4" Height="4" Fill="{StaticResource TextMuted}"/>
+            </Canvas>
+          </Button>
+
           <Button Classes="info" Click="OnAboutClick" ToolTip.Tip="Information / Über"
                   WindowDecorationProperties.ElementRole="User">
             <TextBlock Text="i" FontFamily="Georgia,Cambria,serif" FontSize="16" FontWeight="Bold"/>

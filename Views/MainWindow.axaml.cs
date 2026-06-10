@@ -61,6 +61,21 @@ public partial class MainWindow : Window
         }
     }
 
+    // --- Netzwerkkarte ---
+    private void OnMapClick(object? sender, RoutedEventArgs e)
+    {
+        Log.Info("Netzwerkkarte-Button geklickt");
+        try
+        {
+            if (DataContext is MainViewModel vm)
+                new NetworkMapWindow(vm).Show(this);   // nicht-modal: parallel zum Hauptfenster nutzbar
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Netzwerkkarte konnte nicht geoeffnet werden");
+        }
+    }
+
     // === Host-Aktionen (Kontextmenue + Detail-Panel teilen dieselben Handler) ===
     private static HostResult? HostOf(object? sender) => (sender as Control)?.DataContext as HostResult;
     private MainViewModel? Vm => DataContext as MainViewModel;

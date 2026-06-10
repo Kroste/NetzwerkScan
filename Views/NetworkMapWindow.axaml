@@ -1,0 +1,171 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="NetScanner.Views.NetworkMapWindow"
+        Width="940" Height="700" MinWidth="620" MinHeight="480"
+        CanResize="True"
+        WindowStartupLocation="CenterOwner"
+        RequestedThemeVariant="Dark"
+        Background="{StaticResource Bg}"
+        ExtendClientAreaToDecorationsHint="True"
+        WindowDecorations="None"
+        Title="Netzwerkkarte">
+
+  <Window.Styles>
+    <Style Selector="Button.win">
+      <Setter Property="Width" Value="44"/>
+      <Setter Property="Height" Value="32"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="CornerRadius" Value="7"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.win:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource SurfaceAlt}"/>
+    </Style>
+    <Style Selector="Button.win-close:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#E0303F"/>
+    </Style>
+
+    <Style Selector="Button.accent">
+      <Setter Property="Background" Value="{StaticResource Accent}"/>
+      <Setter Property="Foreground" Value="#062420"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Height" Value="34"/>
+      <Setter Property="Padding" Value="16,0"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#4FCBBC"/>
+    </Style>
+    <Style Selector="Button.accent:disabled /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource SurfaceAlt}"/>
+      <Setter Property="Foreground" Value="{StaticResource TextMuted}"/>
+    </Style>
+
+    <Style Selector="Button.ghost">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{StaticResource TextMuted}"/>
+      <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Height" Value="34"/>
+      <Setter Property="Padding" Value="14,0"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource SurfaceAlt}"/>
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+    </Style>
+
+    <Style Selector="TextBox.trace">
+      <Setter Property="Background" Value="{StaticResource Surface}"/>
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+      <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Height" Value="34"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Padding" Value="10,0"/>
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="Auto,*,Auto">
+
+    <!-- ===== Custom-Titlebar ===== -->
+    <Border Grid.Row="0" Padding="16,8,8,8" Background="{StaticResource Bg}"
+            BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1"
+            WindowDecorationProperties.ElementRole="TitleBar">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="11" VerticalAlignment="Center"
+                    IsHitTestVisible="False">
+          <Panel Width="22" Height="22" VerticalAlignment="Center">
+            <Ellipse Width="22" Height="22" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.3"/>
+            <Ellipse Width="14" Height="14" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.6"/>
+            <Ellipse Width="6"  Height="6"  Fill="{StaticResource Accent}"/>
+          </Panel>
+          <TextBlock Text="NetScanner" FontSize="15" FontWeight="Bold"
+                     Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
+          <Border Background="{StaticResource Surface}" CornerRadius="5" Padding="6,2" VerticalAlignment="Center">
+            <TextBlock Text="Netzwerkkarte" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+          </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+          <Button Classes="win" Click="OnMinimize" ToolTip.Tip="Minimieren"
+                  WindowDecorationProperties.ElementRole="MinimizeButton">
+            <Border Width="11" Height="1.4" Background="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+          </Button>
+          <Button Classes="win" Click="OnMaximizeRestore" ToolTip.Tip="Maximieren"
+                  WindowDecorationProperties.ElementRole="MaximizeButton">
+            <Panel Width="12" Height="12">
+              <Border x:Name="MaxGlyph" BorderBrush="{StaticResource TextMuted}"
+                      BorderThickness="1.4" CornerRadius="2"/>
+              <Panel x:Name="RestoreGlyph" IsVisible="False">
+                <Border Width="8" Height="8" BorderBrush="{StaticResource TextMuted}" BorderThickness="1.4"
+                        CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                <Border Width="8" Height="8" BorderBrush="{StaticResource TextMuted}" BorderThickness="1.4"
+                        CornerRadius="1.5" Background="{StaticResource Bg}"
+                        HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+              </Panel>
+            </Panel>
+          </Button>
+          <Button Classes="win win-close" Click="OnClose" ToolTip.Tip="Schließen"
+                  WindowDecorationProperties.ElementRole="CloseButton">
+            <Path Stroke="{StaticResource TextPrimary}" StrokeThickness="1.4"
+                  Data="M0,0 L11,11 M0,11 L11,0"/>
+          </Button>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- ===== Karte (Canvas) + Legende ===== -->
+    <Panel Grid.Row="1" ClipToBounds="True">
+      <Canvas x:Name="MapCanvas" Background="{StaticResource Bg}"/>
+
+      <!-- leerer Zustand -->
+      <TextBlock x:Name="EmptyHint" IsVisible="False"
+                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                 FontSize="14" Foreground="{StaticResource TextMuted}"
+                 Text="Noch keine Hosts — erst im Hauptfenster scannen, dann „Aktualisieren“."/>
+
+      <!-- Legende -->
+      <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,12,12,0"
+              Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}"
+              BorderThickness="1" CornerRadius="9" Padding="12,9">
+        <StackPanel x:Name="LegendPanel" Spacing="5"/>
+      </Border>
+    </Panel>
+
+    <!-- ===== Traceroute-Leiste ===== -->
+    <Border Grid.Row="2" Background="{StaticResource Surface}"
+            BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0"
+            Padding="16,12">
+      <StackPanel Spacing="10">
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" >
+          <TextBlock Grid.Column="0" Text="Außenpfad (traceroute)" VerticalAlignment="Center"
+                     FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"
+                     Margin="0,0,14,0"/>
+          <TextBox Grid.Column="1" x:Name="TraceTarget" Classes="trace"
+                   Watermark="Ziel-IP oder Hostname — leer = Gateway" Text="8.8.8.8"/>
+          <Button Grid.Column="2" x:Name="TraceBtn" Classes="accent" Content="Pfad verfolgen"
+                  Click="OnTrace" Margin="10,0,0,0"/>
+          <Button Grid.Column="3" x:Name="TraceCancelBtn" Classes="ghost" Content="Abbrechen"
+                  Click="OnTraceCancel" IsVisible="False" Margin="8,0,0,0"/>
+          <Button Grid.Column="4" Classes="ghost" Content="Aktualisieren"
+                  Click="OnRefresh" Margin="8,0,0,0" ToolTip.Tip="Karte aus aktuellem Scan neu zeichnen"/>
+        </Grid>
+
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+          <StackPanel x:Name="HopPanel" Orientation="Horizontal" Spacing="0" MinHeight="44"/>
+        </ScrollViewer>
+
+        <TextBlock x:Name="TraceStatus" FontSize="12" Foreground="{StaticResource TextMuted}"
+                   Text="Verfolgt den Weg vom Gateway nach außen — im flachen LAN nur ein Hop, Richtung Internet die ISP-Stationen."/>
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>
