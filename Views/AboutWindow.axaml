@@ -1,11 +1,13 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="NetScanner.Views.AboutWindow"
-        Width="440" Height="430"
-        CanResize="False"
+        Width="440" Height="470" MinWidth="380" MinHeight="420"
+        CanResize="True"
         WindowStartupLocation="CenterOwner"
         RequestedThemeVariant="Dark"
         Background="{StaticResource Bg}"
+        ExtendClientAreaToDecorationsHint="True"
+        WindowDecorations="None"
         Title="Über NetScanner · v1.0">
 
   <Window.Styles>
@@ -46,44 +48,116 @@
       <Setter Property="Background" Value="{StaticResource SurfaceAlt}"/>
       <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
     </Style>
+
+    <!-- Fenster-Steuerbuttons (Custom Chrome) — identisch zum Hauptfenster -->
+    <Style Selector="Button.win">
+      <Setter Property="Width" Value="44"/>
+      <Setter Property="Height" Value="32"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="CornerRadius" Value="7"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.win:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource SurfaceAlt}"/>
+    </Style>
+    <Style Selector="Button.win-close:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#E0303F"/>
+    </Style>
   </Window.Styles>
 
-  <StackPanel Margin="28" Spacing="16">
+  <Grid RowDefinitions="Auto,*">
 
-    <!-- Logo + Titel -->
-    <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" Margin="0,8,0,0">
-      <Panel Width="44" Height="44">
-        <Ellipse Width="44" Height="44" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.3"/>
-        <Ellipse Width="30" Height="30" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.6"/>
-        <Ellipse Width="9"  Height="9"  Fill="{StaticResource Accent}"/>
-      </Panel>
-      <StackPanel VerticalAlignment="Center">
-        <TextBlock Text="NetScanner" FontSize="22" FontWeight="Bold"
-                   Foreground="{StaticResource TextPrimary}"/>
-        <TextBlock Text="Version 1.0 · .NET 10 · Avalonia 12" FontSize="12"
-                   Foreground="{StaticResource TextMuted}"/>
+    <!-- ===== Custom-Titlebar (analog Hauptfenster) ===== -->
+    <Border Grid.Row="0" Padding="16,8,8,8" Background="{StaticResource Bg}"
+            BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1"
+            WindowDecorationProperties.ElementRole="TitleBar">
+      <Grid ColumnDefinitions="*,Auto">
+
+        <!-- Marke (hit-test-transparent -> Drag faellt auf die TitleBar-Region durch) -->
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="11" VerticalAlignment="Center"
+                    IsHitTestVisible="False">
+          <Panel Width="24" Height="24" VerticalAlignment="Center">
+            <Ellipse Width="24" Height="24" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.3"/>
+            <Ellipse Width="16" Height="16" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.6"/>
+            <Ellipse Width="6"  Height="6"  Fill="{StaticResource Accent}"/>
+          </Panel>
+          <TextBlock Text="NetScanner" FontSize="15" FontWeight="Bold"
+                     Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
+          <Border Background="{StaticResource Surface}" CornerRadius="5" Padding="6,2" VerticalAlignment="Center">
+            <TextBlock Text="Über" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+          </Border>
+        </StackPanel>
+
+        <!-- Eigene Fenster-Buttons (ElementRole sorgt fuer natives Hit-Testing) -->
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+          <Button Classes="win" Click="OnMinimize" ToolTip.Tip="Minimieren"
+                  WindowDecorationProperties.ElementRole="MinimizeButton">
+            <Border Width="11" Height="1.4" Background="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+          </Button>
+          <Button Classes="win" Click="OnMaximizeRestore" ToolTip.Tip="Maximieren"
+                  WindowDecorationProperties.ElementRole="MaximizeButton">
+            <Panel Width="12" Height="12">
+              <Border x:Name="MaxGlyph" BorderBrush="{StaticResource TextMuted}"
+                      BorderThickness="1.4" CornerRadius="2"/>
+              <Panel x:Name="RestoreGlyph" IsVisible="False">
+                <Border Width="8" Height="8" BorderBrush="{StaticResource TextMuted}" BorderThickness="1.4"
+                        CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                <Border Width="8" Height="8" BorderBrush="{StaticResource TextMuted}" BorderThickness="1.4"
+                        CornerRadius="1.5" Background="{StaticResource Bg}"
+                        HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+              </Panel>
+            </Panel>
+          </Button>
+          <Button Classes="win win-close" Click="OnClose" ToolTip.Tip="Schließen"
+                  WindowDecorationProperties.ElementRole="CloseButton">
+            <Path Stroke="{StaticResource TextPrimary}" StrokeThickness="1.4"
+                  Data="M0,0 L11,11 M0,11 L11,0"/>
+          </Button>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- ===== Inhalt ===== -->
+    <StackPanel Grid.Row="1" Margin="28,20,28,24" Spacing="16">
+
+      <!-- Logo + Titel (Hero) -->
+      <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" Margin="0,4,0,0">
+        <Panel Width="44" Height="44">
+          <Ellipse Width="44" Height="44" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.3"/>
+          <Ellipse Width="30" Height="30" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.6"/>
+          <Ellipse Width="9"  Height="9"  Fill="{StaticResource Accent}"/>
+        </Panel>
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="NetScanner" FontSize="22" FontWeight="Bold"
+                     Foreground="{StaticResource TextPrimary}"/>
+          <TextBlock Text="Version 1.0 · .NET 10 · Avalonia 12" FontSize="12"
+                     Foreground="{StaticResource TextMuted}"/>
+        </StackPanel>
       </StackPanel>
+
+      <Border Height="1" Background="{StaticResource Line}" Margin="0,4"/>
+
+      <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="20"
+                 Foreground="{StaticResource TextMuted}" HorizontalAlignment="Center"
+                 TextAlignment="Center"
+                 Text="LAN-Discovery (ICMP + ARP), Portscan und ONVIF/RTSP-Kameraerkennung mit eingebettetem Live-Video."/>
+
+      <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+        <TextBlock Text="von" FontSize="13" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+        <Button Classes="link" Content="github.com/Kroste" Click="OnGitHubClick"/>
+      </StackPanel>
+
+      <Border Height="1" Background="{StaticResource Line}" Margin="0,4"/>
+
+      <TextBlock Text="Gefällt dir das Tool?" FontSize="13" HorizontalAlignment="Center"
+                 Foreground="{StaticResource TextPrimary}"/>
+
+      <Button Classes="coffee" Content="☕  Buy me a coffee" Click="OnCoffeeClick"/>
+
+      <Button Classes="close" Content="Schließen" Click="OnCloseClick"/>
     </StackPanel>
-
-    <Border Height="1" Background="{StaticResource Line}" Margin="0,4"/>
-
-    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="20"
-               Foreground="{StaticResource TextMuted}" HorizontalAlignment="Center"
-               TextAlignment="Center"
-               Text="LAN-Discovery (ICMP + ARP), Portscan und ONVIF/RTSP-Kameraerkennung mit eingebettetem Live-Video."/>
-
-    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
-      <TextBlock Text="von" FontSize="13" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center"/>
-      <Button Classes="link" Content="github.com/Kroste" Click="OnGitHubClick"/>
-    </StackPanel>
-
-    <Border Height="1" Background="{StaticResource Line}" Margin="0,4"/>
-
-    <TextBlock Text="Gefällt dir das Tool?" FontSize="13" HorizontalAlignment="Center"
-               Foreground="{StaticResource TextPrimary}"/>
-
-    <Button Classes="coffee" Content="☕  Buy me a coffee" Click="OnCoffeeClick"/>
-
-    <Button Classes="close" Content="Schließen" Click="OnCloseClick"/>
-  </StackPanel>
+  </Grid>
 </Window>
