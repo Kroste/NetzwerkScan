@@ -554,10 +554,10 @@
                 <!-- Kamera-Stream -->
                 <StackPanel Spacing="8" IsVisible="{Binding IsCamera}">
                   <Border Height="1" Background="{StaticResource Line}"/>
-                  <TextBlock Text="{Binding Camera.RtspUri}" FontSize="11" TextWrapping="Wrap"
+                  <TextBlock Text="{Binding RtspUri}" FontSize="11" TextWrapping="Wrap"
                              FontFamily="Cascadia Code,Consolas,monospace"
                              Foreground="{StaticResource TextMuted}"
-                             IsVisible="{Binding Camera.RtspUri, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                             IsVisible="{Binding HasRtspUri}"/>
                   <Button Classes="stream" Content="▶  Stream öffnen" HorizontalAlignment="Left"
                           Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).OpenStreamCommand}"
                           CommandParameter="{Binding}"/>

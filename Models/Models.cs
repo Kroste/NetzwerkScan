@@ -74,6 +74,9 @@ public sealed class HostResult
     public CameraInfo? Camera { get; set; }
 
     public bool IsCamera => Camera is not null;
+    /// <summary>RTSP-URL der Kamera — null-sicher (vermeidet Binding-Fehler bei Nicht-Kameras).</summary>
+    public string? RtspUri => Camera?.RtspUri;
+    public bool HasRtspUri => !string.IsNullOrWhiteSpace(RtspUri);
     public string OpenPortsDisplay => OpenPorts.Count == 0
         ? "—"
         : string.Join(", ", OpenPorts.Select(p => $"{p.Port}/{p.Service}"));
