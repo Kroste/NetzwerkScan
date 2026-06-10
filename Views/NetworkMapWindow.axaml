@@ -150,7 +150,7 @@
                      FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"
                      Margin="0,0,14,0"/>
           <TextBox Grid.Column="1" x:Name="TraceTarget" Classes="trace"
-                   Watermark="Ziel-IP oder Hostname — leer = Gateway" Text="8.8.8.8"/>
+                   PlaceholderText="Ziel-IP oder Hostname — leer = Gateway" Text="8.8.8.8"/>
           <Button Grid.Column="2" x:Name="TraceBtn" Classes="accent" Content="Pfad verfolgen"
                   Click="OnTrace" Margin="10,0,0,0"/>
           <Button Grid.Column="3" x:Name="TraceCancelBtn" Classes="ghost" Content="Abbrechen"

@@ -8,7 +8,7 @@
         Background="{StaticResource Bg}"
         ExtendClientAreaToDecorationsHint="True"
         WindowDecorations="None"
-        Title="Über NetScanner · v1.2.0">
+        Title="Über NetScanner · v1.2.1">
 
   <Window.Styles>
     <Style Selector="Button.coffee">
@@ -133,7 +133,7 @@
         <StackPanel VerticalAlignment="Center">
           <TextBlock Text="NetScanner" FontSize="22" FontWeight="Bold"
                      Foreground="{StaticResource TextPrimary}"/>
-          <TextBlock x:Name="VersionText" Text="Version 1.2.0 · .NET 10 · Avalonia 12" FontSize="12"
+          <TextBlock x:Name="VersionText" Text="Version 1.2.1 · .NET 10 · Avalonia 12" FontSize="12"
                      Foreground="{StaticResource TextMuted}"/>
         </StackPanel>
       </StackPanel>
