@@ -9,6 +9,13 @@ public partial class AboutWindow : Window
     public AboutWindow()
     {
         InitializeComponent();
+
+        // Version aus der Assembly (Quelle: <Version> in der csproj) -> eine Stelle zum Pflegen.
+        var v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+        string ver = v is null ? "1.0" : $"{v.Major}.{v.Minor}.{v.Build}";
+        VersionText.Text = $"Version {ver} · .NET 10 · Avalonia 12";
+        Title = $"Über NetScanner · v{ver}";
+
         UpdateChrome(WindowState);
     }
 

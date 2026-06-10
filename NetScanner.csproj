@@ -12,6 +12,9 @@
     <!-- nlog.config wird neben die EXE kopiert -->
     <AssemblyName>NetScanner</AssemblyName>
     <RootNamespace>NetScanner</RootNamespace>
+    <!-- Zentrale Versionsquelle. Die About-Box liest sie zur Laufzeit aus.
+         Bei jeder Aenderung hochzaehlen; der Release-Workflow ueberschreibt sie per Tag. -->
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
