@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Burn-Bundle fuer NetScanner -> erzeugt die Setup.exe.
+  Kette: 1) .NET 10 Desktop Runtime (eingebettet, nur falls nicht vorhanden)
+         2) NetScanner.msi
+
+  Die Runtime-Erkennung laeuft ueber netfx:DotNetCoreSearch (nutzt hostfxr, nicht die
+  fragilen Registry-Pfade). Die Runtime wird per Compressed="yes" IN die Setup.exe
+  eingebettet -> offline-faehig, umgeht zugleich den WiX-v5-Download-Popup-Bug.
+
+  Build:  wix build packaging\windows\Bundle.wxs -d Version=1.2.5
+            -ext WixToolset.Bal.wixext -ext WixToolset.Netfx.wixext -o NetScanner-Setup.exe
+  Voraussetzung: windowsdesktop-runtime.exe liegt im Arbeitsverzeichnis (vom Workflow geladen).
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal"
+     xmlns:netfx="http://wixtoolset.org/schemas/v4/wxs/netfx">
+
+  <Bundle Name="NetScanner"
+          Manufacturer="Kroste"
+          Version="$(Version)"
+          UpgradeCode="4F2B81D6-9A3E-4C57-B1D8-6E0A3F9C2B45">
+
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication Theme="hyperlinkLicense" LicenseUrl="" />
+    </BootstrapperApplication>
+
+    <!-- Hoechste installierte .NET-10-Desktop-Runtime ermitteln (leer = keine). -->
+    <netfx:DotNetCoreSearch RuntimeType="desktop" MajorVersion="10" Platform="x64"
+                            Variable="NetDesktopVersion" />
+
+    <Chain>
+      <!-- Eingebettete .NET 10 Desktop Runtime. DetectCondition true => bereits vorhanden,
+           wird uebersprungen. Die Runtime-EXE ist selbst ein Burn-Paket => Protocol="burn". -->
+      <ExePackage bal:PrereqPackage="yes"
+                  DisplayName=".NET 10 Desktop Runtime (x64)"
+                  Compressed="yes"
+                  PerMachine="yes"
+                  Permanent="yes"
+                  Vital="no"
+                  Protocol="burn"
+                  DetectCondition="NetDesktopVersion &gt;= v10.0.0"
+                  InstallArguments="/install /quiet /norestart"
+                  RepairArguments="/repair /quiet /norestart"
+                  SourceFile="windowsdesktop-runtime.exe" />
+
+      <!-- Die Anwendung. -->
+      <MsiPackage SourceFile="NetScanner.msi" Vital="yes" />
+    </Chain>
+  </Bundle>
+</Wix>

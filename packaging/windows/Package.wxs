@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  MSI fuer NetScanner. Packt alle veroeffentlichten Dateien (inkl. der ausgeduennten
+  libvlc-Plugins) nach %ProgramFiles%\NetScanner und legt eine Startmenue-Verknuepfung an.
+  Wird vom Bundle (Bundle.wxs) eingebettet; allein installiert es NICHT die .NET-Runtime.
+
+  Build:  wix build packaging\windows\Package.wxs -d Version=1.2.5 -b publish\win -o NetScanner.msi
+  Die GUIDs (UpgradeCode, Component) muessen ueber Versionen hinweg STABIL bleiben,
+  sonst funktionieren Upgrades nicht. Nicht aendern.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="NetScanner"
+           Manufacturer="Kroste"
+           Version="$(Version)"
+           UpgradeCode="7A3C9E14-2B6D-4F81-9C0A-1E5D4B8A2F60"
+           Scope="perMachine"
+           Compressed="yes">
+
+    <MajorUpgrade DowngradeErrorMessage="Eine neuere Version von NetScanner ist bereits installiert." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- %ProgramFiles%\NetScanner -->
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="NetScanner" />
+    </StandardDirectory>
+
+    <!-- Startmenue\NetScanner -->
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="AppShortcutFolder" Name="NetScanner" />
+    </StandardDirectory>
+
+    <!-- Alle Publish-Dateien rekursiv einsammeln (erhaelt die plugins\-Unterstruktur).
+         Der Pfad wird ueber den Bindpath (-b publish\win) aufgeloest. -->
+    <Files Include="!(bindpath.0)\**" Directory="INSTALLFOLDER" />
+
+    <!-- Startmenue-Verknuepfung -->
+    <Component Directory="AppShortcutFolder" Guid="C18E5A92-7D4B-4A36-8F2C-9B1E0D6A4C73">
+      <Shortcut Id="StartMenuShortcut"
+                Name="NetScanner"
+                Description="LAN-Scanner und ONVIF/RTSP-Kameraerkennung"
+                Target="[INSTALLFOLDER]NetScanner.exe"
+                WorkingDirectory="INSTALLFOLDER" />
+      <RemoveFolder Id="RemoveAppShortcutFolder" Directory="AppShortcutFolder" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\Kroste\NetScanner"
+                     Name="installed" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+  </Package>
+</Wix>

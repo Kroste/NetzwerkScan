@@ -56,8 +56,9 @@ Ein schlankes Desktop-Werkzeug, um das eigene Netz sichtbar zu machen: Welche Ge
 
 Über die [Releases](../../releases)-Seite gibt es vorgebaute Pakete (vom GitHub-Actions-Workflow erzeugt):
 
-- **Windows:** `NetScanner-win-x64.zip` — entpacken, `NetScanner.exe` starten. libvlc ist enthalten.
-- **Linux:** `NetScanner-linux-x64.tar.gz` **oder** `NetScanner-x86_64.AppImage`.
+- **Windows (empfohlen):** `NetScanner-…-Setup.exe` — Installer mit Startmenü-Eintrag. Er bringt die **.NET 10 Desktop Runtime mit** und installiert sie bei Bedarf automatisch; ist sie schon vorhanden, wird dieser Schritt übersprungen. libvlc ist enthalten.
+- **Windows (portabel):** `NetScanner-…-win-x64.zip` — entpacken, `NetScanner.exe` starten. Dieses Paket ist framework-dependent, setzt also eine installierte **.NET 10 Desktop Runtime** voraus (sonst startet die App nicht).
+- **Linux:** `NetScanner-…-linux-x64.tar.gz` **oder** `NetScanner-…-x86_64.AppImage`.
   libvlc ist hier eine **Laufzeit-Abhängigkeit** (siehe unten).
 
 ### Aus dem Quellcode bauen

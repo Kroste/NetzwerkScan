@@ -40,10 +40,39 @@ jobs:
         shell: pwsh
         run: Compress-Archive -Path publish/win/* -DestinationPath "NetScanner-${{ github.ref_name }}-win-x64.zip"
 
+      # ---- Installer (Setup.exe mit eingebetteter .NET-Runtime) ----
+      - name: WiX-Toolset installieren
+        shell: pwsh
+        # Versionen bewusst gepinnt (Tool + Extensions muessen zusammenpassen).
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          wix extension add -g WixToolset.Bal.wixext/5.0.2
+          wix extension add -g WixToolset.Netfx.wixext/5.0.2
+
+      - name: .NET 10 Desktop Runtime laden (zum Einbetten)
+        shell: pwsh
+        # Stabiler aka.ms-Channel-Link -> jeweils neueste 10.0.x. Falls Microsoft den Link
+        # aendert: aktuelle Direkt-URL von dotnet.microsoft.com/download/dotnet/10.0 eintragen.
+        run: curl.exe -L -o windowsdesktop-runtime.exe "https://aka.ms/dotnet/10.0/windowsdesktop-runtime-win-x64.exe"
+
+      - name: MSI bauen
+        shell: pwsh
+        run: wix build packaging\windows\Package.wxs -d Version=${{ steps.ver.outputs.v }} -b publish\win -o NetScanner.msi
+
+      - name: Setup.exe (Bundle) bauen
+        shell: pwsh
+        run: >
+          wix build packaging\windows\Bundle.wxs
+          -d Version=${{ steps.ver.outputs.v }}
+          -ext WixToolset.Bal.wixext -ext WixToolset.Netfx.wixext
+          -o "NetScanner-${{ github.ref_name }}-Setup.exe"
+
       - uses: actions/upload-artifact@v4
         with:
           name: win
-          path: NetScanner-*-win-x64.zip
+          path: |
+            NetScanner-*-win-x64.zip
+            NetScanner-*-Setup.exe
           retention-days: 1
 
   # ------------------------------------------------------------------ Linux
