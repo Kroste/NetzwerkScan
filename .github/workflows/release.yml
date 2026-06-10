@@ -7,6 +7,11 @@ on:
     tags:
       - "v*.*.*"
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Testversion ohne fuehrendes v (z.B. 1.2.5). Nur fuer manuelle Laeufe."
+        required: false
+        default: "1.2.5"
 
 permissions:
   contents: write   # noetig, damit der Release-Job das Release anlegen/aktualisieren darf
@@ -24,7 +29,13 @@ jobs:
       - name: Version aus Tag ableiten
         id: ver
         shell: bash
-        run: echo "v=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+        run: |
+          # Bei Tag-Push die Version aus dem Tag (ohne v); bei manuellem Lauf aus dem Input.
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            echo "v=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "v=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Publish (win-x64, framework-dependent)
         # Framework-dependent: die .NET-Runtime wird NICHT gebundelt (~80 MB kleiner).
@@ -38,7 +49,7 @@ jobs:
 
       - name: ZIP packen
         shell: pwsh
-        run: Compress-Archive -Path publish/win/* -DestinationPath "NetScanner-${{ github.ref_name }}-win-x64.zip"
+        run: Compress-Archive -Path publish/win/* -DestinationPath "NetScanner-v${{ steps.ver.outputs.v }}-win-x64.zip"
 
       # ---- Installer (Setup.exe mit eingebetteter .NET-Runtime) ----
       - name: WiX-Toolset + Extensions installieren
@@ -68,7 +79,13 @@ jobs:
 
       - name: MSI bauen
         shell: pwsh
-        run: wix build packaging\windows\Package.wxs -d Version=${{ steps.ver.outputs.v }} -b publish\win -o NetScanner.msi
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          # Absoluter Pfad -> kein Zweifel, relativ zu welchem Verzeichnis geharvestet wird.
+          $pub = (Resolve-Path publish\win).Path
+          Write-Host "PublishDir: $pub"
+          wix build packaging\windows\Package.wxs -d Version=${{ steps.ver.outputs.v }} -d "PublishDir=$pub" -o NetScanner.msi
 
       - name: Setup.exe (Bundle) bauen
         shell: pwsh
@@ -76,7 +93,7 @@ jobs:
           wix build packaging\windows\Bundle.wxs
           -d Version=${{ steps.ver.outputs.v }}
           -ext WixToolset.BootstrapperApplications.wixext -ext WixToolset.Netfx.wixext
-          -o "NetScanner-${{ github.ref_name }}-Setup.exe"
+          -o "NetScanner-v${{ steps.ver.outputs.v }}-Setup.exe"
 
       - uses: actions/upload-artifact@v7
         with:
@@ -97,7 +114,13 @@ jobs:
 
       - name: Version aus Tag ableiten
         id: ver
-        run: echo "v=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+        run: |
+          # Bei Tag-Push die Version aus dem Tag (ohne v); bei manuellem Lauf aus dem Input.
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            echo "v=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "v=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Publish (linux-x64, self-contained)
         # libvlc ist hier KEINE Build-Abhaengigkeit; zur Laufzeit wird System-libvlc
@@ -107,10 +130,10 @@ jobs:
           -p:Version=${{ steps.ver.outputs.v }} -p:DebugType=none -p:DebugSymbols=false -o publish/linux
 
       - name: Tarball packen
-        run: tar -czf "NetScanner-${{ github.ref_name }}-linux-x64.tar.gz" -C publish/linux .
+        run: tar -czf "NetScanner-v${{ steps.ver.outputs.v }}-linux-x64.tar.gz" -C publish/linux .
 
       - name: AppImage bauen
-        run: bash packaging/linux/build-appimage.sh "${{ github.ref_name }}" publish/linux
+        run: bash packaging/linux/build-appimage.sh "v${{ steps.ver.outputs.v }}" publish/linux
 
       - uses: actions/upload-artifact@v7
         with:

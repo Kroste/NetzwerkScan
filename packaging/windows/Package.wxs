@@ -4,7 +4,7 @@
   libvlc-Plugins) nach %ProgramFiles%\NetScanner und legt eine Startmenue-Verknuepfung an.
   Wird vom Bundle (Bundle.wxs) eingebettet; allein installiert es NICHT die .NET-Runtime.
 
-  Build:  wix build packaging\windows\Package.wxs -d Version=1.2.5 -b publish\win -o NetScanner.msi
+  Build:  wix build packaging\windows\Package.wxs -d Version=1.2.5 -d PublishDir=<abs-pfad-zu-publish\win> -o NetScanner.msi
   Die GUIDs (UpgradeCode, Component) muessen ueber Versionen hinweg STABIL bleiben,
   sonst funktionieren Upgrades nicht. Nicht aendern.
 -->
@@ -30,8 +30,10 @@
     </StandardDirectory>
 
     <!-- Alle Publish-Dateien rekursiv einsammeln (erhaelt die plugins\-Unterstruktur).
-         Der Pfad wird ueber den Bindpath (-b publish\win) aufgeloest. -->
-    <Files Include="!(bindpath.0)\**" Directory="INSTALLFOLDER" />
+         WICHTIG: Compile-Zeit-Preprocessor $(PublishDir), NICHT die Bind-Zeit-Variable
+         !(bindpath.0) -- letztere ist beim <Files>-Harvesting noch nicht aufgeloest
+         (-> WIX8600/8601, zero files). Pfad kommt per -d PublishDir=... vom Build. -->
+    <Files Include="$(PublishDir)\**" Directory="INSTALLFOLDER" />
 
     <!-- Startmenue-Verknuepfung -->
     <Component Directory="AppShortcutFolder" Guid="C18E5A92-7D4B-4A36-8F2C-9B1E0D6A4C73">
