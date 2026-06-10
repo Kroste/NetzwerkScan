@@ -31,7 +31,7 @@
 
     <!-- Alle Publish-Dateien rekursiv einsammeln (erhaelt die plugins\-Unterstruktur).
          WICHTIG: Compile-Zeit-Preprocessor $(PublishDir), NICHT die Bind-Zeit-Variable
-         !(bindpath.0) -- letztere ist beim <Files>-Harvesting noch nicht aufgeloest
+         !(bindpath.0) letztere ist beim <Files>-Harvesting noch nicht aufgeloest
          (-> WIX8600/8601, zero files). Pfad kommt per -d PublishDir=... vom Build. -->
     <Files Include="$(PublishDir)\**" Directory="INSTALLFOLDER" />
 
