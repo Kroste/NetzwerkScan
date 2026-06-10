@@ -29,10 +29,11 @@
       <Directory Id="AppShortcutFolder" Name="NetScanner" />
     </StandardDirectory>
 
-    <!-- Alle Publish-Dateien rekursiv einsammeln (erhaelt die plugins\-Unterstruktur).
-         WICHTIG: Compile-Zeit-Preprocessor $(PublishDir), NICHT die Bind-Zeit-Variable
-         !(bindpath.0) letztere ist beim <Files>-Harvesting noch nicht aufgeloest
-         (-> WIX8600/8601, zero files). Pfad kommt per -d PublishDir=... vom Build. -->
+    <!-- Alle Publish-Dateien rekursiv einsammeln (erhaelt die plugins-Unterstruktur).
+         WICHTIG: Compile-Zeit-Preprocessor $(PublishDir) verwenden, NICHT die
+         Bind-Zeit-Variable bindpath. Letztere ist beim Files-Harvesting noch nicht
+         aufgeloest und fuehrt zu WIX8600/8601 (zero files harvested). Der Pfad kommt
+         per Define PublishDir vom Build-Aufruf. -->
     <Files Include="$(PublishDir)\**" Directory="INSTALLFOLDER" />
 
     <!-- Startmenue-Verknuepfung -->
