@@ -48,6 +48,17 @@ public sealed partial class MainViewModel : ViewModelBase
     public bool ShowVlcMissingHint =>
         !IsPreviewAvailable && !string.IsNullOrWhiteSpace(SelectedStreamUrl);
 
+    /// <summary>Statusabhaengiger Hinweis fuer den Fall ohne (passende) VLC-Installation.</summary>
+    public string VlcHintText => VlcLocator.Status switch
+    {
+        VlcStatus.WrongArchitecture =>
+            "Es wurde eine 32-bit-VLC gefunden. NetScanner braucht die 64-bit-Version des VLC media player.",
+        VlcStatus.InitFailed =>
+            "VLC wurde gefunden, aber libvlc ließ sich nicht laden. Vermutlich ist die Installation beschädigt — VLC neu installieren.",
+        _ =>
+            "NetScanner bringt libvlc nicht mehr mit. Installiere den VLC media player (64-bit), dann läuft der Stream direkt hier. Ohne VLC die Stream-URL kopieren und extern öffnen."
+    };
+
     // Beide abgeleiteten Flags neu auswerten, sobald sich die Stream-URL aendert.
     partial void OnSelectedStreamUrlChanged(string? value)
     {
@@ -67,6 +78,14 @@ public sealed partial class MainViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanStart))]
     private async Task StartScanAsync()
     {
+        // Eingabe vorab pruefen -> klare Meldung statt generischem Fehler tief im Scan.
+        if (!IpRangeHelper.IsValidCidr(Cidr))
+        {
+            Status = "Ungültige CIDR-Angabe — erwartet z. B. 192.168.10.0/24.";
+            _audit.LogInformation("SCAN_REJECT | ungueltige CIDR: {Cidr}", Cidr);
+            return;
+        }
+
         // --- Audit: vollstaendige Eingabe protokollieren ---
         _audit.LogInformation(
             "SCAN_START | cidr={Cidr} | fullPorts={Full} | probeRtsp={Rtsp} | onvifMs={Onvif} | rtspUser={User}",

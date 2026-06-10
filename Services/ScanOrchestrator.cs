@@ -67,14 +67,21 @@ public sealed class ScanOrchestrator(
         {
             ct.ThrowIfCancellationRequested();
             var onvifMap = onvifTask.IsCompletedSuccessfully ? onvifTask.Result : null;
-            await EnrichAsync(host, opt, onvifMap, mdnsSink, ssdpSink, ct);
+            await SafeEnrichAsync(host, opt, onvifMap, mdnsSink, ssdpSink, ct);
             seen.Add(host.Address.ToString());
             yield return host;
         }
 
         // Alle Discovery-Tasks abwarten -> vollstaendige Sinks fuer die "nur-Discovery"-Hosts.
-        var cams = await onvifTask;
-        await Task.WhenAll(mdnsTask, ssdpTask);
+        // Fehler einer Discovery-Quelle duerfen den Scan NICHT abreissen (best effort).
+        IReadOnlyList<CameraInfo> cams;
+        try { cams = await onvifTask; }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex) { log.LogWarning(ex, "ONVIF-Discovery fehlgeschlagen"); cams = []; }
+
+        try { await Task.WhenAll(mdnsTask, ssdpTask); }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex) { log.LogWarning(ex, "mDNS/SSDP-Discovery fehlgeschlagen"); }
 
         // Geraete, die nicht auf Ping geantwortet haben, aber per ONVIF/mDNS/SSDP sichtbar sind
         // (z. B. ICMP-stumme Kameras, Smart-TVs, Drucker).
@@ -85,15 +92,36 @@ public sealed class ScanOrchestrator(
 
         foreach (var ipStr in extra)
         {
-            var ip = IPAddress.Parse(ipStr);
+            if (!IPAddress.TryParse(ipStr, out var ip)) continue;   // defekte Adresse ueberspringen
             var cam = cams.FirstOrDefault(c => c.Address.ToString() == ipStr);
             var host = new HostResult { Address = ip, Camera = cam, Vendor = cam?.Vendor };
-            await EnrichAsync(host, opt, cams, mdnsSink, ssdpSink, ct);
+            await SafeEnrichAsync(host, opt, cams, mdnsSink, ssdpSink, ct);
             log.LogInformation("Discovery-only Host ergaenzt: {Ip}", ip);
             yield return host;
         }
 
         log.LogInformation("=== Scan-Lauf ENDE ===");
+    }
+
+    /// <summary>Reichert einen Host an, faengt dabei aber alle nicht-Abbruch-Fehler ab —
+    /// ein einzelner defekter Host (Timeout, Socket-Fehler) darf den Scan nicht abreissen.
+    /// Der Host wird trotzdem mit den bis dahin gesammelten Infos zurueckgegeben.</summary>
+    private async Task SafeEnrichAsync(
+        HostResult host, ScanOptions opt, IReadOnlyList<CameraInfo>? onvifMatches,
+        ConcurrentDictionary<string, MdnsRecord> mdnsSink,
+        ConcurrentDictionary<string, SsdpRecord> ssdpSink,
+        CancellationToken ct)
+    {
+        try
+        {
+            await EnrichAsync(host, opt, onvifMatches, mdnsSink, ssdpSink, ct);
+        }
+        catch (OperationCanceledException) { throw; }   // Abbruch sauber durchreichen
+        catch (Exception ex)
+        {
+            log.LogWarning(ex, "Anreicherung fehlgeschlagen fuer {Ip} — Host wird mit Teildaten uebernommen",
+                host.Address);
+        }
     }
 
     private async Task EnrichAsync(

@@ -39,6 +39,19 @@ public static class IpRangeHelper
         return list;
     }
 
+    /// <summary>Prueft eine CIDR-Angabe (IPv4) auf Gueltigkeit, ohne zu expandieren oder
+    /// zu werfen — fuer die Eingabe-Validierung vor dem Scan-Start.</summary>
+    public static bool IsValidCidr(string? cidr)
+    {
+        if (string.IsNullOrWhiteSpace(cidr)) return false;
+        var parts = cidr.Trim().Split('/', 2);
+        return parts.Length == 2
+            && IPAddress.TryParse(parts[0], out var ip)
+            && ip.AddressFamily == AddressFamily.InterNetwork
+            && int.TryParse(parts[1], out var prefix)
+            && prefix is >= 0 and <= 32;
+    }
+
     /// <summary>Ermittelt die lokalen IPv4-Subnetze als CIDR (eines pro aktivem Interface).</summary>
     public static IReadOnlyList<string> LocalSubnets()
     {

@@ -576,11 +576,20 @@
         </Border>
 
         <!-- ===== Video (nur bei aktivem Stream UND verfuegbarem libvlc) ===== -->
-        <Border Grid.Row="1" Height="260" Margin="0,12,0,0" CornerRadius="12" Background="#05080B"
-                BorderBrush="{StaticResource Line}" BorderThickness="1" ClipToBounds="True"
-                IsVisible="{Binding ShowVideoPreview}">
-          <ctrl:NativeVideoView MediaUrl="{Binding SelectedStreamUrl}"/>
-        </Border>
+        <!-- Die Statuszeile liegt UNTER dem Video, nicht darueber: NativeControlHost ist
+             ein natives Fenster und wuerde ein Avalonia-Overlay verdecken (Airspace). -->
+        <StackPanel Grid.Row="1" Margin="0,12,0,0" IsVisible="{Binding ShowVideoPreview}">
+          <Border Height="232" CornerRadius="12,12,0,0" Background="#05080B"
+                  BorderBrush="{StaticResource Line}" BorderThickness="1" ClipToBounds="True">
+            <ctrl:NativeVideoView x:Name="VideoView" MediaUrl="{Binding SelectedStreamUrl}"/>
+          </Border>
+          <Border Background="{StaticResource SurfaceAlt}" Padding="12,6" CornerRadius="0,0,12,12"
+                  BorderBrush="{StaticResource Line}" BorderThickness="1,0,1,1"
+                  IsVisible="{Binding #VideoView.PlaybackInfo, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+            <TextBlock Text="{Binding #VideoView.PlaybackInfo}" Foreground="{StaticResource TextMuted}"
+                       FontFamily="Cascadia Code,Consolas,monospace" FontSize="12"/>
+          </Border>
+        </StackPanel>
 
         <!-- ===== Hinweis, wenn kein (passendes) VLC installiert ist ===== -->
         <Border Grid.Row="1" Height="260" Margin="0,12,0,0" CornerRadius="12" Background="#05080B"
@@ -592,7 +601,7 @@
                        HorizontalAlignment="Center"/>
             <TextBlock TextWrapping="Wrap" TextAlignment="Center" MaxWidth="430"
                        Foreground="{StaticResource TextMuted}" FontSize="12"
-                       Text="NetScanner bringt libvlc nicht mehr mit. Installiere den VLC media player (64-bit), dann läuft der Stream direkt hier. Ohne VLC kannst du die Stream-URL kopieren und extern öffnen."/>
+                       Text="{Binding VlcHintText}"/>
             <Button Classes="stream" Content="VLC herunterladen" HorizontalAlignment="Center"
                     Click="OnDownloadVlc"/>
           </StackPanel>

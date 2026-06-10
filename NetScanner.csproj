@@ -14,7 +14,7 @@
     <RootNamespace>NetScanner</RootNamespace>
     <!-- Zentrale Versionsquelle. Die About-Box liest sie zur Laufzeit aus.
          Bei jeder Aenderung hochzaehlen; der Release-Workflow ueberschreibt sie per Tag. -->
-    <Version>1.2.6</Version>
+    <Version>1.2.7</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,6 +43,8 @@
          Vorschau nutzt zur Laufzeit eine vorhandene VLC-Installation (siehe VlcLocator).
          Windows: VLC 64-bit unter %ProgramFiles%\VideoLAN\VLC; Linux: System-libvlc. -->
     <PackageReference Include="LibVLCSharp" Version="3.9.4" />
+    <!-- Registry-Lookup der VLC-Installation (nur zur Laufzeit auf Windows genutzt). -->
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
