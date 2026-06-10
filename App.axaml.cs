@@ -70,6 +70,7 @@ public partial class App : Application
         sc.AddSingleton<MdnsDiscovery>();
         sc.AddSingleton<SsdpDiscovery>();
         sc.AddSingleton<NetBiosProbe>();
+        sc.AddSingleton<CredentialAuditor>();
         sc.AddSingleton<WolSender>();
         sc.AddSingleton<TracerouteService>();
         sc.AddSingleton<IScanOrchestrator, ScanOrchestrator>();

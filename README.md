@@ -42,6 +42,7 @@ Ein schlankes Desktop-Werkzeug, um das eigene Netz sichtbar zu machen: Welche Ge
 | **Namensauflösung** | Reverse-DNS, mDNS/Bonjour, NetBIOS und SSDP/UPnP — der beste verfügbare Name wird angezeigt. |
 | **Kameraerkennung** | ONVIF-WS-Discovery + Port-Heuristik (554/8554) + RTSP-`OPTIONS`-Probe. Optional mit RTSP-Login für die Stream-URL. |
 | **Live-Video** | RTSP-Stream direkt im Fenster, eingebettet über LibVLC (`NativeControlHost`). |
+| **Schwachstellen-Audit** *(opt-in)* | Prüft erkannte Kameras und Router auf **offene Streams** und gängige **Werks-Logins** (Default-Credentials). Bei Fund wird das Gerät markiert und – bei einer Kamera – das Bild direkt gezeigt. Nur fürs eigene Netz. |
 | **Host-Aktionen** | Pro Gerät: Weboberfläche öffnen, SSH, RDP, SMB-Freigabe, IP/MAC/Name kopieren, **Wake-on-LAN**. |
 | **Export** | Ergebnisliste als **CSV** (Semikolon, Excel-DE) oder **JSON**. |
 | **Netzwerkkarte** | Interaktive Stern-Topologie: Gateway im Zentrum, Geräte ringsum, eingefärbt nach Typ. |
@@ -176,6 +177,19 @@ Unten die Leiste **Außenpfad (traceroute):** Ziel eingeben (Standard `8.8.8.8`,
 ![Traceroute-Hop-Kette](docs/screenshots/08-traceroute.png)
 
 > Im flachen LAN ist der Weg zum Gateway genau **ein Hop** — Switches und Access-Points sind auf IP-Ebene unsichtbar. Interessant wird die Kette mit einem Internet-Ziel oder über Subnetzgrenzen hinweg.
+
+---
+
+## Schwachstellen-Audit
+
+Optional (Checkbox **„Schwachstellen prüfen"**) testet NetScanner erkannte **Kameras** und **Router** auf zwei häufige Schwachstellen:
+
+- **Offener RTSP-Stream:** Der Stream antwortet ohne Zugangsdaten. Die Kamera wird markiert und die Vorschau automatisch geöffnet.
+- **Werks-Login (Default-Credentials):** Eine kuratierte Liste der gängigsten Werks-Zugänge (z. B. `admin/admin`, `admin/12345`, `root/root`) wird gegen den RTSP-Stream und das Web-Login (HTTP Basic/Digest) geprüft. Funktioniert einer, erscheint ein rotes Warn-Badge mit dem gefundenen Login; bei einer Kamera wird zusätzlich das Bild gezeigt.
+
+Geprüft werden bewusst nur Kameras und Router/Gateways, nicht jeder Host. Form-basierte Web-Logins (Status 200 statt 401) werden nicht angetastet — nur HTTP-Basic/Digest. Es ist **kein Brute-Force**, sondern eine feste, kleine Liste dokumentierter Werks-Logins.
+
+> ⚠ **Nur im eigenen Netz.** Default-Credential-Checks gegen fremde Systeme ohne ausdrückliche Erlaubnis können rechtlich relevant sein (in Deutschland u. a. § 202c StGB). Das Feature ist deshalb standardmäßig aus und muss bewusst aktiviert werden. Nutze es ausschließlich zum Absichern deiner eigenen Geräte.
 
 ---
 

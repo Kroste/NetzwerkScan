@@ -271,6 +271,8 @@
           <StackPanel Spacing="8" VerticalAlignment="Bottom" Margin="6,0,0,6">
             <CheckBox Content="Alle Ports (1–65535)" IsChecked="{Binding ScanFullPorts}"/>
             <CheckBox Content="RTSP prüfen" IsChecked="{Binding ProbeRtsp}"/>
+            <CheckBox Content="Schwachstellen prüfen" IsChecked="{Binding AuditCredentials}"
+                      ToolTip.Tip="Testet offene Streams und gängige Werks-Logins (Kamera/Router). Nur im eigenen Netz verwenden."/>
           </StackPanel>
         </StackPanel>
 
@@ -351,6 +353,10 @@
                               VerticalAlignment="Center" IsVisible="{Binding IsCamera}">
                         <TextBlock Text="KAMERA" FontSize="10" FontWeight="Bold"
                                    Foreground="{StaticResource Camera}"/>
+                      </Border>
+                      <Border Background="#3A1414" CornerRadius="4" Padding="6,1"
+                              VerticalAlignment="Center" IsVisible="{Binding IsVulnerable}">
+                        <TextBlock Text="⚠ OFFEN" FontSize="10" FontWeight="Bold" Foreground="#E74C3C"/>
                       </Border>
                       <TextBlock Text="{Binding Vendor}" FontSize="12" VerticalAlignment="Center"
                                  Foreground="{StaticResource TextMuted}"/>
@@ -550,6 +556,17 @@
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>
                 </StackPanel>
+
+                <!-- Schwachstellen-Befund (nur bei Audit-Fund) -->
+                <Border Background="#3A1414" BorderBrush="#C0392B" BorderThickness="1"
+                        CornerRadius="8" Padding="12,9" IsVisible="{Binding HasVulnBadge}">
+                  <StackPanel Spacing="3">
+                    <TextBlock Text="⚠  SCHWACHSTELLE" FontSize="10" FontWeight="Bold"
+                               Foreground="#E74C3C"/>
+                    <TextBlock Text="{Binding VulnBadge}" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource TextPrimary}"/>
+                  </StackPanel>
+                </Border>
 
                 <!-- Kamera-Stream -->
                 <StackPanel Spacing="8" IsVisible="{Binding IsCamera}">

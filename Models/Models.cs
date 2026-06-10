@@ -33,9 +33,25 @@ public sealed record CameraInfo
     public string? RtspUri { get; set; }
     /// <summary>True, wenn der Stream Zugangsdaten verlangt (401/Beschreibung).</summary>
     public bool RequiresAuth { get; set; }
+    /// <summary>Ergebnis des optionalen RTSP-Credential-Audits. Bei Open/DefaultCredentials
+    /// enthaelt <see cref="RtspUri"/> die funktionierenden Zugangsdaten fuer die Vorschau.</summary>
+    public AuthFinding RtspAudit { get; set; } = AuthFinding.NotChecked;
 }
 
 public enum CameraSource { OnvifDiscovery, PortHeuristic, Both }
+
+/// <summary>Ergebnis einer Credential-Pruefung (Stream oder Web-Login).</summary>
+public enum AuthFinding
+{
+    /// <summary>Nicht geprueft (Audit war aus oder nicht anwendbar).</summary>
+    NotChecked,
+    /// <summary>Ohne Zugangsdaten erreichbar — offen.</summary>
+    Open,
+    /// <summary>Zugangsdaten noetig, ein Werks-Login funktioniert.</summary>
+    DefaultCredentials,
+    /// <summary>Zugangsdaten noetig, kein getesteter Werks-Login passte.</summary>
+    Secured
+}
 
 /// <summary>Aggregiertes Ergebnis pro erreichbarem Host.</summary>
 public sealed class HostResult
@@ -72,6 +88,36 @@ public sealed class HostResult
 
     public List<PortResult> OpenPorts { get; } = [];
     public CameraInfo? Camera { get; set; }
+
+    /// <summary>Ergebnis des optionalen Web-Login-Audits (Router/Geraet-Webinterface).</summary>
+    public AuthFinding WebAudit { get; set; } = AuthFinding.NotChecked;
+    /// <summary>Funktionierender Werks-Login als "user/pass" (nur Anzeige), falls gefunden.</summary>
+    public string? WebAuditCred { get; set; }
+
+    // --- Verwundbarkeits-Auswertung fuer die UI ---
+    /// <summary>RTSP-Stream ist offen oder per Werks-Login zugaenglich.</summary>
+    public bool RtspVulnerable =>
+        Camera?.RtspAudit is AuthFinding.Open or AuthFinding.DefaultCredentials;
+    /// <summary>Web-Login (Router/Geraet) ist offen oder per Werks-Login zugaenglich.</summary>
+    public bool WebVulnerable =>
+        WebAudit is AuthFinding.Open or AuthFinding.DefaultCredentials;
+    public bool IsVulnerable => RtspVulnerable || WebVulnerable;
+
+    /// <summary>Kompakte Badge-Zeile fuer gefundene Schwachstellen.</summary>
+    public string? VulnBadge
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (Camera?.RtspAudit == AuthFinding.Open) parts.Add("Stream offen");
+            else if (Camera?.RtspAudit == AuthFinding.DefaultCredentials) parts.Add("Stream: Werks-Login");
+            if (WebAudit == AuthFinding.Open) parts.Add("Web offen");
+            else if (WebAudit == AuthFinding.DefaultCredentials)
+                parts.Add($"Web-Login: {WebAuditCred}");
+            return parts.Count == 0 ? null : string.Join("  ·  ", parts);
+        }
+    }
+    public bool HasVulnBadge => VulnBadge is not null;
 
     public bool IsCamera => Camera is not null;
     /// <summary>RTSP-URL der Kamera — null-sicher (vermeidet Binding-Fehler bei Nicht-Kameras).</summary>

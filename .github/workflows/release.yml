@@ -9,9 +9,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Testversion ohne fuehrendes v (z.B. 1.2.7). Nur fuer manuelle Laeufe."
+        description: "Testversion ohne fuehrendes v (z.B. 1.3.0). Nur fuer manuelle Laeufe."
         required: false
-        default: "1.2.7"
+        default: "1.3.0"
 
 permissions:
   contents: write   # noetig, damit der Release-Job das Release anlegen/aktualisieren darf

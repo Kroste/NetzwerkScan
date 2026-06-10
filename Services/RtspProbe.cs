@@ -8,7 +8,8 @@ namespace NetScanner.Services;
 /// <summary>
 /// Prueft per RTSP-OPTIONS, ob an einem Port ein RTSP-Server lauscht, und
 /// erzeugt Stream-URL-Kandidaten nach oeffentlich dokumentierten Hersteller-Mustern.
-/// Es findet KEIN Passwort-Raten statt; Credentials kommen ausschliesslich vom Benutzer.
+/// Diese Klasse raet selbst keine Passwoerter — das optionale Default-Login-Audit
+/// (offene Streams + Werks-Logins) steckt in <see cref="CredentialAuditor"/>.
 /// </summary>
 public sealed class RtspProbe(ILogger<RtspProbe> log)
 {

@@ -23,6 +23,7 @@ public sealed partial class MainViewModel : ViewModelBase
     [ObservableProperty] private string _cidr;
     [ObservableProperty] private bool _scanFullPorts;
     [ObservableProperty] private bool _probeRtsp = true;
+    [ObservableProperty] private bool _auditCredentials;
     [ObservableProperty] private string? _rtspUser;
     [ObservableProperty] private string? _rtspPass;
     [ObservableProperty] private int _onvifListenMs = 3000;
@@ -88,8 +89,8 @@ public sealed partial class MainViewModel : ViewModelBase
 
         // --- Audit: vollstaendige Eingabe protokollieren ---
         _audit.LogInformation(
-            "SCAN_START | cidr={Cidr} | fullPorts={Full} | probeRtsp={Rtsp} | onvifMs={Onvif} | rtspUser={User}",
-            Cidr, ScanFullPorts, ProbeRtsp, OnvifListenMs,
+            "SCAN_START | cidr={Cidr} | fullPorts={Full} | probeRtsp={Rtsp} | audit={Audit} | onvifMs={Onvif} | rtspUser={User}",
+            Cidr, ScanFullPorts, ProbeRtsp, AuditCredentials, OnvifListenMs,
             string.IsNullOrEmpty(RtspUser) ? "(leer)" : RtspUser);   // Passwort NICHT loggen
 
         Hosts.Clear();
@@ -104,6 +105,7 @@ public sealed partial class MainViewModel : ViewModelBase
             Cidr = Cidr.Trim(),
             Ports = ScanFullPorts ? [.. Enumerable.Range(1, 65535)] : PortScanner.CommonPorts,
             ProbeRtsp = ProbeRtsp,
+            AuditCredentials = AuditCredentials,
             OnvifListenMs = OnvifListenMs,
             RtspUser = RtspUser,
             RtspPass = RtspPass
@@ -118,6 +120,15 @@ public sealed partial class MainViewModel : ViewModelBase
                     Hosts.Add(host);
                     HostCount = Hosts.Count;
                     if (host.IsCamera) CameraCount++;
+
+                    // Offener/per Werks-Login zugaenglicher Stream: erste solche Kamera
+                    // automatisch auswaehlen und die Vorschau oeffnen (Beleg der Schwachstelle).
+                    if (host.RtspVulnerable && string.IsNullOrEmpty(SelectedStreamUrl))
+                    {
+                        SelectedHost = host;
+                        SelectedStreamUrl = host.RtspUri;
+                    }
+
                     Status = $"Läuft … {HostCount} Host(s), {CameraCount} Kamera(s)";
                 });
             }

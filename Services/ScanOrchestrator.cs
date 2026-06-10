@@ -19,6 +19,8 @@ public sealed record ScanOptions
     public bool ProbeRtsp { get; init; } = true;
     public string? RtspUser { get; init; }
     public string? RtspPass { get; init; }
+    /// <summary>Optionales Sicherheits-Audit: offene Streams + Werks-Logins (Kamera/Router).</summary>
+    public bool AuditCredentials { get; init; }
 }
 
 public interface IScanOrchestrator
@@ -44,6 +46,7 @@ public sealed class ScanOrchestrator(
     MdnsDiscovery mdns,
     SsdpDiscovery ssdp,
     NetBiosProbe netbios,
+    CredentialAuditor auditor,
     ILogger<ScanOrchestrator> log) : IScanOrchestrator
 {
     private static readonly int[] RtspPorts = [554, 8554];
@@ -172,7 +175,53 @@ public sealed class ScanOrchestrator(
         if (host.HasDeviceInfo)
             log.LogInformation("{Ip} erkannt als: {Summary} (TTL {Ttl})",
                 host.Address, host.DeviceSummary, host.Ttl?.ToString() ?? "?");
+
+        // Optionales Sicherheits-Audit: offene Streams + Werks-Logins (Kamera/Router).
+        if (opt.AuditCredentials)
+            await AuditCredentialsAsync(host, open, opt.PortTimeoutMs, ct);
     }
+
+    /// <summary>Prueft Kamera-Stream und (bei Router/Kamera) das Web-Login auf offene
+    /// Zugaenge bzw. dokumentierte Werks-Logins. Nur fuer das eigene Netz gedacht.</summary>
+    private async Task AuditCredentialsAsync(
+        HostResult host, IReadOnlyList<PortResult> open, int timeoutMs, CancellationToken ct)
+    {
+        // 1) RTSP-Stream der Kamera.
+        if (host.Camera is { } cam)
+        {
+            int rtspPort = open.Select(p => p.Port).FirstOrDefault(RtspPorts.Contains, 554);
+            var path = RtspProbe.PathsForVendor(cam.Vendor).First();
+            var (finding, user, pass) = await auditor.AuditRtspAsync(host.Address, rtspPort, path, timeoutMs, ct);
+            cam.RtspAudit = finding;
+
+            // Bei offenem/geknacktem Stream die URL mit funktionierenden Creds setzen ->
+            // die Vorschau kann das Bild direkt zeigen.
+            if (finding == AuthFinding.Open)
+                cam.RtspUri = RtspProbe.BuildUri(host.Address, rtspPort, path);
+            else if (finding == AuthFinding.DefaultCredentials)
+                cam.RtspUri = RtspProbe.BuildUri(host.Address, rtspPort, path, user, pass);
+
+            if (finding is AuthFinding.Open or AuthFinding.DefaultCredentials)
+                log.LogWarning("SCHWACHSTELLE RTSP {Ip}: {Finding}", host.Address, finding);
+        }
+
+        // 2) Web-Login von Router/Kamera (HTTP Basic/Digest).
+        if (host.WebUrl is { } web && ShouldAuditWeb(host))
+        {
+            var (finding, cred) = await auditor.AuditHttpAsync(web, timeoutMs, ct);
+            host.WebAudit = finding;
+            host.WebAuditCred = cred;
+            if (finding == AuthFinding.DefaultCredentials)
+                log.LogWarning("SCHWACHSTELLE Web-Login {Ip}: {Cred}", host.Address, cred);
+        }
+    }
+
+    /// <summary>Web-Audit nur fuer Kameras und Router/Gateways (fokussiert, nicht jeder Host).</summary>
+    private static bool ShouldAuditWeb(HostResult host) =>
+        host.IsCamera
+        || string.Equals(host.DeviceType, "Router", StringComparison.OrdinalIgnoreCase)
+        || (host.UpnpDeviceType?.Contains("Router", StringComparison.OrdinalIgnoreCase) ?? false)
+        || (host.UpnpDeviceType?.Contains("Gateway", StringComparison.OrdinalIgnoreCase) ?? false);
 
     private static async Task<string?> ReverseDnsAsync(IPAddress ip, CancellationToken ct)
     {
