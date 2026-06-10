@@ -278,6 +278,11 @@
           <ProgressBar IsIndeterminate="{Binding IsScanning}" IsVisible="{Binding IsScanning}"
                        Width="160" Height="4" VerticalAlignment="Bottom" Margin="4,0,0,16"
                        Foreground="{StaticResource Accent}"/>
+
+          <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Bottom" Margin="8,0,0,0">
+            <Button Classes="ghost" Content="⬇ CSV" Click="OnExportCsv" ToolTip.Tip="Als CSV exportieren"/>
+            <Button Classes="ghost" Content="⬇ JSON" Click="OnExportJson" ToolTip.Tip="Als JSON exportieren"/>
+          </StackPanel>
         </StackPanel>
       </StackPanel>
     </Border>
@@ -291,7 +296,22 @@
             <DataTemplate x:DataType="models:HostResult">
               <Border Classes="host-card" Background="{StaticResource Surface}"
                       BorderBrush="{StaticResource Line}" BorderThickness="1"
-                      CornerRadius="12" Padding="0">
+                      CornerRadius="12" Padding="0"
+                      PointerReleased="OnCardPointerReleased">
+                <Border.ContextMenu>
+                  <ContextMenu>
+                    <MenuItem Header="Im Browser öffnen" Click="OnHostWeb" IsVisible="{Binding HasWebUi}"/>
+                    <MenuItem Header="SSH-Verbindung" Click="OnHostSsh" IsVisible="{Binding HasSsh}"/>
+                    <MenuItem Header="Remotedesktop (RDP)" Click="OnHostRdp" IsVisible="{Binding HasRdp}"/>
+                    <MenuItem Header="Dateifreigabe (SMB)" Click="OnHostSmb" IsVisible="{Binding HasSmb}"/>
+                    <Separator/>
+                    <MenuItem Header="IP kopieren" Click="OnHostCopyIp"/>
+                    <MenuItem Header="MAC kopieren" Click="OnHostCopyMac" IsVisible="{Binding HasMac}"/>
+                    <MenuItem Header="Name kopieren" Click="OnHostCopyName" IsVisible="{Binding HasBestName}"/>
+                    <Separator/>
+                    <MenuItem Header="Wake-on-LAN senden" Click="OnHostWol" IsVisible="{Binding HasMac}"/>
+                  </ContextMenu>
+                </Border.ContextMenu>
                 <Grid ColumnDefinitions="3,16,Auto,*,Auto">
 
                   <!-- Kamera-Akzentstreifen (Spalte immer 3px -> kein Layout-Shift) -->
@@ -381,25 +401,172 @@
 
       <GridSplitter Grid.Column="1" Background="Transparent" ResizeDirection="Columns"/>
 
-      <Border Grid.Column="2" CornerRadius="12" Background="#05080B" ClipToBounds="True"
-              BorderBrush="{StaticResource Line}" BorderThickness="1">
-        <Panel>
-          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10"
-                      IsVisible="{Binding SelectedStreamUrl, Converter={x:Static StringConverters.IsNullOrEmpty}}">
-            <Border Width="56" Height="56" CornerRadius="28" Background="{StaticResource Surface}"
-                    HorizontalAlignment="Center">
-              <TextBlock Text="▣" FontSize="26" Foreground="{StaticResource TextMuted}"
-                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Border>
-            <TextBlock Text="Kein Stream ausgewählt" Foreground="{StaticResource TextMuted}"
-                       HorizontalAlignment="Center"/>
-            <TextBlock Text="Wähle eine Kamera und klicke ▶ Stream" FontSize="12"
-                       Foreground="{StaticResource TextMuted}" Opacity="0.6"
-                       HorizontalAlignment="Center"/>
-          </StackPanel>
+      <Grid Grid.Column="2" RowDefinitions="*,Auto">
+
+        <!-- ===== Detail-Panel ===== -->
+        <Border Grid.Row="0" CornerRadius="12" Background="{StaticResource Surface}"
+                BorderBrush="{StaticResource Line}" BorderThickness="1" ClipToBounds="True">
+          <Panel>
+            <!-- Platzhalter -->
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10"
+                        IsVisible="{Binding SelectedHost, Converter={x:Static ObjectConverters.IsNull}}">
+              <Border Width="56" Height="56" CornerRadius="28" Background="{StaticResource SurfaceAlt}"
+                      HorizontalAlignment="Center">
+                <TextBlock Text="◉" FontSize="26" Foreground="{StaticResource TextMuted}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+              </Border>
+              <TextBlock Text="Host auswählen für Details" Foreground="{StaticResource TextMuted}"
+                         HorizontalAlignment="Center"/>
+              <TextBlock Text="Rechtsklick auf eine Karte für Aktionen" FontSize="12"
+                         Foreground="{StaticResource TextMuted}" Opacity="0.6"
+                         HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Detailinhalt -->
+            <ScrollViewer IsVisible="{Binding SelectedHost, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <StackPanel DataContext="{Binding SelectedHost}" Margin="18" Spacing="13">
+
+                <!-- Kopf: IP + Kamera-Badge -->
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <TextBlock Text="{Binding Address}" FontSize="20" FontWeight="Bold"
+                             FontFamily="Cascadia Code,JetBrains Mono,Consolas,monospace"
+                             Foreground="{StaticResource TextPrimary}"/>
+                  <Border Background="{StaticResource CameraSoft}" CornerRadius="4" Padding="6,1"
+                          VerticalAlignment="Center" IsVisible="{Binding IsCamera}">
+                    <TextBlock Text="KAMERA" FontSize="10" FontWeight="Bold"
+                               Foreground="{StaticResource Camera}"/>
+                  </Border>
+                </StackPanel>
+
+                <!-- Geraete-Badge -->
+                <Border Background="{StaticResource AccentSoft}" CornerRadius="4" Padding="8,3"
+                        HorizontalAlignment="Left" IsVisible="{Binding HasDeviceInfo}">
+                  <TextBlock Text="{Binding DeviceSummary}" FontSize="12" FontWeight="SemiBold"
+                             Foreground="{StaticResource Accent}"/>
+                </Border>
+
+                <!-- Aktionen -->
+                <WrapPanel>
+                  <Button Classes="ghost" Content="🌐 Web" Click="OnHostWeb" Margin="0,0,6,6"
+                          IsVisible="{Binding HasWebUi}"/>
+                  <Button Classes="ghost" Content="⌨ SSH" Click="OnHostSsh" Margin="0,0,6,6"
+                          IsVisible="{Binding HasSsh}"/>
+                  <Button Classes="ghost" Content="🖥 RDP" Click="OnHostRdp" Margin="0,0,6,6"
+                          IsVisible="{Binding HasRdp}"/>
+                  <Button Classes="ghost" Content="📁 SMB" Click="OnHostSmb" Margin="0,0,6,6"
+                          IsVisible="{Binding HasSmb}"/>
+                  <Button Classes="ghost" Content="⏻ Wake-on-LAN" Click="OnHostWol" Margin="0,0,6,6"
+                          IsVisible="{Binding HasMac}"/>
+                </WrapPanel>
+
+                <Border Height="1" Background="{StaticResource Line}"/>
+
+                <!-- Eigenschaften -->
+                <StackPanel Spacing="7">
+                  <Grid ColumnDefinitions="88,*" IsVisible="{Binding HasBestName}">
+                    <TextBlock Grid.Column="0" Text="Name" FontSize="11" Foreground="{StaticResource TextMuted}"/>
+                    <TextBlock Grid.Column="1" Text="{Binding BestName}" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource TextPrimary}"/>
+                  </Grid>
+                  <Grid ColumnDefinitions="88,*" IsVisible="{Binding Vendor, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <TextBlock Grid.Column="0" Text="Hersteller" FontSize="11" Foreground="{StaticResource TextMuted}"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Vendor}" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource TextPrimary}"/>
+                  </Grid>
+                  <Grid ColumnDefinitions="88,*" IsVisible="{Binding HasMac}">
+                    <TextBlock Grid.Column="0" Text="MAC" FontSize="11" Foreground="{StaticResource TextMuted}"/>
+                    <TextBlock Grid.Column="1" Text="{Binding MacAddress}" FontSize="12"
+                               FontFamily="Cascadia Code,Consolas,monospace"
+                               Foreground="{StaticResource TextPrimary}"/>
+                  </Grid>
+                  <Grid ColumnDefinitions="88,*" IsVisible="{Binding Ttl, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <TextBlock Grid.Column="0" Text="TTL" FontSize="11" Foreground="{StaticResource TextMuted}"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Ttl}" FontSize="12"
+                               Foreground="{StaticResource TextPrimary}"/>
+                  </Grid>
+                  <Grid ColumnDefinitions="88,*">
+                    <TextBlock Grid.Column="0" Text="Antwortzeit" FontSize="11" Foreground="{StaticResource TextMuted}"/>
+                    <TextBlock Grid.Column="1" Text="{Binding LatencyDisplay}" FontSize="12"
+                               Foreground="{StaticResource TextPrimary}"/>
+                  </Grid>
+                </StackPanel>
+
+                <!-- Discovery -->
+                <StackPanel Spacing="7" IsVisible="{Binding HasDiscovery}">
+                  <Border Height="1" Background="{StaticResource Line}"/>
+                  <TextBlock Text="DISCOVERY" FontSize="10" FontWeight="SemiBold"
+                             Foreground="{StaticResource TextMuted}"/>
+                  <TextBlock Text="{Binding DiscoveryDisplay}" FontSize="12" TextWrapping="Wrap"
+                             Foreground="{StaticResource Accent}"/>
+                  <TextBlock Text="{Binding UpnpServer}" FontSize="11" TextWrapping="Wrap"
+                             Foreground="{StaticResource TextMuted}"
+                             IsVisible="{Binding UpnpServer, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                </StackPanel>
+
+                <!-- Banner -->
+                <StackPanel Spacing="6" IsVisible="{Binding HasBanner}">
+                  <Border Height="1" Background="{StaticResource Line}"/>
+                  <TextBlock Text="{Binding BannerDisplay}" FontSize="11" TextWrapping="Wrap"
+                             FontFamily="Cascadia Code,Consolas,monospace"
+                             Foreground="{StaticResource TextMuted}"/>
+                </StackPanel>
+
+                <!-- Ports -->
+                <StackPanel Spacing="7">
+                  <Border Height="1" Background="{StaticResource Line}"/>
+                  <TextBlock Text="OFFENE PORTS" FontSize="10" FontWeight="SemiBold"
+                             Foreground="{StaticResource TextMuted}"/>
+                  <ItemsControl ItemsSource="{Binding OpenPorts}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="models:PortResult">
+                        <Border Classes="chip">
+                          <StackPanel Orientation="Horizontal" Spacing="5">
+                            <TextBlock Text="{Binding Port}" FontSize="11" FontWeight="SemiBold"
+                                       FontFamily="Cascadia Code,Consolas,monospace"
+                                       Foreground="{StaticResource TextPrimary}"/>
+                            <TextBlock Text="{Binding Service}" FontSize="11"
+                                       Foreground="{StaticResource TextMuted}"/>
+                          </StackPanel>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+
+                <!-- Kamera-Stream -->
+                <StackPanel Spacing="8" IsVisible="{Binding IsCamera}">
+                  <Border Height="1" Background="{StaticResource Line}"/>
+                  <TextBlock Text="{Binding Camera.RtspUri}" FontSize="11" TextWrapping="Wrap"
+                             FontFamily="Cascadia Code,Consolas,monospace"
+                             Foreground="{StaticResource TextMuted}"
+                             IsVisible="{Binding Camera.RtspUri, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                  <Button Classes="stream" Content="▶  Stream öffnen" HorizontalAlignment="Left"
+                          Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).OpenStreamCommand}"
+                          CommandParameter="{Binding}"/>
+                </StackPanel>
+
+                <!-- Kopier-Aktionen -->
+                <WrapPanel Margin="0,2,0,0">
+                  <Button Classes="ghost" Content="IP kopieren" Click="OnHostCopyIp" Margin="0,0,6,6"/>
+                  <Button Classes="ghost" Content="MAC kopieren" Click="OnHostCopyMac" Margin="0,0,6,6"
+                          IsVisible="{Binding HasMac}"/>
+                </WrapPanel>
+
+              </StackPanel>
+            </ScrollViewer>
+          </Panel>
+        </Border>
+
+        <!-- ===== Video (nur bei aktivem Stream) ===== -->
+        <Border Grid.Row="1" Height="260" Margin="0,12,0,0" CornerRadius="12" Background="#05080B"
+                BorderBrush="{StaticResource Line}" BorderThickness="1" ClipToBounds="True"
+                IsVisible="{Binding SelectedStreamUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
           <ctrl:NativeVideoView MediaUrl="{Binding SelectedStreamUrl}"/>
-        </Panel>
-      </Border>
+        </Border>
+      </Grid>
     </Grid>
 
     <!-- ===== Statusleiste ===== -->

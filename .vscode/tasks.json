@@ -34,7 +34,7 @@
       "type": "shell",
       "command": "rm -rf bin obj",
       "windows": {
-        "command": "if exist bin rmdir /s /q bin & if exist obj rmdir /s /q obj"
+        "command": "Remove-Item -Recurse -Force bin, obj -ErrorAction SilentlyContinue"
       },
       "options": { "cwd": "${workspaceFolder}" },
       "problemMatcher": []

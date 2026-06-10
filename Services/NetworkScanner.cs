@@ -89,7 +89,6 @@ public sealed class NetworkScanner(ILogger<NetworkScanner> log) : INetworkScanne
                     Vendor = OuiLookup.Resolve(mac),
                     RoundtripMs = -1            // -1 = nur per ARP gesehen, kein ICMP
                 };
-                await TryReverseDnsAsync(host, ct);
                 log.LogDebug("Host nur per ARP gefunden (ICMP-stumm): {Ip} [{Mac}]", ipStr, mac);
                 yield return host;
             }
@@ -140,18 +139,6 @@ public sealed class NetworkScanner(ILogger<NetworkScanner> log) : INetworkScanne
             Vendor = OuiLookup.Resolve(mac)
         };
         if (!pingOk) log.LogDebug("Host per ARP gefunden (ICMP-stumm): {Ip} [{Mac}]", ip, mac);
-        await TryReverseDnsAsync(host, ct);
         return host;
-    }
-
-    private static async Task TryReverseDnsAsync(HostResult host, CancellationToken ct)
-    {
-        try
-        {
-            var dns = Dns.GetHostEntryAsync(host.Address);
-            if (await Task.WhenAny(dns, Task.Delay(400, ct)) == dns)
-                host.Hostname = dns.Result.HostName;
-        }
-        catch { /* kein PTR-Record */ }
     }
 }

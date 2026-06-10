@@ -106,6 +106,27 @@ public sealed class HostResult
     }
     public bool HasDiscovery => DiscoveryDisplay is not null;
 
+    // --- Aktions-Helfer fuer Kontextmenue/Detail-Panel ---
+    /// <summary>Beste Web-URL aus offenen Ports (HTTPS bevorzugt), sonst null.</summary>
+    public string? WebUrl
+    {
+        get
+        {
+            var ports = OpenPorts.Select(p => p.Port).ToHashSet();
+            if (ports.Contains(443)) return $"https://{Address}";
+            if (ports.Contains(80)) return $"http://{Address}";
+            if (ports.Contains(8443)) return $"https://{Address}:8443";
+            foreach (var p in new[] { 8080, 8000, 8081 })
+                if (ports.Contains(p)) return $"http://{Address}:{p}";
+            return null;
+        }
+    }
+    public bool HasWebUi => WebUrl is not null;
+    public bool HasSsh => OpenPorts.Any(p => p.Port == 22);
+    public bool HasRdp => OpenPorts.Any(p => p.Port == 3389);
+    public bool HasSmb => OpenPorts.Any(p => p.Port is 445 or 139);
+    public bool HasMacForWol => HasMac;
+
     /// <summary>Kurze Zusammenfassung "Geraetetyp · OS" fuer die Anzeige.</summary>
     public string DeviceSummary
     {

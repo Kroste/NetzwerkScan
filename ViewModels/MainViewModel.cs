@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Text;
+using System.Text.Json;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,6 +13,7 @@ namespace NetScanner.ViewModels;
 public sealed partial class MainViewModel : ViewModelBase
 {
     private readonly IScanOrchestrator _orchestrator;
+    private readonly WolSender _wol;
     private readonly ILogger<MainViewModel> _log;
     private readonly ILogger _audit;            // Logger-Name "UserInput" -> Audit-Datei
     private CancellationTokenSource? _cts;
@@ -34,9 +37,10 @@ public sealed partial class MainViewModel : ViewModelBase
     /// <summary>Wird an NativeVideoView.MediaUrl gebunden.</summary>
     [ObservableProperty] private string? _selectedStreamUrl;
 
-    public MainViewModel(IScanOrchestrator orchestrator, ILogger<MainViewModel> log, ILoggerFactory factory)
+    public MainViewModel(IScanOrchestrator orchestrator, WolSender wol, ILogger<MainViewModel> log, ILoggerFactory factory)
     {
         _orchestrator = orchestrator;
+        _wol = wol;
         _log = log;
         _audit = factory.CreateLogger("UserInput");
         _cidr = IpRangeHelper.LocalSubnets().FirstOrDefault() ?? "192.168.10.0/24";
@@ -129,6 +133,71 @@ public sealed partial class MainViewModel : ViewModelBase
     partial void OnCidrChanged(string value) => _audit?.LogInformation("INPUT cidr={Cidr}", value);
     partial void OnScanFullPortsChanged(bool value) => _audit?.LogInformation("INPUT fullPorts={Val}", value);
     partial void OnProbeRtspChanged(bool value) => _audit?.LogInformation("INPUT probeRtsp={Val}", value);
+
+    // --- Host-Aktionen (vom Code-behind aufgerufen) ---
+
+    /// <summary>Sendet ein Wake-on-LAN-Paket an die MAC des Hosts.</summary>
+    public async Task WakeOnLanAsync(HostResult host)
+    {
+        _audit.LogInformation("WOL | ip={Ip} | mac={Mac}", host.Address, host.MacAddress);
+        bool ok = await _wol.SendAsync(host.MacAddress, CancellationToken.None);
+        Status = ok ? $"Wake-on-LAN gesendet an {host.MacAddress}" : "WoL fehlgeschlagen (MAC unbekannt?)";
+    }
+
+    /// <summary>Setzt eine Statusmeldung und protokolliert die Aktion.</summary>
+    public void ReportAction(string message)
+    {
+        Status = message;
+        _audit.LogInformation("ACTION | {Msg}", message);
+    }
+
+    // --- Export ---
+    public string BuildCsv()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("IP;Name;MAC;Hersteller;OS;Geraetetyp;TTL;Latenz_ms;Kamera;OffenePorts;mDNS;NetBIOS;Arbeitsgruppe;UPnP;SSH;HTTP");
+        foreach (var h in Hosts)
+        {
+            string ports = string.Join(" ", h.OpenPorts.Select(p => $"{p.Port}/{p.Service}"));
+            sb.AppendLine(string.Join(";",
+                h.Address.ToString(), Csv(h.BestName), h.MacAddress ?? "", Csv(h.Vendor),
+                Csv(h.OsGuess), Csv(h.DeviceType), h.Ttl?.ToString() ?? "",
+                h.RoundtripMs.ToString(), h.IsCamera ? "ja" : "nein", Csv(ports),
+                Csv(h.MdnsName), Csv(h.NetbiosName), Csv(h.NetbiosGroup),
+                Csv(h.UpnpDeviceType), Csv(h.SshBanner), Csv(h.HttpServer)));
+        }
+        return sb.ToString();
+    }
+
+    public string BuildJson()
+    {
+        var data = Hosts.Select(h => new
+        {
+            ip = h.Address.ToString(),
+            name = h.BestName,
+            mac = h.MacAddress,
+            vendor = h.Vendor,
+            os = h.OsGuess,
+            deviceType = h.DeviceType,
+            ttl = h.Ttl,
+            latencyMs = h.RoundtripMs,
+            isCamera = h.IsCamera,
+            rtsp = h.Camera?.RtspUri,
+            ports = h.OpenPorts.Select(p => new { p.Port, p.Service }),
+            mdnsName = h.MdnsName,
+            mdnsServices = h.MdnsServices,
+            netbiosName = h.NetbiosName,
+            netbiosGroup = h.NetbiosGroup,
+            upnpType = h.UpnpDeviceType,
+            upnpServer = h.UpnpServer,
+            sshBanner = h.SshBanner,
+            httpServer = h.HttpServer
+        });
+        return JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+    }
+
+    private static string Csv(string? s) =>
+        string.IsNullOrEmpty(s) ? "" : s.Replace(';', ',').Replace("\n", " ").Replace("\r", "");
 
     private static string MaskCreds(string uri)
     {
