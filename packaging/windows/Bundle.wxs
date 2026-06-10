@@ -9,7 +9,9 @@
   eingebettet -> offline-faehig, umgeht zugleich den WiX-v5-Download-Popup-Bug.
 
   Build:  wix build packaging\windows\Bundle.wxs -d Version=1.2.5
-            -ext WixToolset.Bal.wixext -ext WixToolset.Netfx.wixext -o NetScanner-Setup.exe
+            -ext WixToolset.BootstrapperApplications.wixext -ext WixToolset.Netfx.wixext -o NetScanner-Setup.exe
+  Hinweis: Extension-Name bei wix.exe ist seit WiX 5 "BootstrapperApplications.wixext"
+           (frueher "Bal.wixext"). Der bal:-Namespace unten bleibt unveraendert.
   Voraussetzung: windowsdesktop-runtime.exe liegt im Arbeitsverzeichnis (vom Workflow geladen).
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
