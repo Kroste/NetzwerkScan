@@ -17,6 +17,11 @@ public partial class MainWindow : Window
 {
     public MainWindow()
     {
+        // DataContext VOR InitializeComponent: sonst werten statische Bindings im Baum
+        // (z. B. $parent[Window].DataContext.OpenStreamCommand im Detail-Panel) beim
+        // Aufbau gegen einen noch leeren DataContext aus und loggen einen Start-Fehler.
+        if (!Design.IsDesignMode)
+            DataContext = App.Services.GetRequiredService<MainViewModel>();
         InitializeComponent();
         UpdateChrome(WindowState);   // Initialzustand setzen
     }

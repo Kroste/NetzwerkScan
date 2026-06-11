@@ -33,10 +33,9 @@ public partial class App : Application
                 NetScanner.Services.VlcLocator.IsAvailable,
                 NetScanner.Services.VlcLocator.LoadedFrom is { } p ? $" (aus {p})" : "");
 
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = Services.GetRequiredService<MainViewModel>()
-            };
+            // DataContext setzt das Fenster selbst im Konstruktor (vor dem Baum-Aufbau),
+            // damit Bindings wie $parent[Window].DataContext beim Start nicht gegen null laufen.
+            desktop.MainWindow = new MainWindow();
             desktop.ShutdownRequested += (_, _) =>
             {
                 log.LogInformation("Anwendung wird beendet");
