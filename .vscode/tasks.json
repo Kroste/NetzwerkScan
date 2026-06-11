@@ -38,6 +38,20 @@
       },
       "options": { "cwd": "${workspaceFolder}" },
       "problemMatcher": []
+    },
+    {
+      // Liest die <Version> aus der csproj, taggt vX.Y.Z und pusht -> loest das
+      // GitHub-Release aus. Interaktiv (Terminal sichtbar) fuer die Sicherheitsfragen;
+      // fuer "ganz faul" das Skript direkt mit --yes / -Yes aufrufen.
+      "label": "release (tag + push)",
+      "type": "shell",
+      "command": "bash scripts/release.sh",
+      "windows": {
+        "command": "powershell -ExecutionPolicy Bypass -File scripts/release.ps1"
+      },
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared", "focus": true },
+      "problemMatcher": []
     }
   ]
 }
