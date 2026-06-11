@@ -71,6 +71,8 @@ public partial class App : Application
         sc.AddSingleton<SsdpDiscovery>();
         sc.AddSingleton<NetBiosProbe>();
         sc.AddSingleton<CredentialAuditor>();
+        sc.AddSingleton<PwnedPasswordChecker>();
+        sc.AddSingleton<UpnpExposureProbe>();
         sc.AddSingleton<WolSender>();
         sc.AddSingleton<TracerouteService>();
         sc.AddSingleton<IScanOrchestrator, ScanOrchestrator>();

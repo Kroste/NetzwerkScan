@@ -1,0 +1,199 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:NetScanner.Models"
+        x:Class="NetScanner.Views.ExposureWindow"
+        Width="560" Height="620" MinWidth="480" MinHeight="520"
+        CanResize="True"
+        WindowStartupLocation="CenterOwner"
+        RequestedThemeVariant="Dark"
+        Background="{StaticResource Bg}"
+        ExtendClientAreaToDecorationsHint="True"
+        WindowDecorations="None"
+        Title="Expositions-Prüfung">
+
+  <Window.Styles>
+    <Style Selector="Button.link">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="4,2"/>
+    </Style>
+    <Style Selector="Button.link:pointerover /template/ ContentPresenter">
+      <Setter Property="Foreground" Value="#4FCBBC"/>
+    </Style>
+    <Style Selector="Button.close">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{StaticResource TextMuted}"/>
+      <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Height" Value="38"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.close:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource SurfaceAlt}"/>
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+    </Style>
+    <Style Selector="Button.win">
+      <Setter Property="Width" Value="44"/>
+      <Setter Property="Height" Value="32"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="CornerRadius" Value="7"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.win:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource SurfaceAlt}"/>
+    </Style>
+    <Style Selector="Button.win-close:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#E0303F"/>
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="Auto,*">
+
+    <!-- ===== Custom-Titlebar ===== -->
+    <Border Grid.Row="0" Padding="16,8,8,8" Background="{StaticResource Bg}"
+            BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1"
+            WindowDecorationProperties.ElementRole="TitleBar">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="11" VerticalAlignment="Center"
+                    IsHitTestVisible="False">
+          <Panel Width="24" Height="24" VerticalAlignment="Center">
+            <Ellipse Width="24" Height="24" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.3"/>
+            <Ellipse Width="16" Height="16" Stroke="{StaticResource Accent}" StrokeThickness="1.5" Opacity="0.6"/>
+            <Ellipse Width="6"  Height="6"  Fill="{StaticResource Accent}"/>
+          </Panel>
+          <TextBlock Text="NetScanner" FontSize="15" FontWeight="Bold"
+                     Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
+          <Border Background="{StaticResource Surface}" CornerRadius="5" Padding="6,2" VerticalAlignment="Center">
+            <TextBlock Text="Exposition" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+          </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+          <Button Classes="win" Click="OnMinimize" ToolTip.Tip="Minimieren"
+                  WindowDecorationProperties.ElementRole="MinimizeButton">
+            <Border Width="11" Height="1.4" Background="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+          </Button>
+          <Button Classes="win" Click="OnMaximizeRestore" ToolTip.Tip="Maximieren"
+                  WindowDecorationProperties.ElementRole="MaximizeButton">
+            <Panel Width="12" Height="12">
+              <Border x:Name="MaxGlyph" BorderBrush="{StaticResource TextMuted}"
+                      BorderThickness="1.4" CornerRadius="2"/>
+              <Panel x:Name="RestoreGlyph" IsVisible="False">
+                <Border Width="8" Height="8" BorderBrush="{StaticResource TextMuted}" BorderThickness="1.4"
+                        CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                <Border Width="8" Height="8" BorderBrush="{StaticResource TextMuted}" BorderThickness="1.4"
+                        CornerRadius="1.5" Background="{StaticResource Bg}"
+                        HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+              </Panel>
+            </Panel>
+          </Button>
+          <Button Classes="win win-close" Click="OnClose" ToolTip.Tip="Schließen"
+                  WindowDecorationProperties.ElementRole="CloseButton">
+            <Path Stroke="{StaticResource TextPrimary}" StrokeThickness="1.4"
+                  Data="M0,0 L11,11 M0,11 L11,0"/>
+          </Button>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- ===== Inhalt ===== -->
+    <Grid Grid.Row="1" Margin="24,20,24,20" RowDefinitions="Auto,Auto,Auto,*,Auto">
+
+      <StackPanel Grid.Row="0" Spacing="4">
+        <TextBlock Text="Was ist von außen erreichbar?" FontSize="19" FontWeight="Bold"
+                   Foreground="{StaticResource TextPrimary}"/>
+        <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource TextMuted}"
+                   Text="NetScanner fragt deinen Router (UPnP-IGD) nach aktiven Portweiterleitungen. Jeder Eintrag ist ein Port, der aus dem Internet auf ein Gerät in deinem LAN zeigt — reine Leseabfrage, es wird nichts geändert."/>
+      </StackPanel>
+
+      <!-- Status / Laden -->
+      <StackPanel Grid.Row="1" Spacing="8" Margin="0,16,0,0">
+        <ProgressBar x:Name="LoadingBar" IsIndeterminate="True" Height="4"
+                     Foreground="{StaticResource Accent}"/>
+        <TextBlock x:Name="StatusText" FontSize="12" TextWrapping="Wrap"
+                   Foreground="{StaticResource TextMuted}" Text="Suche Router (UPnP) …"/>
+      </StackPanel>
+
+      <!-- Öffentliche IP -->
+      <Border Grid.Row="2" x:Name="PublicIpBox" IsVisible="False" Margin="0,14,0,0"
+              Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}"
+              BorderThickness="1" CornerRadius="10" Padding="14,12">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Grid.Column="0" Spacing="2">
+            <TextBlock Text="ÖFFENTLICHE IP" FontSize="10" FontWeight="SemiBold"
+                       Foreground="{StaticResource TextMuted}"/>
+            <TextBlock x:Name="PublicIpText" FontSize="15" FontWeight="Bold"
+                       FontFamily="Cascadia Code,Consolas,monospace"
+                       Foreground="{StaticResource TextPrimary}"/>
+          </StackPanel>
+          <Button x:Name="ShodanBtn" Grid.Column="1" Classes="link" Content="Auf Shodan prüfen ↗"
+                  VerticalAlignment="Center" Click="OnShodanClick"/>
+        </Grid>
+      </Border>
+
+      <!-- Portweiterleitungen -->
+      <ScrollViewer Grid.Row="3" Margin="0,14,0,0" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="0">
+          <TextBlock x:Name="MappingsHeader" Text="AKTIVE PORTWEITERLEITUNGEN" FontSize="10"
+                     FontWeight="SemiBold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,8"
+                     IsVisible="False"/>
+
+          <ItemsControl x:Name="MappingsList">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="models:PortMapping">
+                <Border BorderThickness="1" CornerRadius="8" Padding="12,9" Margin="0,0,0,6"
+                        Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}">
+                  <StackPanel Spacing="3">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Grid.Column="0" Text="{Binding Display}" FontSize="12"
+                                 FontFamily="Cascadia Code,Consolas,monospace"
+                                 Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
+                      <Border Grid.Column="1" Background="#3A1414" CornerRadius="4" Padding="6,1"
+                              VerticalAlignment="Center" IsVisible="{Binding TargetsCamera}">
+                        <TextBlock Text="⚠ KAMERA" FontSize="9" FontWeight="Bold" Foreground="#E74C3C"/>
+                      </Border>
+                    </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextMuted}"
+                               Text="{Binding DeviceName}"/>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextMuted}"
+                               Text="{Binding DescriptionDisplay}"/>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <!-- Keine Weiterleitungen -->
+          <Border x:Name="EmptyHint" IsVisible="False" Background="#14271A" BorderBrush="#2E7D46"
+                  BorderThickness="1" CornerRadius="10" Padding="14,12">
+            <StackPanel Spacing="3">
+              <TextBlock Text="✓  Keine Portweiterleitungen aktiv" FontSize="13" FontWeight="Bold"
+                         Foreground="#4ADE80"/>
+              <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource TextMuted}"
+                         Text="Der Router meldet keine offenen Weiterleitungen ins LAN. Beachte: Hersteller-Cloud-/P2P-Zugriff läuft an UPnP vorbei und wäre hier nicht sichtbar — den prüfst du in der Kamera-App selbst."/>
+            </StackPanel>
+          </Border>
+
+          <!-- Kein IGD -->
+          <Border x:Name="NoIgdHint" IsVisible="False" Background="{StaticResource Surface}"
+                  BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="10" Padding="14,12">
+            <StackPanel Spacing="3">
+              <TextBlock Text="Kein UPnP-Router gefunden" FontSize="13" FontWeight="Bold"
+                         Foreground="{StaticResource TextPrimary}"/>
+              <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource TextMuted}"
+                         Text="Der Router antwortet nicht auf UPnP — oft ist UPnP deaktiviert (sicherheitstechnisch gut). Prüfe Portfreigaben dann direkt im Router-Menü. Die öffentliche IP oben kannst du trotzdem auf Shodan gegenprüfen."/>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+
+      <Button Grid.Row="4" Classes="close" Content="Schließen" Margin="0,16,0,0" Click="OnCloseClick"/>
+    </Grid>
+  </Grid>
+</Window>

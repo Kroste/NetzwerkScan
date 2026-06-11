@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Linq;
 using System.IO;
 using Avalonia;
 using Avalonia.Controls;
@@ -6,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using NetScanner.Models;
 using NetScanner.ViewModels;
 
@@ -58,6 +60,40 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             Log.Error(ex, "About-Dialog konnte nicht geoeffnet werden");
+        }
+    }
+
+    // --- Passwort-Leak-Check ---
+    private async void OnPwCheckClick(object? sender, RoutedEventArgs e)
+    {
+        Log.Info("Passwort-Check-Button geklickt → Dialog wird geoeffnet");
+        try
+        {
+            var checker = App.Services.GetRequiredService<Services.PwnedPasswordChecker>();
+            await new PasswordCheckWindow(checker).ShowDialog(this);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Passwort-Check-Dialog konnte nicht geoeffnet werden");
+        }
+    }
+
+    // --- Expositions-Prüfung (UPnP-IGD) ---
+    private async void OnExposureClick(object? sender, RoutedEventArgs e)
+    {
+        Log.Info("Expositions-Button geklickt → Dialog wird geoeffnet");
+        try
+        {
+            var probe = App.Services.GetRequiredService<Services.UpnpExposureProbe>();
+            System.Collections.Generic.IReadOnlyList<Models.HostResult> hosts =
+                DataContext is MainViewModel vm
+                    ? vm.Hosts.ToList()
+                    : System.Array.Empty<Models.HostResult>();
+            await new ExposureWindow(probe, hosts).ShowDialog(this);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Expositions-Dialog konnte nicht geoeffnet werden");
         }
     }
 

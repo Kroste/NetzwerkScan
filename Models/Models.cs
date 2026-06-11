@@ -193,3 +193,18 @@ public sealed class HostResult
     public string? BannerDisplay => SshBanner ?? (HttpServer is not null ? $"HTTP: {HttpServer}" : null);
     public bool HasBanner => !string.IsNullOrWhiteSpace(BannerDisplay);
 }
+
+/// <summary>Eine aktive Portweiterleitung vom Router ins LAN (UPnP-IGD).
+/// Heißt: Dieser externe Port ist aus dem Internet erreichbar und landet bei InternalClient.</summary>
+public sealed record PortMapping(
+    int ExternalPort, string Protocol, string InternalClient, int InternalPort,
+    string? Description, bool Enabled)
+{
+    /// <summary>Wird beim Abgleich mit den Scan-Ergebnissen gesetzt (Gerätename, falls bekannt).</summary>
+    public string? DeviceName { get; set; }
+    /// <summary>True, wenn das Ziel eine erkannte Kamera ist (für die Hervorhebung).</summary>
+    public bool TargetsCamera { get; set; }
+
+    public string Display => $"{Protocol} :{ExternalPort}  →  {InternalClient}:{InternalPort}";
+    public string DescriptionDisplay => string.IsNullOrWhiteSpace(Description) ? "—" : Description!;
+}

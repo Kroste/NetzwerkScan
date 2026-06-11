@@ -43,6 +43,8 @@ Ein schlankes Desktop-Werkzeug, um das eigene Netz sichtbar zu machen: Welche Ge
 | **Kameraerkennung** | ONVIF-WS-Discovery + Port-Heuristik (554/8554) + RTSP-`OPTIONS`-Probe. Optional mit RTSP-Login für die Stream-URL. |
 | **Live-Video** | RTSP-Stream direkt im Fenster, eingebettet über LibVLC (`NativeControlHost`). |
 | **Schwachstellen-Audit** *(opt-in)* | Prüft erkannte Kameras und Router auf **offene Streams** und gängige **Werks-Logins** (Default-Credentials). Bei Fund wird das Gerät markiert und – bei einer Kamera – das Bild direkt gezeigt. Nur fürs eigene Netz. |
+| **Passwort-Leak-Check** | Prüft per *Have I Been Pwned* (k-Anonymity), ob ein Geräte-Passwort in bekannten Daten-Leaks steht – **ohne das Passwort zu übertragen** – plus lokale Stärke-/Crackzeit-Schätzung gegen schnelle (MD5) und langsame (bcrypt) Hashes. |
+| **Expositions-Prüfung** | Fragt den Router (UPnP-IGD) nach aktiven **Portweiterleitungen** und der öffentlichen IP – zeigt, was aus dem Internet erreichbar ist und ob eine Weiterleitung auf eine Kamera zeigt. Mit Shodan-Selbstcheck. |
 | **Host-Aktionen** | Pro Gerät: Weboberfläche öffnen, SSH, RDP, SMB-Freigabe, IP/MAC/Name kopieren, **Wake-on-LAN**. |
 | **Export** | Ergebnisliste als **CSV** (Semikolon, Excel-DE) oder **JSON**. |
 | **Netzwerkkarte** | Interaktive Stern-Topologie: Gateway im Zentrum, Geräte ringsum, eingefärbt nach Typ. |
@@ -190,6 +192,35 @@ Optional (Checkbox **„Schwachstellen prüfen"**) testet NetScanner erkannte **
 Geprüft werden bewusst nur Kameras und Router/Gateways, nicht jeder Host. Form-basierte Web-Logins (Status 200 statt 401) werden nicht angetastet — nur HTTP-Basic/Digest. Es ist **kein Brute-Force**, sondern eine feste, kleine Liste dokumentierter Werks-Logins.
 
 > ⚠ **Nur im eigenen Netz.** Default-Credential-Checks gegen fremde Systeme ohne ausdrückliche Erlaubnis können rechtlich relevant sein (in Deutschland u. a. § 202c StGB). Das Feature ist deshalb standardmäßig aus und muss bewusst aktiviert werden. Nutze es ausschließlich zum Absichern deiner eigenen Geräte.
+
+---
+
+## Passwort-Leak-Check
+
+Über das **Schild-Symbol** oben rechts öffnest du den Passwort-Leak-Check. Er beantwortet die Frage: *Taucht das Passwort meiner Kamera oder meines Routers in bekannten Daten-Leaks auf?* — ohne dass du es irgendwo hinterlegen musst.
+
+Technisch läuft das über das **k-Anonymity-Verfahren** der „Pwned Passwords"-Datenbank von *Have I Been Pwned* — dasselbe, das Bitwarden, 1Password, Google und Firefox für ihre Leak-Warnungen nutzen:
+
+1. NetScanner bildet **lokal** den SHA-1-Hash des Passworts.
+2. Nur die **ersten 5 Zeichen** des Hashes gehen an die API.
+3. Die API liefert alle Hash-Endungen zu diesem Präfix zurück (mehrere hundert).
+4. Der Abgleich, ob dein Passwort dabei ist, passiert **lokal**.
+
+Das Passwort und der vollständige Hash verlassen dein Gerät nie — die API kann nicht erkennen, welches Passwort geprüft wurde. Der `Add-Padding`-Header vereinheitlicht zusätzlich die Antwortgröße, sodass auch daraus kein Rückschluss auf einen Treffer möglich ist. Anders als beim Hinterlegen in einem Passwort-Manager bleibt das Passwort also vollständig bei dir.
+
+Das ist bewusst **kein Bruteforce** gegen das Gerät: Du prüfst dein eigenes, bekanntes Passwort als Zeichenkette gegen eine Leak-Datenbank — es findet kein Zugriff auf ein System statt.
+
+Zusätzlich schätzt NetScanner **lokal** (offline, ohne Übertragung) die Passwortstärke und übersetzt sie in eine Offline-Crackzeit gegen einen schnellen Hash (MD5 & Co., ~100 Mrd. Versuche/s) und einen langsamen (bcrypt). Das beantwortet die Frage, die der Leak-Check offenlässt: Wie lange hält ein *nicht* geleaktes Passwort gegen reines Durchprobieren? Gerade bei Altgeräten mit MD5-Speicherung ist das die relevante Kennzahl — dort entscheidet die Länge/Zufälligkeit, nicht die Listen-Treffer.
+
+---
+
+## Expositions-Prüfung
+
+Über das **Globus-Symbol** oben rechts beantwortet NetScanner die wichtigste Frage für eine Kamera im Heimnetz: *Ist sie überhaupt von außen erreichbar?* Denn die berüchtigten „offene Webcam"-Seiten listen Kameras, die **exponiert** sind und mit Werks- oder ohne Login laufen — nicht solche, deren starkes Passwort gebrochen wurde.
+
+NetScanner fragt dazu deinen Router per **UPnP-IGD** (`GetGenericPortMappingEntry`) nach seinen aktiven **Portweiterleitungen** ab und gleicht jede mit den Scan-Ergebnissen ab. Du siehst dann schwarz auf weiß: „Port :554 → 192.168.x.y (Kamera)" heißt, dieser Kamera-Stream ist aus dem Internet erreichbar. Zusätzlich wird die **öffentliche IP** ermittelt, mit einem Direktlink, sie auf **Shodan** gegenzuprüfen. Die Abfrage ist rein lesend — es werden keine Weiterleitungen angelegt oder geändert.
+
+Drei Dinge, die diese Prüfung dir nicht abnimmt, aber die zur Absicherung gehören: **Hersteller-Cloud/P2P** läuft an UPnP vorbei (in der Kamera-App selbst deaktivieren), **UPnP** am Router solltest du abschalten, wenn du es nicht brauchst, und der sicherste Fernzugriff ist ein **VPN ins Heimnetz** (z. B. WireGuard auf einem Raspberry Pi) statt einer nach außen offenen Kamera — kombiniert mit einem **eigenen VLAN** ohne Internet-Zugang für die Kamera.
 
 ---
 
