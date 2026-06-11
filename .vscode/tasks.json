@@ -47,7 +47,7 @@
       "type": "shell",
       "command": "bash scripts/release.sh",
       "windows": {
-        "command": "powershell -ExecutionPolicy Bypass -File scripts/release.ps1"
+        "command": "pwsh -ExecutionPolicy Bypass -File scripts/release.ps1"
       },
       "options": { "cwd": "${workspaceFolder}" },
       "presentation": { "reveal": "always", "panel": "shared", "focus": true },

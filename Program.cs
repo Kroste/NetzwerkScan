@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Logging;
 using NLog;
 
 namespace NetScanner;
@@ -45,5 +46,9 @@ internal static class Program
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
         .UsePlatformDetect()
         .WithInterFont()
-        .LogToTrace();
+        // Nur die fuer die Entwicklung nuetzlichen Avalonia-Log-Bereiche ins Trace-Output:
+        // Binding-Fehler (MVVM), Layout- und Property-Warnungen. Das rauschige [Control]/
+        // [Visual]-Framework-Logging (z. B. "PlatformImpl is null" beim Fensterschliessen)
+        // bleibt damit aussen vor. Ohne Argumente wuerde LogToTrace() alle Bereiche loggen.
+        .LogToTrace(LogEventLevel.Warning, LogArea.Binding, LogArea.Layout, LogArea.Property);
 }

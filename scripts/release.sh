@@ -53,7 +53,7 @@ fi
 if git rev-parse "$TAG" >/dev/null 2>&1; then
   echo "Tag $TAG existiert bereits."
   ask "Altes Tag (lokal + remote) loeschen und neu auf HEAD setzen?" "N" \
-    || { echo "Abgebrochen — Version in $CSPROJ erhoehen oder Tag manuell pflegen."; exit 1; }
+    || { echo "Abgebrochen - Version in $CSPROJ erhoehen oder Tag manuell pflegen."; exit 1; }
   git tag -d "$TAG"
   git push origin ":refs/tags/$TAG" 2>/dev/null || true   # remote ggf. nicht vorhanden -> egal
 fi

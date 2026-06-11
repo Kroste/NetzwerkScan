@@ -2,12 +2,16 @@
   Liest <Version> aus NetScanner.csproj, erstellt das Tag vX.Y.Z und pusht es.
   Der Tag-Push triggert die GitHub-Action (release.yml) -> Build + Release.
 
-  Aufruf:  powershell -ExecutionPolicy Bypass -File scripts\release.ps1
-           ... -Yes    (ohne Rueckfragen)
+  Aufruf:  pwsh -ExecutionPolicy Bypass -File scripts\release.ps1
+           ... -Yes    (ohne Rueckfragen)   |   laeuft auch unter Windows PowerShell 5.1
 #>
 param([switch]$Yes)
 
 $ErrorActionPreference = 'Stop'
+# Externe Kommandos (git) duerfen mit Exit-Code != 0 zurueckkehren, ohne abzubrechen -
+# wir pruefen $LASTEXITCODE selbst (z. B. "Tag existiert noch nicht" ist der Normalfall).
+# Ohne das wuerde PowerShell 7.4+ bei 'Stop' auch native Kommandos als Fehler werfen.
+$PSNativeCommandUseErrorActionPreference = $false
 Set-Location (Join-Path $PSScriptRoot '..')
 
 $csproj = 'NetScanner.csproj'
@@ -50,7 +54,7 @@ git rev-parse $tag 2>$null | Out-Null
 if ($LASTEXITCODE -eq 0) {
   Write-Host "Tag $tag existiert bereits."
   if (-not (Confirm-Step "Altes Tag (lokal + remote) loeschen und neu auf HEAD setzen?" 'N')) {
-    Write-Host "Abgebrochen — Version in $csproj erhoehen oder Tag manuell pflegen."; exit 1
+    Write-Host "Abgebrochen - Version in $csproj erhoehen oder Tag manuell pflegen."; exit 1
   }
   git tag -d $tag
   git push origin ":refs/tags/$tag" 2>$null
