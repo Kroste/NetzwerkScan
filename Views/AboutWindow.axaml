@@ -1,7 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="NetScanner.Views.AboutWindow"
-        Width="440" Height="470" MinWidth="380" MinHeight="420"
+        Width="440" Height="470" MinWidth="360" MinHeight="320"
         CanResize="True"
         WindowStartupLocation="CenterOwner"
         RequestedThemeVariant="Dark"
@@ -121,7 +121,8 @@
     </Border>
 
     <!-- ===== Inhalt ===== -->
-    <StackPanel Grid.Row="1" Margin="28,20,28,24" Spacing="16">
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="28,20,28,24" Spacing="16">
 
       <!-- Logo + Titel (Hero) -->
       <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" Margin="0,4,0,0">
@@ -159,5 +160,6 @@
 
       <Button Classes="close" Content="Schließen" Click="OnCloseClick"/>
     </StackPanel>
+    </ScrollViewer>
   </Grid>
 </Window>

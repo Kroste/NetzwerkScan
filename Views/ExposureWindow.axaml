@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:NetScanner.Models"
         x:Class="NetScanner.Views.ExposureWindow"
-        Width="560" Height="620" MinWidth="480" MinHeight="520"
+        Width="560" Height="620" MinWidth="400" MinHeight="360"
         CanResize="True"
         WindowStartupLocation="CenterOwner"
         RequestedThemeVariant="Dark"

@@ -25,7 +25,7 @@ public partial class PasswordCheckWindow : Window
         InitializeComponent();
         _checker = checker;
         UpdateChrome(WindowState);
-        Opened += (_, _) => PwBox.Focus();
+        Opened += (_, _) => { WindowSizing.FitToScreen(this); PwBox.Focus(); };
     }
 
     // --- Custom-Chrome (analog AboutWindow) ---
@@ -79,6 +79,7 @@ public partial class PasswordCheckWindow : Window
 
         // Stärke sofort lokal anzeigen (offline, noch ohne Leak-Info).
         ShowStrength(PasswordStrength.Evaluate(pw, foundInLeaks: false));
+        GrowForResults();
 
         try
         {
@@ -152,6 +153,18 @@ public partial class PasswordCheckWindow : Window
         ResultDetail.Text = detail ?? "";
         ResultDetail.IsVisible = !string.IsNullOrEmpty(detail);
         ResultBox.IsVisible = true;
+    }
+
+    /// <summary>Sobald Stärke + Ergebnis sichtbar werden, das Fenster auf die volle
+    /// Inhaltshöhe bringen — FitToScreen begrenzt auf den Bildschirm, dann greift der ScrollViewer.</summary>
+    private void GrowForResults()
+    {
+        const double full = 780;
+        if (Height < full)
+        {
+            Height = full;
+            WindowSizing.FitToScreen(this);
+        }
     }
 
     private async void OnHibpClick(object? sender, RoutedEventArgs e)

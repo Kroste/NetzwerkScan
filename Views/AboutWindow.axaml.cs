@@ -17,6 +17,7 @@ public partial class AboutWindow : Window
         Title = $"Über NetScanner · v{ver}";
 
         UpdateChrome(WindowState);
+        Opened += (_, _) => WindowSizing.FitToScreen(this);
     }
 
     // Avalonia 12: kein Subscribe(Action<T>) ohne System.Reactive -> Property-Override nutzen.

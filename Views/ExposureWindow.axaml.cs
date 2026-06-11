@@ -27,7 +27,7 @@ public partial class ExposureWindow : Window
         _probe = probe;
         _hosts = hosts;
         UpdateChrome(WindowState);
-        Opened += async (_, _) => await RunAsync();
+        Opened += async (_, _) => { WindowSizing.FitToScreen(this); await RunAsync(); };
     }
 
     private async System.Threading.Tasks.Task RunAsync()
