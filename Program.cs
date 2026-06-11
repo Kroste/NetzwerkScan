@@ -1,5 +1,4 @@
 using Avalonia;
-using Avalonia.Logging;
 using NLog;
 
 namespace NetScanner;
@@ -50,5 +49,8 @@ internal static class Program
         // Binding-Fehler (MVVM), Layout- und Property-Warnungen. Das rauschige [Control]/
         // [Visual]-Framework-Logging (z. B. "PlatformImpl is null" beim Fensterschliessen)
         // bleibt damit aussen vor. Ohne Argumente wuerde LogToTrace() alle Bereiche loggen.
-        .LogToTrace(LogEventLevel.Warning, LogArea.Binding, LogArea.Layout, LogArea.Property);
+        .LogToTrace(Avalonia.Logging.LogEventLevel.Warning,
+            Avalonia.Logging.LogArea.Binding,
+            Avalonia.Logging.LogArea.Layout,
+            Avalonia.Logging.LogArea.Property);
 }
