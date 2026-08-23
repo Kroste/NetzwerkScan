@@ -37,7 +37,7 @@
 
     <!-- Tests: xunit.v3 (nicht das deprecated xunit-v2-Paket).
          FluentAssertions NICHT auf 8.x heben — kommerzielle Xceed-Lizenz. -->
-    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+    <PackageVersion Include="xunit.v3" Version="4.0.0" />
     <PackageVersion Include="FluentAssertions" Version="[7.2.2,8.0.0)" />
   </ItemGroup>
 </Project>
