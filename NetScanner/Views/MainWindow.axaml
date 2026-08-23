@@ -67,6 +67,10 @@
             </Canvas>
           </Button>
 
+          <!-- Erscheint nur, wenn der Start-Check ein Update gefunden hat. -->
+          <Button x:Name="UpdateBadge" Classes="accent" Content="⬇ Update" IsVisible="False"
+                  Click="OnAboutClick" ToolTip.Tip="Neue Version verfügbar — im Über-Fenster installieren"/>
+
           <Button Classes="icon" Click="OnAboutClick" ToolTip.Tip="Information / Über">
             <TextBlock Text="i" FontFamily="Georgia,Cambria,serif" FontSize="16" FontWeight="Bold"/>
           </Button>

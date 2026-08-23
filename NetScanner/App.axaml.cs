@@ -75,6 +75,7 @@ public partial class App : Application
         sc.AddSingleton<WolSender>();
         sc.AddSingleton<TracerouteService>();
         sc.AddSingleton<IScanOrchestrator, ScanOrchestrator>();
+        sc.AddSingleton<UpdateService>();
 
         // ViewModels
         sc.AddTransient<MainViewModel>();

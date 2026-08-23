@@ -8,7 +8,9 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Avalonia.Threading;
 using NetScanner.Models;
+using NetScanner.Services;
 using NetScanner.ViewModels;
 
 namespace NetScanner.Views;
@@ -23,17 +25,51 @@ public partial class MainWindow : ChromeWindow
         if (!Design.IsDesignMode)
             DataContext = App.Services.GetRequiredService<MainViewModel>();
         InitializeComponent();
+
+        // Update-Check bewusst NICHT blockierend beim Start: offline oder ein
+        // zaeher Proxy darf den Fensterstart nicht verzoegern.
+        Opened += (_, _) => _ = CheckForUpdatesAsync();
+    }
+
+    /// <summary>
+    /// Sucht im Hintergrund nach einem Update und blendet bei einem Fund das
+    /// Update-Abzeichen in der Titelleiste ein. Fehler bleiben still im Log —
+    /// ein fehlgeschlagener Check ist kein App-Fehler.
+    /// </summary>
+    private async Task CheckForUpdatesAsync()
+    {
+        if (Design.IsDesignMode) return;
+
+        try
+        {
+            var updates = App.Services.GetRequiredService<UpdateService>();
+            _pendingUpdate = await updates.CheckAsync();
+            if (_pendingUpdate is null) return;
+
+            await Dispatcher.UIThread.InvokeAsync(() => UpdateBadge.IsVisible = true);
+            Log.Info("Update {Version} verfuegbar (installiert {Current})",
+                _pendingUpdate.Version, AppVersion.Display);
+        }
+        catch (Exception ex)
+        {
+            Log.Warn(ex, "Update-Check beim Start fehlgeschlagen");
+        }
     }
 
     // --- About-Dialog ---
     private static readonly NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
+
+    private UpdateInfo? _pendingUpdate;
 
     private async void OnAboutClick(object? sender, RoutedEventArgs e)
     {
         Log.Info("Info-Button geklickt → About-Dialog wird geoeffnet");
         try
         {
-            await new AboutWindow().ShowDialog(this);
+            var about = new AboutWindow();
+            if (_pendingUpdate is { } info)
+                about.ShowPendingUpdate(info);
+            await about.ShowDialog(this);
         }
         catch (Exception ex)
         {
