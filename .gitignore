@@ -83,3 +83,7 @@ publish/
 AppDir/
 appimagetool
 *.AppImage
+
+# ---- Python-Bytecode (scripts/) ----
+__pycache__/
+*.pyc

@@ -7,7 +7,7 @@ using NetScanner.Services;
 
 namespace NetScanner.Views;
 
-public partial class PasswordCheckWindow : Window
+public partial class PasswordCheckWindow : ChromeWindow
 {
     private readonly PwnedPasswordChecker _checker;
     private CancellationTokenSource? _cts;
@@ -24,31 +24,9 @@ public partial class PasswordCheckWindow : Window
     {
         InitializeComponent();
         _checker = checker;
-        UpdateChrome(WindowState);
         Opened += (_, _) => { WindowSizing.FitToScreen(this); PwBox.Focus(); };
     }
 
-    // --- Custom-Chrome (analog AboutWindow) ---
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        if (change.Property == WindowStateProperty)
-            UpdateChrome(WindowState);
-    }
-
-    private void UpdateChrome(WindowState state)
-    {
-        Padding = state == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
-        if (this.FindControl<Control>("MaxGlyph") is { } max)
-            max.IsVisible = state != WindowState.Maximized;
-        if (this.FindControl<Control>("RestoreGlyph") is { } restore)
-            restore.IsVisible = state == WindowState.Maximized;
-    }
-
-    private void OnMinimize(object? sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
-    private void OnMaximizeRestore(object? sender, RoutedEventArgs e) =>
-        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
-    private void OnClose(object? sender, RoutedEventArgs e) => Close();
     private void OnCloseClick(object? sender, RoutedEventArgs e) => Close();
 
     // --- Eingabe-Helfer ---
@@ -115,17 +93,9 @@ public partial class PasswordCheckWindow : Window
 
     private void ShowStrength(PasswordStrength.Result r)
     {
-        Color[] palette =
-        [
-            Color.Parse("#E74C3C"), // 0 rot
-            Color.Parse("#F0883E"), // 1 orange
-            Color.Parse("#FFDD00"), // 2 gelb
-            Color.Parse("#4ADE80"), // 3 hellgrün
-            Color.Parse("#3FB6A8"), // 4 teal
-        ];
         int score = Math.Clamp(r.Score, 0, 4);
-        var on = new SolidColorBrush(palette[score]);
-        var off = new SolidColorBrush(Color.Parse("#2A3742"));
+        var on = Palette.Brush($"NetStrength{score}Brush");
+        var off = Palette.Brush("KrosteBorderBrush");
         Border[] segs = [Seg0, Seg1, Seg2, Seg3, Seg4];
         for (int i = 0; i < segs.Length; i++)
             segs[i].Background = i <= score ? on : off;
@@ -139,16 +109,16 @@ public partial class PasswordCheckWindow : Window
 
     private void ShowResult(ResultKind kind, string title, string? detail = null)
     {
-        (Color bg, Color border, Color text) = kind switch
+        (string bg, string border, string text) = kind switch
         {
-            ResultKind.Leaked => (Color.Parse("#3A1414"), Color.Parse("#C0392B"), Color.Parse("#E74C3C")),
-            ResultKind.Safe   => (Color.Parse("#14271A"), Color.Parse("#2E7D46"), Color.Parse("#4ADE80")),
-            _                 => (Color.Parse("#1E2A35"), Color.Parse("#2A3742"), Color.Parse("#8593A0")),
+            ResultKind.Leaked => ("NetVulnSoftBrush", "NetVulnBorderBrush", "NetVulnBrush"),
+            ResultKind.Safe   => ("NetSuccessSoftBrush", "NetSuccessBorderBrush", "NetSuccessTextBrush"),
+            _                 => ("KrosteSurfaceBrush", "KrosteBorderBrush", "KrosteMutedTextBrush"),
         };
 
-        ResultBox.Background = new SolidColorBrush(bg);
-        ResultBox.BorderBrush = new SolidColorBrush(border);
-        ResultTitle.Foreground = new SolidColorBrush(text);
+        ResultBox.Background = Palette.Brush(bg);
+        ResultBox.BorderBrush = Palette.Brush(border);
+        ResultTitle.Foreground = Palette.Brush(text);
         ResultTitle.Text = title;
         ResultDetail.Text = detail ?? "";
         ResultDetail.IsVisible = !string.IsNullOrEmpty(detail);

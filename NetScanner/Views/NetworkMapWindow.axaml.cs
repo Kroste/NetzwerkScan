@@ -14,34 +14,35 @@ using NetScanner.ViewModels;
 
 namespace NetScanner.Views;
 
-public partial class NetworkMapWindow : Window
+public partial class NetworkMapWindow : ChromeWindow
 {
     private MainViewModel? _vm;
     private TracerouteService? _trace;
     private CancellationTokenSource? _traceCts;
     private Border? _selectedNode;
 
-    // --- Farben (dunkles Theme; spiegeln App.axaml + Visualizer-Palette) ---
-    private static readonly IBrush SurfaceBrush    = new SolidColorBrush(Color.Parse("#172029"));
-    private static readonly IBrush AccentSoftBrush = new SolidColorBrush(Color.Parse("#1E3A38"));
-    private static readonly IBrush LinkBrush       = new SolidColorBrush(Color.Parse("#3A4752"));
-    private static readonly IBrush TextPrimaryBrush= new SolidColorBrush(Color.Parse("#E6EDF3"));
-    private static readonly IBrush TextMutedBrush  = new SolidColorBrush(Color.Parse("#8593A0"));
-    private static readonly IBrush AccentBrush     = new SolidColorBrush(Color.Parse("#3FB6A8"));
-    private static readonly IBrush CameraBrush     = new SolidColorBrush(Color.Parse("#F0883E"));
-    private static readonly IBrush BlueBrush       = new SolidColorBrush(Color.Parse("#378ADD"));
-    private static readonly IBrush GreenBrush      = new SolidColorBrush(Color.Parse("#7BB661"));
-    private static readonly IBrush PurpleBrush     = new SolidColorBrush(Color.Parse("#8E86E0"));
-    private static readonly IBrush AmberBrush      = new SolidColorBrush(Color.Parse("#D9A441"));
-    private static readonly IBrush PinkBrush       = new SolidColorBrush(Color.Parse("#D4789E"));
-    private static readonly IBrush MutedBrush      = TextMutedBrush;
-    private static readonly IBrush GatewayBrush    = AccentBrush;
+    // --- Farben: ausschliesslich aus der Palette in App.axaml (siehe Palette.cs).
+    //     Lazy ueber Properties, weil die Application-Resources beim Laden der
+    //     statischen Felder eines Fensters noch nicht zwingend stehen. ---
+    private static IBrush SurfaceBrush     => Palette.Brush("KrosteSurfaceBrush");
+    private static IBrush AccentSoftBrush  => Palette.Brush("KrosteAccentSoftBrush");
+    private static IBrush LinkBrush        => Palette.Brush("NetNodeLinkBrush");
+    private static IBrush TextPrimaryBrush => Palette.Brush("KrosteTextBrush");
+    private static IBrush TextMutedBrush   => Palette.Brush("KrosteMutedTextBrush");
+    private static IBrush AccentBrush      => Palette.Brush("KrosteGoldBrush");
+    private static IBrush CameraBrush      => Palette.Brush("NetCameraBrush");
+    private static IBrush BlueBrush        => Palette.Brush("NetNodeBlueBrush");
+    private static IBrush GreenBrush       => Palette.Brush("NetNodeGreenBrush");
+    private static IBrush PurpleBrush      => Palette.Brush("NetNodePurpleBrush");
+    private static IBrush AmberBrush       => Palette.Brush("NetNodeAmberBrush");
+    private static IBrush PinkBrush        => Palette.Brush("NetNodePinkBrush");
+    private static IBrush MutedBrush       => TextMutedBrush;
+    private static IBrush GatewayBrush     => AccentBrush;
 
     // Designer-Konstruktor
     public NetworkMapWindow()
     {
         InitializeComponent();
-        UpdateChrome(WindowState);
     }
 
     public NetworkMapWindow(MainViewModel vm) : this()
@@ -309,23 +310,4 @@ public partial class NetworkMapWindow : Window
 
     private void OnRefresh(object? sender, RoutedEventArgs e) => DrawMap();
 
-    // ===== Fenster-Chrome =====
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        if (change.Property == WindowStateProperty)
-            UpdateChrome(WindowState);
-    }
-
-    private void UpdateChrome(WindowState state)
-    {
-        Padding = state == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
-        if (this.FindControl<Control>("MaxGlyph") is { } max) max.IsVisible = state != WindowState.Maximized;
-        if (this.FindControl<Control>("RestoreGlyph") is { } restore) restore.IsVisible = state == WindowState.Maximized;
-    }
-
-    private void OnMinimize(object? sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
-    private void OnMaximizeRestore(object? sender, RoutedEventArgs e) =>
-        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
-    private void OnClose(object? sender, RoutedEventArgs e) => Close();
 }

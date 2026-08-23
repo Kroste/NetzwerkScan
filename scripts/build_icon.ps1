@@ -5,7 +5,8 @@
 # Geometrie, gleiche Farben, gleiches Ergebnis — bei Design-Änderungen BEIDE
 # Skripte anpassen, sonst driften PNG/ICO je nach Rechner auseinander.
 #
-# Motiv: Radarschirm — konzentrische Ringe, Sweep-Strahl, Mittelpunkt.
+# Motiv: Radarschirm — konzentrische Ringe in Weiß, Sweep-Strahl und erfasster
+# Punkt in Kroste-Gold, auf abgerundetem Quadrat in Kroste-Blau.
 #
 # Erzeugt:
 #   NetScanner/Assets/netscanner.png   (256x256, master für Fenster/Tray/AppImage)
@@ -23,12 +24,17 @@ Add-Type -AssemblyName System.Drawing
 
 $APP_NAME = 'netscanner'
 
-# NetScanner-Palette (siehe NetScanner/App.axaml)
-$BG     = [System.Drawing.Color]::FromArgb(255, 14, 20, 27)      # #0E141B
-$ACCENT = @(63, 182, 168)                                        # #3FB6A8
+# Kroste-Palette (siehe NetScanner/App.axaml)
+$BG     = [System.Drawing.Color]::FromArgb(255, 18, 62, 107)     # #123E6B
+$RING   = @(255, 255, 255)                                       # Ringe: Weiß
+$SIGNAL = @(224, 177, 76)                                        # #E0B14C Kroste-Gold
 
-function New-Accent([int]$alpha) {
-    return [System.Drawing.Color]::FromArgb($alpha, $ACCENT[0], $ACCENT[1], $ACCENT[2])
+function New-Ring([int]$alpha) {
+    return [System.Drawing.Color]::FromArgb($alpha, $RING[0], $RING[1], $RING[2])
+}
+
+function New-Signal([int]$alpha) {
+    return [System.Drawing.Color]::FromArgb($alpha, $SIGNAL[0], $SIGNAL[1], $SIGNAL[2])
 }
 
 function New-Graphics([System.Drawing.Bitmap]$bmp) {
@@ -70,13 +76,13 @@ function New-Icon([int]$size) {
     # 16x16-Silhouette gegenprüfen, sie ist der harte Maßstab.
     $small = $size -lt 32
     if ($small) {
-        $rings = @(@(0.36, 190), @(0.17, 255))
+        $rings = @(@(0.36, 235), @(0.17, 255))
         $ringW = $size * 0.045
         $sweepW = $size * 0.075
         $reach = $size * 0.33
         $dotR = $size * 0.075
     } else {
-        $rings = @(@(0.40, 110), @(0.28, 155), @(0.15, 205))
+        $rings = @(@(0.40, 150), @(0.28, 195), @(0.15, 240))
         $ringW = $size * 0.012
         $sweepW = $size * 0.016
         $reach = $size * 0.38
@@ -85,18 +91,18 @@ function New-Icon([int]$size) {
 
     foreach ($ring in $rings) {
         $r = $size * $ring[0]
-        $pen = New-Object System.Drawing.Pen (New-Accent ([int]$ring[1])), ([Math]::Max(1, [int]$ringW))
+        $pen = New-Object System.Drawing.Pen (New-Ring ([int]$ring[1])), ([Math]::Max(1, [int]$ringW))
         $g.DrawEllipse($pen, ($cx - $r), ($cy - $r), (2 * $r), (2 * $r))
         $pen.Dispose()
     }
 
     # Sweep-Strahl vom Zentrum nach rechts oben (45 Grad).
-    $penSweep = New-Object System.Drawing.Pen (New-Accent 255), ([Math]::Max(1, [int]$sweepW))
+    $penSweep = New-Object System.Drawing.Pen (New-Signal 255), ([Math]::Max(1, [int]$sweepW))
     $g.DrawLine($penSweep, $cx, $cy, ($cx + $reach), ($cy - $reach))
     $penSweep.Dispose()
 
     # Mittelpunkt = erfasstes Gerät.
-    $bDot = New-Object System.Drawing.SolidBrush (New-Accent 255)
+    $bDot = New-Object System.Drawing.SolidBrush (New-Signal 255)
     $g.FillEllipse($bDot, ($cx - $dotR), ($cy - $dotR), (2 * $dotR), (2 * $dotR))
     $bDot.Dispose()
 

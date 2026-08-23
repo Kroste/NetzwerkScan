@@ -18,7 +18,9 @@ chmod +x "${APPDIR}/usr/bin/NetScanner"
 
 # 2) Desktop-Eintrag, Icon und AppRun
 cp "${HERE}/NetScanner.desktop" "${APPDIR}/NetScanner.desktop"
-cp "${HERE}/netscanner.png"     "${APPDIR}/netscanner.png"
+# Eine einzige Icon-Quelle: die App-Assets. Eine Kopie hier daneben driftet
+# sonst bei jedem Icon-Rebuild auseinander.
+cp "${HERE}/../../NetScanner/Assets/netscanner.png" "${APPDIR}/netscanner.png"
 cp "${HERE}/AppRun"             "${APPDIR}/AppRun"
 chmod +x "${APPDIR}/AppRun"
 

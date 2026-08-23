@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:chrome="using:Avalonia.Controls.Chrome"
+             x:Class="NetScanner.Controls.TitleBar"
+             Height="40">
+  <!-- ElementRole ist der Avalonia-12-Mechanismus für Custom-Chrome-Hit-Testing:
+       TitleBar = OS übernimmt Drag + Doppelklick-Maximieren nativ (HTCAPTION).
+       Buttons = Rolle "User" (HTCLIENT): Klicks laufen als normale Client-
+       Eingabe direkt zu den Avalonia-Buttons. NICHT MinimizeButton/
+       MaximizeButton/CloseButton verwenden — diese Rollen leiten über den
+       Non-Client-Pfad (HTMINBUTTON &amp; Co.), wo DWM die Klicks schlucken
+       kann → tote Buttons. Ohne Rollen schluckt die Caption-Zone alles. -->
+  <Border x:Name="Bar"
+          Background="{DynamicResource KrosteTitleBarBrush}"
+          BorderBrush="{DynamicResource KrosteBorderBrush}"
+          BorderThickness="0,0,0,1"
+          chrome:WindowDecorationProperties.ElementRole="TitleBar">
+    <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+
+      <!-- Radar-Marke, passend zum App-Icon. Hit-test-transparent, damit der
+           Drag auf die TitleBar-Region durchfällt. -->
+      <Panel Grid.Column="0" Width="22" Height="22" Margin="12,0,0,0"
+             VerticalAlignment="Center" IsHitTestVisible="False">
+        <Ellipse Width="22" Height="22" StrokeThickness="1.3" Opacity="0.35"
+                 Stroke="{DynamicResource KrosteGoldBrush}" />
+        <Ellipse Width="14" Height="14" StrokeThickness="1.3" Opacity="0.65"
+                 Stroke="{DynamicResource KrosteGoldBrush}" />
+        <Ellipse Width="6" Height="6" Fill="{DynamicResource KrosteGoldBrush}" />
+      </Panel>
+
+      <TextBlock x:Name="TitleText" Grid.Column="1"
+                 Margin="10,0" VerticalAlignment="Center"
+                 FontWeight="SemiBold"
+                 Foreground="{DynamicResource KrosteGoldBrush}"
+                 IsHitTestVisible="False" />
+
+      <!-- Platz für fensterspezifische Aktionen (Icon-Buttons). Content wird im
+           Code-Behind gesetzt, nicht gebunden: bei aktivierten CompiledBindings
+           bräuchte ein Binding hier ein x:DataType, das es im Chrome nicht gibt.
+           ElementRole "User" ist Pflicht, sonst schluckt die Caption-Zone die Klicks. -->
+      <ContentPresenter x:Name="ActionsHost" Grid.Column="3"
+                        chrome:WindowDecorationProperties.ElementRole="User"
+                        VerticalAlignment="Center" Margin="0,0,8,0" />
+
+      <StackPanel Grid.Column="4" Orientation="Horizontal">
+        <Button x:Name="MinButton" Classes="chrome" Content="—" ToolTip.Tip="Minimieren"
+                chrome:WindowDecorationProperties.ElementRole="User" />
+        <Button x:Name="MaxButton" Classes="chrome" Content="❐" ToolTip.Tip="Maximieren"
+                chrome:WindowDecorationProperties.ElementRole="User" />
+        <Button x:Name="CloseButton" Classes="chrome close" Content="✕" ToolTip.Tip="Schließen"
+                chrome:WindowDecorationProperties.ElementRole="User" />
+      </StackPanel>
+    </Grid>
+  </Border>
+</UserControl>

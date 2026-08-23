@@ -1,64 +1,51 @@
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Interactivity;
 
 namespace NetScanner.Views;
 
-public partial class AboutWindow : Window
+public partial class AboutWindow : ChromeWindow
 {
+    private static readonly NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
+
     public AboutWindow()
     {
         InitializeComponent();
 
-        // Version aus der Assembly (Quelle: <Version> in der csproj) -> eine Stelle zum Pflegen.
-        var v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-        string ver = v is null ? "1.0" : $"{v.Major}.{v.Minor}.{v.Build}";
-        VersionText.Text = $"Version {ver} · .NET 10 · Avalonia 12";
-        Title = $"Über NetScanner · v{ver}";
+        VersionText.Text = $"Version {AppVersion.Display} · .NET 10 · Avalonia 12";
+        Title = $"Über NetScanner · v{AppVersion.Display}";
 
-        UpdateChrome(WindowState);
         Opened += (_, _) => WindowSizing.FitToScreen(this);
     }
 
-    // Avalonia 12: kein Subscribe(Action<T>) ohne System.Reactive -> Property-Override nutzen.
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    private void OnCheckUpdateClick(object? sender, RoutedEventArgs e)
     {
-        base.OnPropertyChanged(change);
-        if (change.Property == WindowStateProperty)
-            UpdateChrome(WindowState);
+        // Wird im Update-Slice mit dem UpdateService verdrahtet.
+        UpdateStatus.Text = "Update-Prüfung ist noch nicht verdrahtet.";
     }
 
-    /// <summary>Bei maximiertem Fenster oben Luft lassen (Custom-Chrome) und Max/Restore-Glyph umschalten.</summary>
-    private void UpdateChrome(WindowState state)
+    private void OnInstallUpdateClick(object? sender, RoutedEventArgs e)
     {
-        Padding = state == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
-        if (this.FindControl<Control>("MaxGlyph") is { } max)
-            max.IsVisible = state != WindowState.Maximized;
-        if (this.FindControl<Control>("RestoreGlyph") is { } restore)
-            restore.IsVisible = state == WindowState.Maximized;
     }
 
-    // --- Fenster-Buttons ---
-    private void OnMinimize(object? sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
-    private void OnMaximizeRestore(object? sender, RoutedEventArgs e) =>
-        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
-    private void OnClose(object? sender, RoutedEventArgs e) => Close();
-
-    // --- Inhalt ---
     private async void OnCoffeeClick(object? sender, RoutedEventArgs e)
         => await OpenUrlAsync("https://buymeacoffee.com/kroste");
 
     private async void OnGitHubClick(object? sender, RoutedEventArgs e)
-        => await OpenUrlAsync("https://github.com/Kroste");
+        => await OpenUrlAsync("https://github.com/Kroste/NetzwerkScan");
 
     private void OnCloseClick(object? sender, RoutedEventArgs e) => Close();
 
-    /// <summary>Oeffnet eine URL im Standardbrowser — plattformneutral via Avalonia-Launcher
+    /// <summary>Öffnet eine URL im Standardbrowser — plattformneutral via Avalonia-Launcher
     /// (Windows: ShellExecute, Linux: xdg-open, macOS: open).</summary>
     private async Task OpenUrlAsync(string url)
     {
-        var top = GetTopLevel(this);
-        if (top is not null)
-            await top.Launcher.LaunchUriAsync(new Uri(url));
+        try
+        {
+            if (GetTopLevel(this) is { } top)
+                await top.Launcher.LaunchUriAsync(new Uri(url));
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "URL konnte nicht geöffnet werden: {Url}", url);
+        }
     }
 }

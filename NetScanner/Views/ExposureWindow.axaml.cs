@@ -8,7 +8,7 @@ using NetScanner.Services;
 
 namespace NetScanner.Views;
 
-public partial class ExposureWindow : Window
+public partial class ExposureWindow : ChromeWindow
 {
     private readonly UpnpExposureProbe _probe;
     private readonly IReadOnlyList<HostResult> _hosts;
@@ -26,7 +26,6 @@ public partial class ExposureWindow : Window
         InitializeComponent();
         _probe = probe;
         _hosts = hosts;
-        UpdateChrome(WindowState);
         Opened += async (_, _) => { WindowSizing.FitToScreen(this); await RunAsync(); };
     }
 
@@ -82,27 +81,6 @@ public partial class ExposureWindow : Window
         }
     }
 
-    // --- Custom-Chrome ---
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        if (change.Property == WindowStateProperty)
-            UpdateChrome(WindowState);
-    }
-
-    private void UpdateChrome(WindowState state)
-    {
-        Padding = state == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
-        if (this.FindControl<Control>("MaxGlyph") is { } max)
-            max.IsVisible = state != WindowState.Maximized;
-        if (this.FindControl<Control>("RestoreGlyph") is { } restore)
-            restore.IsVisible = state == WindowState.Maximized;
-    }
-
-    private void OnMinimize(object? sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
-    private void OnMaximizeRestore(object? sender, RoutedEventArgs e) =>
-        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
-    private void OnClose(object? sender, RoutedEventArgs e) => Close();
     private void OnCloseClick(object? sender, RoutedEventArgs e) => Close();
 
     private async void OnShodanClick(object? sender, RoutedEventArgs e)

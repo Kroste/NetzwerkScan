@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Erzeugt das NetScanner-App-Icon reproduzierbar aus Code.
 
-Motiv: Radarschirm — konzentrische Ringe, Sweep-Strahl und Mittelpunkt in der
-App-Akzentfarbe auf dunklem, abgerundetem Quadrat. Das Quadrat mit Rundecken ist
-plattformneutral (Windows-Taskbar, GNOME/KDE-Dock, AppImage).
+Motiv: Radarschirm — konzentrische Ringe in Weiß, Sweep-Strahl und erfasster
+Punkt in Kroste-Gold, auf einem abgerundeten Quadrat in Kroste-Blau. Das Quadrat
+mit Rundecken ist plattformneutral (Windows-Taskbar, GNOME/KDE-Dock, AppImage).
 
 Ausgabe (beide werden eingecheckt):
   NetScanner/Assets/netscanner.png  256x256, transparente Ecken — Fenster, Tray, AppImage
@@ -24,8 +24,9 @@ from PIL import Image, ImageDraw
 APP_NAME = "netscanner"
 SIZE = 256
 SUPERSAMPLE = 4          # gegen ausgefranste Kanten: groß zeichnen, dann herunterskalieren
-BG = (14, 20, 27, 255)          # #0E141B — App-Hintergrund
-ACCENT = (63, 182, 168)         # #3FB6A8 — App-Akzent (Teal)
+BG = (18, 62, 107, 255)         # #123E6B — Kroste-Akzent (Grundfläche)
+RING = (255, 255, 255)          # Ringe: Weiß, damit sie auf dem Blau stehen
+SIGNAL = (224, 177, 76)         # #E0B14C — Kroste-Gold (Sweep + erfasster Punkt)
 ICO_SIZES = [16, 24, 32, 48, 64, 128, 256]
 
 ASSETS = pathlib.Path(__file__).resolve().parent.parent / "NetScanner" / "Assets"
@@ -47,7 +48,7 @@ def draw_icon(size: int) -> Image.Image:
     # dafuer kraeftiger und voll deckend. Bei jeder Aenderung am Motiv die
     # 16x16-Silhouette gegenpruefen, sie ist der harte Massstab.
     small = size < 32
-    rings = ((0.36, 190), (0.17, 255)) if small else ((0.40, 110), (0.28, 155), (0.15, 205))
+    rings = ((0.36, 235), (0.17, 255)) if small else ((0.40, 150), (0.28, 195), (0.15, 240))
     ring_w = s * (0.045 if small else 0.012)
     sweep_w = s * (0.075 if small else 0.016)
     sweep_reach = s * (0.33 if small else 0.38)
@@ -57,14 +58,14 @@ def draw_icon(size: int) -> Image.Image:
     for factor, alpha in rings:
         r = s * factor
         d.ellipse([cx - r, cy - r, cx + r, cy + r],
-                  outline=ACCENT + (alpha,), width=max(1, int(ring_w)))
+                  outline=RING + (alpha,), width=max(1, int(ring_w)))
 
     # Sweep-Strahl vom Zentrum nach rechts oben (45 Grad).
     d.line([cx, cy, cx + sweep_reach, cy - sweep_reach],
-           fill=ACCENT + (255,), width=max(1, int(sweep_w)))
+           fill=SIGNAL + (255,), width=max(1, int(sweep_w)))
 
     # Mittelpunkt = erfasstes Geraet.
-    d.ellipse([cx - dot_r, cy - dot_r, cx + dot_r, cy + dot_r], fill=ACCENT + (255,))
+    d.ellipse([cx - dot_r, cy - dot_r, cx + dot_r, cy + dot_r], fill=SIGNAL + (255,))
 
     return img.resize((size, size), Image.LANCZOS)
 
