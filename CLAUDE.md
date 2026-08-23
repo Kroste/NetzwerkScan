@@ -109,9 +109,10 @@ Offene Feature-Ideen, keine Standard-Lücken mehr:
   mit `RuntimeHelpers.RunModuleConstructor` erzwungen werden; ein `typeof()` allein
   löst ihn nicht aus.
 - **`dotnet test` läuft über die Microsoft.Testing.Platform** (Runner-Block in der
-  `global.json`). `--nologo` und andere VSTest-Flags werden durchgereicht und
-  brechen den Lauf ab. Auch `dotnet test` auf der Solution scheitert — immer das
-  Testprojekt direkt angeben.
+  `global.json`). VSTest-Flags wie `--nologo` werden an die Test-Exe durchgereicht,
+  die sie nicht kennt — der Lauf bricht dann mit „Es wurden keine Tests ausgeführt"
+  und Exitcode 5 ab, was wie ein kaputtes Testprojekt aussieht. Einfach weglassen;
+  `dotnet test` auf der Solution funktioniert.
 - **Services liefern Resource-Keys, keine fertigen Texte.** `DeviceClassifier`
   gibt `Device_*`-Keys zurück (und Klartext für Produktnamen und UPnP-Angaben),
   `PasswordStrength` zusätzlich die Form `Key|Zahl` für Zeitspannen. Übersetzt
