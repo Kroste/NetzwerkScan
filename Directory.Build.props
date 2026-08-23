@@ -7,6 +7,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- Ohne das bleibt die .editorconfig zahnlos: die IDE-Regeln erscheinen dann
+         nur im Editor und nie im Build. Zusammen mit TreatWarningsAsErrors sind
+         Stilverstöße damit Compile-Fehler statt Fundsachen im Review. -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Authors>Lars Oste</Authors>
     <RepositoryUrl>https://github.com/Kroste/NetzwerkScan</RepositoryUrl>
     <!-- MinVer: Version aus Git-Tags (v*) statt einer handgepflegten <Version> -->

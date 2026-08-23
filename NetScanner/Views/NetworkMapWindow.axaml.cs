@@ -171,9 +171,9 @@ public partial class NetworkMapWindow : ChromeWindow
     private void OnNodePressed(object? sender, PointerPressedEventArgs e)
     {
         if (sender is not Border b || b.Tag is not HostResult host) return;
-        if (_vm is not null) _vm.SelectedHost = host;
+        if (_vm is { } vm) vm.SelectedHost = host;
 
-        if (_selectedNode is not null) _selectedNode.Background = SurfaceBrush;
+        if (_selectedNode is { } previous) previous.Background = SurfaceBrush;
         b.Background = AccentSoftBrush;
         _selectedNode = b;
     }
