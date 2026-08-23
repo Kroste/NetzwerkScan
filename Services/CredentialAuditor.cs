@@ -143,7 +143,10 @@ public sealed class CredentialAuditor(ILogger<CredentialAuditor> log)
                 if (s is 200 or 301 or 302)
                 {
                     string cred = $"{user}/{(pass.Length == 0 ? "(leer)" : pass)}";
-                    log.LogWarning("Web-Werks-Login wirksam auf {Url} ({Cred})", baseUrl, cred);
+                    // NIE das Passwort loggen: es ist ein wirksames Login fuer ein reales
+                    // Geraet im Netz. Nur der Benutzername geht ins Log, das vollstaendige
+                    // Paar bleibt im Rueckgabewert und damit ausschliesslich in der UI.
+                    log.LogWarning("Web-Werks-Login wirksam auf {Url} (Benutzer {User})", baseUrl, user);
                     return (AuthFinding.DefaultCredentials, cred);
                 }
             }
