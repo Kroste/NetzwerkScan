@@ -25,7 +25,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.0" />
 
     <!-- Logging -->
-    <PackageVersion Include="NLog" Version="5.5.1" />
+    <PackageVersion Include="NLog" Version="6.2.0" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.5.0" />
 
     <!-- Kamera-Vorschau: NUR der UI-neutrale Core, libvlc kommt aus der
