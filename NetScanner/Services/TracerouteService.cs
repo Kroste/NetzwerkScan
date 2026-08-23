@@ -76,8 +76,15 @@ public sealed class TracerouteService
         var addrs = await Dns.GetHostAddressesAsync(target, ct);
         return addrs.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork)
                ?? addrs.FirstOrDefault()
-               ?? throw new InvalidOperationException($"Konnte '{target}' nicht auflösen.");
+               ?? throw new InvalidOperationException(TargetUnresolvedKey);
     }
+
+    /// <summary>
+    /// Resource-Key fuer "Ziel nicht aufloesbar". Die Meldung landet ueber die
+    /// Statuszeile direkt in der UI und muss deshalb uebersetzbar sein; der Service
+    /// selbst bleibt ohne Localization-Abhaengigkeit.
+    /// </summary>
+    public const string TargetUnresolvedKey = "Map_ResolveFailed";
 
     /// <summary>Default-Gateway des aktiven Interfaces (oder null, wenn keins gefunden).</summary>
     public static IPAddress? DefaultGateway()

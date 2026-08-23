@@ -53,7 +53,7 @@ public static class DeviceClassifier
             {
                 <= 64 => "Linux/Unix/Android",
                 <= 128 => "Windows",
-                _ => "Netzwerkgerät"
+                _ => "Device_NetworkDevice"
             };
         }
         return null;

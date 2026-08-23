@@ -266,7 +266,14 @@ public partial class NetworkMapWindow : ChromeWindow
                 : L.F("Map_TraceIncomplete", hops.Count);
         }
         catch (OperationCanceledException) { TraceStatus.Text = L.T("Map_TraceCancelled"); }
-        catch (Exception ex) { TraceStatus.Text = L.F("Status_Error", ex.Message); }
+        catch (Exception ex)
+        {
+            // Services melden uebersetzbare Faelle als Resource-Key; alles andere ist
+            // eine technische Meldung und geht unveraendert durch.
+            TraceStatus.Text = ex.Message == TracerouteService.TargetUnresolvedKey
+                ? L.F(TracerouteService.TargetUnresolvedKey, TraceTarget.Text ?? string.Empty)
+                : L.F("Status_Error", ex.Message);
+        }
         finally
         {
             TraceBtn.IsEnabled = true;
