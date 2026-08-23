@@ -15,6 +15,10 @@ public partial class App : Application
     /// <summary>Globaler DI-Container (einfacher Service-Locator fuer Views/ViewModels).</summary>
     public static IServiceProvider Services { get; private set; } = default!;
 
+    // PFLICHT-Feld: haelt die GC-Referenz auf den Tray. Ohne sie sammelt der GC den
+    // Controller ein und das Tray-Icon verschwindet nach einigen Minuten wieder.
+    private TrayController? _tray;
+
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     public override void OnFrameworkInitializationCompleted()
@@ -35,7 +39,12 @@ public partial class App : Application
 
             // DataContext setzt das Fenster selbst im Konstruktor (vor dem Baum-Aufbau),
             // damit Bindings wie $parent[Window].DataContext beim Start nicht gegen null laufen.
-            desktop.MainWindow = new MainWindow();
+            var main = new MainWindow();
+            desktop.MainWindow = main;
+
+            // Minimieren legt das Fenster in den Tray, Schliessen beendet regulaer.
+            _tray = new TrayController(this, main);
+            _tray.Install();
             desktop.ShutdownRequested += (_, _) =>
             {
                 log.LogInformation("Anwendung wird beendet");

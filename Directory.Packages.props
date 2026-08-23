@@ -13,6 +13,11 @@
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.1" />
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.1.1" />
     <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" />
+    <!-- Linux-Tray haengt an DBus. Kommt transitiv ueber Avalonia, wird aber
+         explizit gepinnt, damit ein Avalonia-Bump die Version nicht still
+         verschiebt und das Tray-Icon wegbleibt. Nach jedem Avalonia-Update
+         gegenpruefen mit "dotnet list package" samt transitiver Pakete. -->
+    <PackageVersion Include="Tmds.DBus.Protocol" Version="0.94.1" />
 
     <!-- MVVM & DI -->
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />

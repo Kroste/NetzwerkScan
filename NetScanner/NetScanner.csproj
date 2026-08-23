@@ -22,6 +22,8 @@
          AvaloniaUI.DiagnosticsSupport ersetzt. Nur im Debug-Build. -->
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport"
                       Condition="'$(Configuration)' == 'Debug'" />
+    <!-- Explizit, damit die DBus-Version fuer den Linux-Tray nicht driftet. -->
+    <PackageReference Include="Tmds.DBus.Protocol" />
 
     <!-- MVVM -->
     <PackageReference Include="CommunityToolkit.Mvvm" />
