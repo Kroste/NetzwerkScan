@@ -9,6 +9,7 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Avalonia.Threading;
+using NetScanner.Localization;
 using NetScanner.Models;
 using NetScanner.Services;
 using NetScanner.ViewModels;
@@ -60,6 +61,19 @@ public partial class MainWindow : ChromeWindow
     private static readonly NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
 
     private UpdateInfo? _pendingUpdate;
+
+    private async void OnSettingsClick(object? sender, RoutedEventArgs e)
+    {
+        Log.Info("Einstellungen werden geoeffnet");
+        try
+        {
+            await new SettingsWindow().ShowDialog(this);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Einstellungen konnten nicht geoeffnet werden");
+        }
+    }
 
     private async void OnAboutClick(object? sender, RoutedEventArgs e)
     {
@@ -149,7 +163,7 @@ public partial class MainWindow : ChromeWindow
         if (HostOf(sender) is { WebUrl: { } url })
         {
             GetTopLevel(this)?.Launcher.LaunchUriAsync(new Uri(url));
-            Vm?.ReportAction($"Browser geöffnet: {url}");
+            Vm?.ReportAction(L.F("Action_BrowserOpened", url));
         }
     }
 
@@ -165,20 +179,20 @@ public partial class MainWindow : ChromeWindow
             {
                 // Linux/macOS: Terminal-Start ist distro-abhaengig -> Befehl in die Zwischenablage.
                 GetTopLevel(this)?.Clipboard?.SetTextAsync($"ssh {ip}");
-                Vm?.ReportAction($"SSH-Befehl kopiert: ssh {ip}");
+                Vm?.ReportAction(L.F("Action_SshCopied", ip));
                 return;
             }
-            Vm?.ReportAction($"SSH zu {ip} gestartet");
+            Vm?.ReportAction(L.F("Action_SshStarted", ip));
         }
-        catch (Exception ex) { Log.Error(ex, "SSH-Start fehlgeschlagen"); Vm?.ReportAction("SSH-Start fehlgeschlagen"); }
+        catch (Exception ex) { Log.Error(ex, "SSH-Start fehlgeschlagen"); Vm?.ReportAction(L.T("Action_SshFailed")); }
     }
 
     private void OnHostRdp(object? sender, RoutedEventArgs e)
     {
         if (HostOf(sender) is not { } h) return;
         var ip = h.Address.ToString();
-        if (!OperatingSystem.IsWindows()) { Vm?.ReportAction("RDP-Client nur unter Windows verfügbar"); return; }
-        try { Process.Start("mstsc.exe", $"/v:{ip}"); Vm?.ReportAction($"RDP zu {ip} gestartet"); }
+        if (!OperatingSystem.IsWindows()) { Vm?.ReportAction(L.T("Action_RdpWindowsOnly")); return; }
+        try { Process.Start("mstsc.exe", $"/v:{ip}"); Vm?.ReportAction(L.F("Action_RdpStarted", ip)); }
         catch (Exception ex) { Log.Error(ex, "RDP-Start fehlgeschlagen"); }
     }
 
@@ -192,7 +206,7 @@ public partial class MainWindow : ChromeWindow
                 Process.Start(new ProcessStartInfo("explorer.exe", $@"\\{ip}") { UseShellExecute = true });
             else
                 GetTopLevel(this)?.Launcher.LaunchUriAsync(new Uri($"smb://{ip}/"));
-            Vm?.ReportAction($"Dateifreigabe geöffnet: {ip}");
+            Vm?.ReportAction(L.F("Action_ShareOpened", ip));
         }
         catch (Exception ex) { Log.Error(ex, "SMB-Start fehlgeschlagen"); }
     }

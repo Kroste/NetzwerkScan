@@ -1,5 +1,6 @@
 <views:ChromeWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:NetScanner.Localization"
         xmlns:ctrl="using:NetScanner.Controls"
         xmlns:views="using:NetScanner.Views"
         xmlns:models="clr-namespace:NetScanner.Models"
@@ -8,21 +9,21 @@
         WindowStartupLocation="CenterOwner"
         RequestedThemeVariant="Dark"
         Background="{DynamicResource KrosteBackgroundBrush}"
-        Title="Expositions-Prüfung">
+        Title="{loc:Tr Window_Exposure}">
 
 
   <Grid RowDefinitions="Auto,*">
 
-    <ctrl:TitleBar Grid.Row="0" Title="NetScanner  ·  Expositions-Prüfung"/>
+    <ctrl:TitleBar Grid.Row="0" Title="{loc:Tr Window_Exposure}"/>
 
     <!-- ===== Inhalt ===== -->
     <Grid Grid.Row="1" Margin="24,20,24,20" RowDefinitions="Auto,Auto,Auto,*,Auto">
 
       <StackPanel Grid.Row="0" Spacing="4">
-        <TextBlock Text="Was ist von außen erreichbar?" FontSize="19" FontWeight="Bold"
+        <TextBlock Text="{loc:Tr Exp_Heading}" FontSize="19" FontWeight="Bold"
                    Foreground="{DynamicResource KrosteTextBrush}"/>
         <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource KrosteMutedTextBrush}"
-                   Text="NetScanner fragt deinen Router (UPnP-IGD) nach aktiven Portweiterleitungen. Jeder Eintrag ist ein Port, der aus dem Internet auf ein Gerät in deinem LAN zeigt — reine Leseabfrage, es wird nichts geändert."/>
+                   Text="{loc:Tr Exp_Intro}"/>
       </StackPanel>
 
       <!-- Status / Laden -->
@@ -30,7 +31,7 @@
         <ProgressBar x:Name="LoadingBar" IsIndeterminate="True" Height="4"
                      Foreground="{DynamicResource KrosteGoldBrush}"/>
         <TextBlock x:Name="StatusText" FontSize="12" TextWrapping="Wrap"
-                   Foreground="{DynamicResource KrosteMutedTextBrush}" Text="Suche Router (UPnP) …"/>
+                   Foreground="{DynamicResource KrosteMutedTextBrush}" Text="{loc:Tr Exp_Searching}"/>
       </StackPanel>
 
       <!-- Öffentliche IP -->
@@ -39,13 +40,13 @@
               BorderThickness="1" CornerRadius="10" Padding="14,12">
         <Grid ColumnDefinitions="*,Auto">
           <StackPanel Grid.Column="0" Spacing="2">
-            <TextBlock Text="ÖFFENTLICHE IP" FontSize="10" FontWeight="SemiBold"
+            <TextBlock Text="{loc:Tr Exp_PublicIp}" FontSize="10" FontWeight="SemiBold"
                        Foreground="{DynamicResource KrosteMutedTextBrush}"/>
             <TextBlock x:Name="PublicIpText" FontSize="15" FontWeight="Bold"
                        FontFamily="Cascadia Code,Consolas,monospace"
                        Foreground="{DynamicResource KrosteTextBrush}"/>
           </StackPanel>
-          <Button x:Name="ShodanBtn" Grid.Column="1" Classes="link" Content="Auf Shodan prüfen ↗"
+          <Button x:Name="ShodanBtn" Grid.Column="1" Classes="link" Content="{loc:Tr Exp_Shodan}"
                   VerticalAlignment="Center" Click="OnShodanClick"/>
         </Grid>
       </Border>
@@ -53,7 +54,7 @@
       <!-- Portweiterleitungen -->
       <ScrollViewer Grid.Row="3" Margin="0,14,0,0" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="0">
-          <TextBlock x:Name="MappingsHeader" Text="AKTIVE PORTWEITERLEITUNGEN" FontSize="10"
+          <TextBlock x:Name="MappingsHeader" Text="{loc:Tr Exp_Forwardings}" FontSize="10"
                      FontWeight="SemiBold" Foreground="{DynamicResource KrosteMutedTextBrush}" Margin="0,0,0,8"
                      IsVisible="False"/>
 
@@ -69,7 +70,7 @@
                                  Foreground="{DynamicResource KrosteTextBrush}" VerticalAlignment="Center"/>
                       <Border Grid.Column="1" Background="{DynamicResource NetVulnSoftBrush}" CornerRadius="4" Padding="6,1"
                               VerticalAlignment="Center" IsVisible="{Binding TargetsCamera}">
-                        <TextBlock Text="⚠ KAMERA" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource NetVulnBrush}"/>
+                        <TextBlock Text="{loc:Tr Exp_Camera}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource NetVulnBrush}"/>
                       </Border>
                     </Grid>
                     <TextBlock FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"
@@ -86,10 +87,10 @@
           <Border x:Name="EmptyHint" IsVisible="False" Background="{DynamicResource NetSuccessSoftBrush}" BorderBrush="{DynamicResource NetSuccessBorderBrush}"
                   BorderThickness="1" CornerRadius="10" Padding="14,12">
             <StackPanel Spacing="3">
-              <TextBlock Text="✓  Keine Portweiterleitungen aktiv" FontSize="13" FontWeight="Bold"
+              <TextBlock Text="{loc:Tr Exp_NoneActive}" FontSize="13" FontWeight="Bold"
                          Foreground="{DynamicResource NetSuccessTextBrush}"/>
               <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"
-                         Text="Der Router meldet keine offenen Weiterleitungen ins LAN. Beachte: Hersteller-Cloud-/P2P-Zugriff läuft an UPnP vorbei und wäre hier nicht sichtbar — den prüfst du in der Kamera-App selbst."/>
+                         Text="{loc:Tr Exp_NoneActive_Detail}"/>
             </StackPanel>
           </Border>
 
@@ -97,16 +98,16 @@
           <Border x:Name="NoIgdHint" IsVisible="False" Background="{DynamicResource KrosteCardBrush}"
                   BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14,12">
             <StackPanel Spacing="3">
-              <TextBlock Text="Kein UPnP-Router gefunden" FontSize="13" FontWeight="Bold"
+              <TextBlock Text="{loc:Tr Exp_NoRouter}" FontSize="13" FontWeight="Bold"
                          Foreground="{DynamicResource KrosteTextBrush}"/>
               <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"
-                         Text="Der Router antwortet nicht auf UPnP — oft ist UPnP deaktiviert (sicherheitstechnisch gut). Prüfe Portfreigaben dann direkt im Router-Menü. Die öffentliche IP oben kannst du trotzdem auf Shodan gegenprüfen."/>
+                         Text="{loc:Tr Exp_NoRouter_Detail}"/>
             </StackPanel>
           </Border>
         </StackPanel>
       </ScrollViewer>
 
-      <Button Grid.Row="4" Classes="close" Content="Schließen" Margin="0,16,0,0" Click="OnCloseClick"/>
+      <Button Grid.Row="4" Classes="close" Content="{loc:Tr Common_Close}" Margin="0,16,0,0" Click="OnCloseClick"/>
     </Grid>
   </Grid>
 </views:ChromeWindow>

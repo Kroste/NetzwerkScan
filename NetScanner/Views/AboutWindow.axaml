@@ -1,5 +1,6 @@
 <views:ChromeWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:NetScanner.Localization"
         xmlns:ctrl="using:NetScanner.Controls"
         xmlns:views="using:NetScanner.Views"
         x:Class="NetScanner.Views.AboutWindow"
@@ -7,11 +8,11 @@
         WindowStartupLocation="CenterOwner"
         RequestedThemeVariant="Dark"
         Background="{DynamicResource KrosteBackgroundBrush}"
-        Title="Über NetScanner">
+        Title="{loc:Tr Window_About}">
 
   <Grid RowDefinitions="Auto,*">
 
-    <ctrl:TitleBar Grid.Row="0" Title="NetScanner  ·  Über"/>
+    <ctrl:TitleBar Grid.Row="0" Title="{loc:Tr Window_About}"/>
 
     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
       <StackPanel Margin="24,20,24,24" Spacing="16">
@@ -32,18 +33,18 @@
 
         <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="20" Classes="secondary"
                    HorizontalAlignment="Center" TextAlignment="Center"
-                   Text="LAN-Discovery (ICMP + ARP), Portscan und ONVIF/RTSP-Kameraerkennung mit eingebettetem Live-Video."/>
+                   Text="{loc:Tr About_Tagline}"/>
 
         <!-- Aktualisierung -->
         <Border Classes="card">
           <StackPanel Spacing="10">
-            <TextBlock Text="AKTUALISIERUNG" Classes="section-label"/>
+            <TextBlock Text="{loc:Tr About_Section_Update}" Classes="section-label"/>
             <TextBlock x:Name="UpdateStatus" Classes="muted" FontSize="12" TextWrapping="Wrap"
-                       Text="Noch nicht geprüft."/>
+                       Text="{loc:Tr About_NotChecked}"/>
             <ProgressBar x:Name="UpdateProgress" IsVisible="False" Minimum="0" Maximum="100"/>
             <StackPanel Orientation="Horizontal" Spacing="8">
-              <Button x:Name="CheckUpdateButton" Content="Auf Updates prüfen" Click="OnCheckUpdateClick"/>
-              <Button x:Name="InstallUpdateButton" Classes="accent" Content="⬇  Update installieren"
+              <Button x:Name="CheckUpdateButton" Content="{loc:Tr About_CheckUpdate}" Click="OnCheckUpdateClick"/>
+              <Button x:Name="InstallUpdateButton" Classes="accent" Content="{loc:Tr About_InstallUpdate}"
                       IsVisible="False" Click="OnInstallUpdateClick"/>
             </StackPanel>
           </StackPanel>
@@ -52,18 +53,18 @@
         <!-- Projekt -->
         <Border Classes="card">
           <StackPanel Spacing="10">
-            <TextBlock Text="PROJEKT" Classes="section-label"/>
+            <TextBlock Text="{loc:Tr About_Section_Project}" Classes="section-label"/>
             <StackPanel Orientation="Horizontal" Spacing="6">
-              <TextBlock Text="Quellcode:" FontSize="13" Classes="muted" VerticalAlignment="Center"/>
+              <TextBlock Text="{loc:Tr About_SourceCode}" FontSize="13" Classes="muted" VerticalAlignment="Center"/>
               <Button Classes="link" Content="github.com/Kroste/NetzwerkScan" Click="OnGitHubClick"/>
             </StackPanel>
-            <TextBlock Text="Gefällt dir das Tool?" FontSize="13" Classes="secondary"/>
-            <Button Classes="coffee" Content="☕  Buy me a coffee" HorizontalAlignment="Stretch"
+            <TextBlock Text="{loc:Tr About_LikeIt}" FontSize="13" Classes="secondary"/>
+            <Button Classes="coffee" Content="{loc:Tr About_Coffee}" HorizontalAlignment="Stretch"
                     Click="OnCoffeeClick"/>
           </StackPanel>
         </Border>
 
-        <Button Content="Schließen" HorizontalAlignment="Stretch" Click="OnCloseClick"/>
+        <Button Content="{loc:Tr Common_Close}" HorizontalAlignment="Stretch" Click="OnCloseClick"/>
       </StackPanel>
     </ScrollViewer>
   </Grid>

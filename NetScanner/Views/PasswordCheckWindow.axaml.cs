@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using NetScanner.Services;
+using NetScanner.Localization;
 
 namespace NetScanner.Views;
 
@@ -52,7 +53,7 @@ public partial class PasswordCheckWindow : ChromeWindow
         _cts?.Cancel();
         _cts = new CancellationTokenSource();
         CheckBtn.IsEnabled = false;
-        CheckBtn.Content = "Prüfe …";
+        CheckBtn.Content = L.T("Pw_Checking");
         ResultBox.IsVisible = false;
 
         // Stärke sofort lokal anzeigen (offline, noch ohne Leak-Info).
@@ -64,30 +65,25 @@ public partial class PasswordCheckWindow : ChromeWindow
             var result = await _checker.CheckAsync(pw, _cts.Token);
             if (result is null)
             {
-                ShowResult(ResultKind.Neutral, "Prüfung nicht möglich",
-                    "Die Pwned-Passwords-API ist gerade nicht erreichbar (Internetverbindung?).");
+                ShowResult(ResultKind.Neutral, L.T("Pw_NotPossible"), L.T("Pw_NotPossible_Detail"));
             }
             else if (result.Found)
             {
                 // Leak übersteuert die Stärke — egal wie komplex, es steht in den Listen.
                 ShowStrength(PasswordStrength.Evaluate(pw, foundInLeaks: true));
-                ShowResult(ResultKind.Leaked, "⚠  In Daten-Leaks gefunden",
-                    $"Dieses Passwort taucht {result.Count:N0}-mal in bekannten Leaks auf. " +
-                    "Ändere es auf dem betroffenen Gerät — solche Passwörter stehen in den Listen, " +
-                    "die bei automatisierten Angriffen zuerst durchprobiert werden.");
+                ShowResult(ResultKind.Leaked, L.T("Pw_Leaked"),
+                    L.F("Pw_Leaked_Detail", result.Count.ToString("N0")));
             }
             else
             {
-                ShowResult(ResultKind.Safe, "✓  Nicht in Leaks gefunden",
-                    "Dieses Passwort taucht in der Pwned-Passwords-Datenbank nicht auf. Das ist ein gutes " +
-                    "Zeichen — die Stärke-Schätzung oben sagt dir zusätzlich, wie es gegen reines Durchprobieren steht.");
+                ShowResult(ResultKind.Safe, L.T("Pw_Safe"), L.T("Pw_Safe_Detail"));
             }
         }
         catch (OperationCanceledException) { /* neuer Check gestartet */ }
         finally
         {
             CheckBtn.IsEnabled = true;
-            CheckBtn.Content = "Prüfen";
+            CheckBtn.Content = L.T("Common_Check");
         }
     }
 
@@ -100,10 +96,12 @@ public partial class PasswordCheckWindow : ChromeWindow
         for (int i = 0; i < segs.Length; i++)
             segs[i].Background = i <= score ? on : off;
 
-        StrengthLabel.Text = r.Label;
+        // PasswordStrength liefert Resource-Keys (teils mit "Key|Zahl"), damit die
+        // Klasse ohne Localization-Abhaengigkeit testbar bleibt.
+        StrengthLabel.Text = L.TOrText(r.Label);
         StrengthLabel.Foreground = on;
-        CrackFast.Text = $"Gegen schnellen Hash (MD5 & Co.): {r.CrackTimeFast}";
-        CrackSlow.Text = $"Gegen langsamen Hash (bcrypt & Co.): {r.CrackTimeSlow}";
+        CrackFast.Text = L.F("Pw_CrackFast", L.TOrText(r.CrackTimeFast));
+        CrackSlow.Text = L.F("Pw_CrackSlow", L.TOrText(r.CrackTimeSlow));
         StrengthBox.IsVisible = true;
     }
 

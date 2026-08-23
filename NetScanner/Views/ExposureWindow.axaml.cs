@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using NetScanner.Models;
 using NetScanner.Services;
+using NetScanner.Localization;
 
 namespace NetScanner.Views;
 
@@ -55,21 +56,21 @@ public partial class ExposureWindow : ChromeWindow
             foreach (var m in result.Mappings)
             {
                 var host = _hosts.FirstOrDefault(h => h.Address.ToString() == m.InternalClient);
-                m.DeviceName = host?.BestName ?? host?.DeviceType ?? "unbekanntes Gerät im LAN";
+                m.DeviceName = host?.BestName ?? host?.DeviceType ?? L.T("Exp_UnknownDevice");
                 m.TargetsCamera = host?.IsCamera ?? false;
             }
 
             if (result.Mappings.Count == 0)
             {
-                StatusText.Text = "Router gefunden — keine aktiven Weiterleitungen.";
+                StatusText.Text = L.T("Exp_NoForwardings");
                 EmptyHint.IsVisible = true;
             }
             else
             {
                 int cams = result.Mappings.Count(m => m.TargetsCamera);
                 StatusText.Text = cams > 0
-                    ? $"{result.Mappings.Count} Weiterleitung(en) — davon {cams} auf eine Kamera!"
-                    : $"{result.Mappings.Count} aktive Weiterleitung(en) gefunden.";
+                    ? L.F("Exp_WithCameras", result.Mappings.Count, cams)
+                    : L.F("Exp_FoundCount", result.Mappings.Count);
                 MappingsHeader.IsVisible = true;
                 MappingsList.ItemsSource = result.Mappings;
             }
@@ -77,7 +78,7 @@ public partial class ExposureWindow : ChromeWindow
         catch (System.Exception)
         {
             LoadingBar.IsVisible = false;
-            StatusText.Text = "Prüfung fehlgeschlagen.";
+            StatusText.Text = L.T("Exp_Failed");
         }
     }
 

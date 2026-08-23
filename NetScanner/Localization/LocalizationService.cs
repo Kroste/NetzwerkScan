@@ -1,0 +1,118 @@
+using System.ComponentModel;
+using System.Globalization;
+using System.Resources;
+using System.Runtime.CompilerServices;
+
+namespace NetScanner.Localization;
+
+/// <summary>
+/// Singleton-Service für UI-Lokalisierung. Liefert übersetzte Strings aus
+/// den <c>Strings.*.resx</c>-Ressourcen und benachrichtigt gebundene XAML-
+/// Elemente per <see cref="INotifyPropertyChanged"/>, sobald die aktive
+/// Sprache wechselt — damit funktioniert der Sprachwechsel live, ohne
+/// App-Neustart.
+///
+/// **Benutzung im XAML:** über die <see cref="TrExtension"/>:
+/// <code>Text="{loc:Tr OpenArchive}"</code>. Fallback (falls Key fehlt):
+/// der Key wird sichtbar ausgegeben (<c>!Key!</c>), damit fehlende
+/// Übersetzungen sofort auffallen.
+///
+/// **Design-Entscheidung:** kein <c>Strings.Designer.cs</c>-Wrapperklasse
+/// (der ResX-Generator läuft nur unter Visual Studio zuverlässig).
+/// Stattdessen greift der Service direkt per <see cref="ResourceManager"/>
+/// auf die eingebetteten Ressourcen zu — funktioniert plattformübergreifend,
+/// tooling-unabhängig, <c>dotnet build</c> reicht.
+/// </summary>
+public sealed class LocalizationService : INotifyPropertyChanged
+{
+    public static LocalizationService Instance { get; } = new();
+
+    /// <summary>Vom App-Nutzer konfigurierbare Sprachen. Der ISO-Code passt
+    /// zur <c>Strings.{iso}.resx</c>-Dateinamenskonvention. Neutral (=
+    /// Fallback) ist Englisch — die englische <c>Strings.resx</c> liegt
+    /// ohne Sprach-Suffix. <c>Flag</c> ist das Emoji-Fahnen-Piktogramm
+    /// (Regional Indicator Symbols) für den Selektor. Englisch bekommt
+    /// die UK-Flagge (🇬🇧) als international neutrales Symbol.
+    ///
+    /// Kroste-Standard: mindestens EN + DE. Weitere Sprachen pro Projekt
+    /// ergänzen (Beispiel-Repo RenPack hat zusätzlich FR + RU).</summary>
+    public static IReadOnlyList<(string Iso, string Display, string Flag)> SupportedCultures { get; } = new[]
+    {
+        ("en", "English", "🇬🇧"),
+        ("de", "Deutsch", "🇩🇪"),
+        // Optional weitere:
+        // ("fr", "Français", "🇫🇷"),
+        // ("ru", "Русский", "🇷🇺"),
+        // ("es", "Español", "🇪🇸"),
+    };
+
+    private readonly ResourceManager _rm = new(
+        "NetScanner.Localization.Strings",
+        typeof(LocalizationService).Assembly);
+
+    private CultureInfo _current = CultureInfo.CurrentUICulture;
+
+    /// <summary>Aktuell aktive UI-Sprache. Bei Zuweisung wird
+    /// <see cref="LocalizedString.NotifyAllChanged"/> aufgerufen — das
+    /// feuert auf jedem lebenden <see cref="LocalizedString"/>-Wrapper
+    /// ein reguläres <c>PropertyChanged(nameof(Value))</c>, was von
+    /// Avalonias Binding-Engine zuverlässig aufgelöst wird.
+    ///
+    /// <b>Wichtig:</b> nicht auf <c>PropertyChanged("Item[]")</c> setzen —
+    /// diese WPF-Indexer-Konvention wird von Avalonia 12 nur unzuverlässig
+    /// gehandhabt (Bindings in nicht-fokussierten Fenstern bleiben stale
+    /// bis zum nächsten Fenster-Aufbau).</summary>
+    public CultureInfo Current
+    {
+        get => _current;
+        set
+        {
+            if (Equals(_current, value)) return;
+            _current = value;
+            CultureInfo.CurrentUICulture = value;
+            LocalizedString.NotifyAllChanged();
+            OnPropertyChanged(nameof(Current));
+            OnPropertyChanged(nameof(CurrentIso));
+        }
+    }
+
+    public string CurrentIso => TwoLetterOrDefault(_current);
+
+    /// <summary>Setzt die Sprache anhand ihres ISO-Codes ("en"/"de"/...).
+    /// Unbekannte Codes werden auf die Neutral-Kultur (EN) gemappt.</summary>
+    public void SetCulture(string iso)
+    {
+        Current = SupportedCultures.Any(c => c.Iso == iso)
+            ? CultureInfo.GetCultureInfo(iso)
+            : CultureInfo.InvariantCulture; // Neutral → englische Resx
+    }
+
+    /// <summary>Indexer für XAML-Binding. Fallback bei fehlendem Key: der
+    /// Key selbst als <c>!Key!</c> — dann fällt eine unlokalisierte Stelle
+    /// sofort in der UI auf.</summary>
+    public string this[string key]
+    {
+        get
+        {
+            try
+            {
+                return _rm.GetString(key, _current) ?? $"!{key}!";
+            }
+            catch (MissingManifestResourceException)
+            {
+                return $"!{key}!";
+            }
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([CallerMemberName] string? name = null)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
+    private static string TwoLetterOrDefault(CultureInfo c)
+    {
+        var iso = c.TwoLetterISOLanguageName;
+        return SupportedCultures.Any(x => x.Iso == iso) ? iso : "en";
+    }
+}

@@ -29,7 +29,7 @@ public static class PasswordStrength
 
     public sealed record Result(
         int Score,                 // 0 (kritisch) … 4 (sehr stark)
-        string Label,              // "Sehr schwach" … "Sehr stark"
+        string Label,              // Resource-Key, z. B. "Strength_VeryWeak"
         double Entropy,            // geschaetzte Bit-Entropie
         string CrackTimeFast,      // gegen MD5 & Co.
         string CrackTimeSlow);     // gegen bcrypt & Co.
@@ -39,11 +39,11 @@ public static class PasswordStrength
     public static Result Evaluate(string password, bool foundInLeaks)
     {
         if (string.IsNullOrEmpty(password))
-            return new Result(0, "—", 0, "—", "—");
+            return new Result(0, "Strength_None", 0, "Strength_None", "Strength_None");
 
         if (foundInLeaks)
-            return new Result(0, "In Leaks — sofort knackbar", 0,
-                "sofort (steht in Wortlisten)", "sofort (steht in Wortlisten)");
+            return new Result(0, "Strength_Leaked", 0,
+                "Crack_InWordlists", "Crack_InWordlists");
 
         double entropy = EstimateEntropy(password);
         // Mittlere Versuchszahl = halber Suchraum = 2^entropy / 2.
@@ -54,11 +54,11 @@ public static class PasswordStrength
 
         var (score, label) = entropy switch
         {
-            < 28 => (0, "Sehr schwach"),
-            < 40 => (1, "Schwach"),
-            < 60 => (2, "Mittel"),
-            < 80 => (3, "Stark"),
-            _    => (4, "Sehr stark"),
+            < 28 => (0, "Strength_VeryWeak"),
+            < 40 => (1, "Strength_Weak"),
+            < 60 => (2, "Strength_Medium"),
+            < 80 => (3, "Strength_Strong"),
+            _    => (4, "Strength_VeryStrong"),
         };
         return new Result(score, label, entropy, fast, slow);
     }
@@ -124,23 +124,27 @@ public static class PasswordStrength
         return false;
     }
 
-    /// <summary>Sekunden in eine lesbare Spanne uebersetzen.</summary>
-    private static string Humanize(double seconds)
+    /// <summary>
+    /// Sekunden in eine lesbare Spanne uebersetzen. Rueckgabe ist ein Resource-Key
+    /// mit optionalem Zahl-Platzhalter, formatiert wird erst in der UI -- so bleibt
+    /// die Klasse ohne Localization-Abhaengigkeit testbar.
+    /// </summary>
+    internal static string Humanize(double seconds)
     {
-        if (seconds < 1) return "sofort";
-        if (seconds < 60) return $"{seconds:N0} Sekunden";
+        if (seconds < 1) return "Crack_Instant";
+        if (seconds < 60) return $"Crack_Seconds|{seconds:N0}";
         double m = seconds / 60;
-        if (m < 60) return $"{m:N0} Minuten";
+        if (m < 60) return $"Crack_Minutes|{m:N0}";
         double h = m / 60;
-        if (h < 24) return $"{h:N0} Stunden";
+        if (h < 24) return $"Crack_Hours|{h:N0}";
         double d = h / 24;
-        if (d < 30) return $"{d:N0} Tage";
+        if (d < 30) return $"Crack_Days|{d:N0}";
         double mo = d / 30;
-        if (mo < 12) return $"{mo:N0} Monate";
+        if (mo < 12) return $"Crack_Months|{mo:N0}";
         double y = d / 365;
-        if (y < 1_000) return $"{y:N0} Jahre";
-        if (y < 1e6) return $"{y / 1e3:N0} Tausend Jahre";
-        if (y < 1e9) return $"{y / 1e6:N0} Millionen Jahre";
-        return "praktisch unknackbar";
+        if (y < 1_000) return $"Crack_Years|{y:N0}";
+        if (y < 1e6) return $"Crack_ThousandYears|{y / 1e3:N0}";
+        if (y < 1e9) return $"Crack_MillionYears|{y / 1e6:N0}";
+        return "Crack_Uncrackable";
     }
 }

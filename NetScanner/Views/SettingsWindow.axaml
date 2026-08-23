@@ -1,0 +1,38 @@
+<views:ChromeWindow xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:NetScanner.Localization"
+        xmlns:ctrl="using:NetScanner.Controls"
+        xmlns:views="using:NetScanner.Views"
+        xmlns:vm="using:NetScanner.ViewModels"
+        x:Class="NetScanner.Views.SettingsWindow"
+        x:DataType="vm:SettingsViewModel"
+        Width="440" Height="300" MinWidth="360" MinHeight="220"
+        WindowStartupLocation="CenterOwner"
+        RequestedThemeVariant="Dark"
+        Background="{DynamicResource KrosteBackgroundBrush}"
+        Title="{loc:Tr Window_Settings}">
+
+  <Grid RowDefinitions="Auto,*">
+
+    <ctrl:TitleBar Grid.Row="0" Title="{loc:Tr Window_Settings}"/>
+
+    <StackPanel Grid.Row="1" Margin="24,20" Spacing="16">
+
+      <Border Classes="card">
+        <StackPanel Spacing="10">
+          <TextBlock Text="{loc:Tr Settings_Section_Language}" Classes="section-label"/>
+          <StackPanel Spacing="6">
+            <TextBlock Text="{loc:Tr Settings_Language}" Classes="secondary"/>
+            <ComboBox ItemsSource="{Binding SupportedUiCultures}"
+                      SelectedItem="{Binding SelectedUiCulture}"
+                      HorizontalAlignment="Stretch"/>
+            <TextBlock Text="{loc:Tr Settings_Language_Hint}"
+                       Classes="muted" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,0"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Button Content="{loc:Tr Common_Close}" HorizontalAlignment="Stretch" Click="OnCloseClick"/>
+    </StackPanel>
+  </Grid>
+</views:ChromeWindow>

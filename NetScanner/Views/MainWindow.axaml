@@ -1,5 +1,6 @@
 <views:ChromeWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:NetScanner.Localization"
         xmlns:vm="using:NetScanner.ViewModels"
         xmlns:models="using:NetScanner.Models"
         xmlns:ctrl="using:NetScanner.Controls"
@@ -9,13 +10,13 @@
         Width="1180" Height="760" MinWidth="900" MinHeight="560"
         RequestedThemeVariant="Dark"
         Background="{DynamicResource KrosteBackgroundBrush}"
-        Title="NetScanner — LAN &amp; Camera Discovery">
+        Title="{loc:Tr Window_Main}">
 
 
   <Grid RowDefinitions="Auto,Auto,*,Auto">
 
     <!-- ===== Titelleiste (Kroste-Chrome) ===== -->
-    <ctrl:TitleBar Grid.Row="0" Title="NetScanner  ·  LAN · Ports · ONVIF/RTSP">
+    <ctrl:TitleBar Grid.Row="0" Title="{loc:Tr Window_Main}">
       <ctrl:TitleBar.Actions>
         <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
 
@@ -25,19 +26,19 @@
             <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
               <TextBlock Text="{Binding HostCount}" FontSize="16" FontWeight="Bold"
                          Foreground="{DynamicResource KrosteTextBrush}"/>
-              <TextBlock Text="Hosts" FontSize="12" VerticalAlignment="Center" Classes="muted"/>
+              <TextBlock Text="{loc:Tr Main_Hosts}" FontSize="12" VerticalAlignment="Center" Classes="muted"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
               <TextBlock Text="{Binding CameraCount}" FontSize="16" FontWeight="Bold"
                          Foreground="{DynamicResource NetCameraBrush}"/>
-              <TextBlock Text="Kameras" FontSize="12" VerticalAlignment="Center" Opacity="0.85"
+              <TextBlock Text="{loc:Tr Main_Cameras}" FontSize="12" VerticalAlignment="Center" Opacity="0.85"
                          Foreground="{DynamicResource NetCameraBrush}"/>
             </StackPanel>
           </StackPanel>
 
           <Rectangle Classes="divider-v" Height="22"/>
 
-          <Button Classes="icon" Click="OnMapClick" ToolTip.Tip="Netzwerkkarte">
+          <Button Classes="icon" Click="OnMapClick" ToolTip.Tip="{loc:Tr Main_Map_Tip}">
             <Canvas Width="18" Height="18">
               <Line StartPoint="9,9" EndPoint="3.5,4.5" Stroke="{DynamicResource KrosteMutedTextBrush}" StrokeThickness="1.2"/>
               <Line StartPoint="9,9" EndPoint="14.5,5"  Stroke="{DynamicResource KrosteMutedTextBrush}" StrokeThickness="1.2"/>
@@ -49,7 +50,7 @@
             </Canvas>
           </Button>
 
-          <Button Classes="icon" Click="OnPwCheckClick" ToolTip.Tip="Passwort-Leak-Check">
+          <Button Classes="icon" Click="OnPwCheckClick" ToolTip.Tip="{loc:Tr Main_PwCheck_Tip}">
             <Canvas Width="18" Height="18">
               <Path Data="M9,1.5 L15.5,3.8 L15.5,9 C15.5,13 12.7,15.6 9,16.8 C5.3,15.6 2.5,13 2.5,9 L2.5,3.8 Z"
                     Stroke="{DynamicResource KrosteMutedTextBrush}" StrokeThickness="1.3"/>
@@ -57,7 +58,7 @@
             </Canvas>
           </Button>
 
-          <Button Classes="icon" Click="OnExposureClick" ToolTip.Tip="Expositions-Prüfung – was ist von außen erreichbar?">
+          <Button Classes="icon" Click="OnExposureClick" ToolTip.Tip="{loc:Tr Main_Exposure_Tip}">
             <Canvas Width="18" Height="18">
               <Ellipse Canvas.Left="2" Canvas.Top="2" Width="14" Height="14"
                        Stroke="{DynamicResource KrosteMutedTextBrush}" StrokeThickness="1.3"/>
@@ -68,10 +69,14 @@
           </Button>
 
           <!-- Erscheint nur, wenn der Start-Check ein Update gefunden hat. -->
-          <Button x:Name="UpdateBadge" Classes="accent" Content="⬇ Update" IsVisible="False"
-                  Click="OnAboutClick" ToolTip.Tip="Neue Version verfügbar — im Über-Fenster installieren"/>
+          <Button x:Name="UpdateBadge" Classes="accent" Content="{loc:Tr Main_Update}" IsVisible="False"
+                  Click="OnAboutClick" ToolTip.Tip="{loc:Tr Main_Update_Tip}"/>
 
-          <Button Classes="icon" Click="OnAboutClick" ToolTip.Tip="Information / Über">
+          <Button Classes="icon" Click="OnSettingsClick" ToolTip.Tip="{loc:Tr Settings_Open_Tip}">
+            <TextBlock Text="⚙" FontSize="16"/>
+          </Button>
+
+          <Button Classes="icon" Click="OnAboutClick" ToolTip.Tip="{loc:Tr Main_About_Tip}">
             <TextBlock Text="i" FontFamily="Georgia,Cambria,serif" FontSize="16" FontWeight="Bold"/>
           </Button>
         </StackPanel>
@@ -83,19 +88,19 @@
       <StackPanel Spacing="12">
         <StackPanel Orientation="Horizontal" Spacing="10">
           <StackPanel Spacing="4">
-            <TextBlock Text="NETZBEREICH (CIDR)" Classes="section-label"/>
-            <TextBox Classes="mono" Text="{Binding Cidr}" Width="210" PlaceholderText="192.168.10.0/24"/>
+            <TextBlock Text="{loc:Tr Main_Section_Cidr}" Classes="section-label"/>
+            <TextBox Classes="mono" Text="{Binding Cidr}" Width="210" PlaceholderText="{loc:Tr Main_Cidr_Placeholder}"/>
           </StackPanel>
           <StackPanel Spacing="4">
-            <TextBlock Text="ONVIF-WARTEZEIT (MS)" Classes="section-label"/>
+            <TextBlock Text="{loc:Tr Main_Section_OnvifWait}" Classes="section-label"/>
             <NumericUpDown Value="{Binding OnvifListenMs}" Minimum="500" Maximum="10000"
                            Increment="500" Width="130" Height="36"/>
           </StackPanel>
           <StackPanel Spacing="8" VerticalAlignment="Bottom" Margin="6,0,0,6">
-            <CheckBox Content="Alle Ports (1–65535)" IsChecked="{Binding ScanFullPorts}"/>
-            <CheckBox Content="RTSP prüfen" IsChecked="{Binding ProbeRtsp}"/>
-            <CheckBox Content="Schwachstellen prüfen" IsChecked="{Binding AuditCredentials}"
-                      ToolTip.Tip="Testet offene Streams und gängige Werks-Logins (Kamera/Router). Nur im eigenen Netz verwenden."/>
+            <CheckBox Content="{loc:Tr Main_AllPorts}" IsChecked="{Binding ScanFullPorts}"/>
+            <CheckBox Content="{loc:Tr Main_ProbeRtsp}" IsChecked="{Binding ProbeRtsp}"/>
+            <CheckBox Content="{loc:Tr Main_AuditCredentials}" IsChecked="{Binding AuditCredentials}"
+                      ToolTip.Tip="{loc:Tr Main_AuditCredentials_Tip}"/>
           </StackPanel>
         </StackPanel>
 
@@ -103,24 +108,24 @@
 
         <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
           <StackPanel Spacing="4">
-            <TextBlock Text="RTSP-LOGIN (OPTIONAL)" Classes="section-label"/>
+            <TextBlock Text="{loc:Tr Main_Section_RtspLogin}" Classes="section-label"/>
             <StackPanel Orientation="Horizontal" Spacing="8">
-              <TextBox Text="{Binding RtspUser}" Width="150" PlaceholderText="Benutzer"/>
-              <TextBox Text="{Binding RtspPass}" Width="150" PlaceholderText="Passwort" PasswordChar="•"/>
+              <TextBox Text="{Binding RtspUser}" Width="150" PlaceholderText="{loc:Tr Main_User_Placeholder}"/>
+              <TextBox Text="{Binding RtspPass}" Width="150" PlaceholderText="{loc:Tr Main_Password_Placeholder}" PasswordChar="•"/>
             </StackPanel>
           </StackPanel>
 
-          <Button Classes="accent" Content="Scan starten" VerticalAlignment="Bottom"
+          <Button Classes="accent" Content="{loc:Tr Main_StartScan}" VerticalAlignment="Bottom"
                   Command="{Binding StartScanCommand}" IsEnabled="{Binding !IsScanning}"/>
-          <Button Classes="ghost" Content="Abbrechen" VerticalAlignment="Bottom"
+          <Button Classes="ghost" Content="{loc:Tr Common_Cancel}" VerticalAlignment="Bottom"
                   Command="{Binding CancelScanCommand}" IsEnabled="{Binding IsScanning}"/>
           <ProgressBar IsIndeterminate="{Binding IsScanning}" IsVisible="{Binding IsScanning}"
                        Width="160" Height="4" VerticalAlignment="Bottom" Margin="4,0,0,16"
                        Foreground="{DynamicResource KrosteGoldBrush}"/>
 
           <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Bottom" Margin="8,0,0,0">
-            <Button Classes="ghost" Content="⬇ CSV" Click="OnExportCsv" ToolTip.Tip="Als CSV exportieren"/>
-            <Button Classes="ghost" Content="⬇ JSON" Click="OnExportJson" ToolTip.Tip="Als JSON exportieren"/>
+            <Button Classes="ghost" Content="{loc:Tr Main_ExportCsv}" Click="OnExportCsv" ToolTip.Tip="{loc:Tr Main_ExportCsv_Tip}"/>
+            <Button Classes="ghost" Content="{loc:Tr Main_ExportJson}" Click="OnExportJson" ToolTip.Tip="{loc:Tr Main_ExportJson_Tip}"/>
           </StackPanel>
         </StackPanel>
       </StackPanel>
@@ -136,16 +141,16 @@
               <Border Classes="host-card" Padding="0" PointerReleased="OnCardPointerReleased">
                 <Border.ContextMenu>
                   <ContextMenu>
-                    <MenuItem Header="Im Browser öffnen" Click="OnHostWeb" IsVisible="{Binding HasWebUi}"/>
-                    <MenuItem Header="SSH-Verbindung" Click="OnHostSsh" IsVisible="{Binding HasSsh}"/>
-                    <MenuItem Header="Remotedesktop (RDP)" Click="OnHostRdp" IsVisible="{Binding HasRdp}"/>
-                    <MenuItem Header="Dateifreigabe (SMB)" Click="OnHostSmb" IsVisible="{Binding HasSmb}"/>
+                    <MenuItem Header="{loc:Tr Main_Ctx_OpenWeb}" Click="OnHostWeb" IsVisible="{Binding HasWebUi}"/>
+                    <MenuItem Header="{loc:Tr Main_Ctx_Ssh}" Click="OnHostSsh" IsVisible="{Binding HasSsh}"/>
+                    <MenuItem Header="{loc:Tr Main_Ctx_Rdp}" Click="OnHostRdp" IsVisible="{Binding HasRdp}"/>
+                    <MenuItem Header="{loc:Tr Main_Ctx_Smb}" Click="OnHostSmb" IsVisible="{Binding HasSmb}"/>
                     <Separator/>
-                    <MenuItem Header="IP kopieren" Click="OnHostCopyIp"/>
-                    <MenuItem Header="MAC kopieren" Click="OnHostCopyMac" IsVisible="{Binding HasMac}"/>
-                    <MenuItem Header="Name kopieren" Click="OnHostCopyName" IsVisible="{Binding HasBestName}"/>
+                    <MenuItem Header="{loc:Tr Common_CopyIp}" Click="OnHostCopyIp"/>
+                    <MenuItem Header="{loc:Tr Common_CopyMac}" Click="OnHostCopyMac" IsVisible="{Binding HasMac}"/>
+                    <MenuItem Header="{loc:Tr Common_CopyName}" Click="OnHostCopyName" IsVisible="{Binding HasBestName}"/>
                     <Separator/>
-                    <MenuItem Header="Wake-on-LAN senden" Click="OnHostWol" IsVisible="{Binding HasMac}"/>
+                    <MenuItem Header="{loc:Tr Main_Ctx_Wol}" Click="OnHostWol" IsVisible="{Binding HasMac}"/>
                   </ContextMenu>
                 </Border.ContextMenu>
                 <Grid ColumnDefinitions="3,16,Auto,*,Auto">
@@ -170,12 +175,12 @@
                                  Foreground="{DynamicResource KrosteTextBrush}"/>
                       <Border Background="{DynamicResource NetCameraSoftBrush}" CornerRadius="4" Padding="6,1"
                               VerticalAlignment="Center" IsVisible="{Binding IsCamera}">
-                        <TextBlock Text="KAMERA" FontSize="10" FontWeight="Bold"
+                        <TextBlock Text="{loc:Tr Main_Camera}" FontSize="10" FontWeight="Bold"
                                    Foreground="{DynamicResource NetCameraBrush}"/>
                       </Border>
                       <Border Background="{DynamicResource NetVulnSoftBrush}" CornerRadius="4" Padding="6,1"
                               VerticalAlignment="Center" IsVisible="{Binding IsVulnerable}">
-                        <TextBlock Text="⚠ OFFEN" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource NetVulnBrush}"/>
+                        <TextBlock Text="{loc:Tr Main_Open}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource NetVulnBrush}"/>
                       </Border>
                       <TextBlock Text="{Binding Vendor}" FontSize="12" VerticalAlignment="Center"
                                  Foreground="{DynamicResource KrosteMutedTextBrush}"/>
@@ -227,7 +232,7 @@
                   </StackPanel>
 
                   <!-- Stream-Aktion -->
-                  <Button Grid.Column="4" Classes="stream" Content="▶  Stream"
+                  <Button Grid.Column="4" Classes="stream" Content="{loc:Tr Main_Stream}"
                           VerticalAlignment="Center" Margin="0,0,14,0"
                           IsVisible="{Binding IsCamera}"
                           Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).OpenStreamCommand}"
@@ -254,9 +259,9 @@
                 <TextBlock Text="◉" FontSize="26" Foreground="{DynamicResource KrosteMutedTextBrush}"
                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
               </Border>
-              <TextBlock Text="Host auswählen für Details" Foreground="{DynamicResource KrosteMutedTextBrush}"
+              <TextBlock Text="{loc:Tr Main_SelectHost}" Foreground="{DynamicResource KrosteMutedTextBrush}"
                          HorizontalAlignment="Center"/>
-              <TextBlock Text="Rechtsklick auf eine Karte für Aktionen" FontSize="12"
+              <TextBlock Text="{loc:Tr Main_RightClickHint}" FontSize="12"
                          Foreground="{DynamicResource KrosteMutedTextBrush}" Opacity="0.6"
                          HorizontalAlignment="Center"/>
             </StackPanel>
@@ -272,7 +277,7 @@
                              Foreground="{DynamicResource KrosteTextBrush}"/>
                   <Border Background="{DynamicResource NetCameraSoftBrush}" CornerRadius="4" Padding="6,1"
                           VerticalAlignment="Center" IsVisible="{Binding IsCamera}">
-                    <TextBlock Text="KAMERA" FontSize="10" FontWeight="Bold"
+                    <TextBlock Text="{loc:Tr Main_Camera}" FontSize="10" FontWeight="Bold"
                                Foreground="{DynamicResource NetCameraBrush}"/>
                   </Border>
                 </StackPanel>
@@ -286,15 +291,15 @@
 
                 <!-- Aktionen -->
                 <WrapPanel>
-                  <Button Classes="ghost" Content="🌐 Web" Click="OnHostWeb" Margin="0,0,6,6"
+                  <Button Classes="ghost" Content="{loc:Tr Main_Btn_Web}" Click="OnHostWeb" Margin="0,0,6,6"
                           IsVisible="{Binding HasWebUi}"/>
-                  <Button Classes="ghost" Content="⌨ SSH" Click="OnHostSsh" Margin="0,0,6,6"
+                  <Button Classes="ghost" Content="{loc:Tr Main_Btn_Ssh}" Click="OnHostSsh" Margin="0,0,6,6"
                           IsVisible="{Binding HasSsh}"/>
-                  <Button Classes="ghost" Content="🖥 RDP" Click="OnHostRdp" Margin="0,0,6,6"
+                  <Button Classes="ghost" Content="{loc:Tr Main_Btn_Rdp}" Click="OnHostRdp" Margin="0,0,6,6"
                           IsVisible="{Binding HasRdp}"/>
-                  <Button Classes="ghost" Content="📁 SMB" Click="OnHostSmb" Margin="0,0,6,6"
+                  <Button Classes="ghost" Content="{loc:Tr Main_Btn_Smb}" Click="OnHostSmb" Margin="0,0,6,6"
                           IsVisible="{Binding HasSmb}"/>
-                  <Button Classes="ghost" Content="⏻ Wake-on-LAN" Click="OnHostWol" Margin="0,0,6,6"
+                  <Button Classes="ghost" Content="{loc:Tr Main_Btn_Wol}" Click="OnHostWol" Margin="0,0,6,6"
                           IsVisible="{Binding HasMac}"/>
                 </WrapPanel>
 
@@ -303,28 +308,28 @@
                 <!-- Eigenschaften -->
                 <StackPanel Spacing="7">
                   <Grid ColumnDefinitions="88,*" IsVisible="{Binding HasBestName}">
-                    <TextBlock Grid.Column="0" Text="Name" FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"/>
+                    <TextBlock Grid.Column="0" Text="{loc:Tr Main_Name}" FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"/>
                     <TextBlock Grid.Column="1" Text="{Binding BestName}" FontSize="12" TextWrapping="Wrap"
                                Foreground="{DynamicResource KrosteTextBrush}"/>
                   </Grid>
                   <Grid ColumnDefinitions="88,*" IsVisible="{Binding Vendor, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                    <TextBlock Grid.Column="0" Text="Hersteller" FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"/>
+                    <TextBlock Grid.Column="0" Text="{loc:Tr Main_Vendor}" FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"/>
                     <TextBlock Grid.Column="1" Text="{Binding Vendor}" FontSize="12" TextWrapping="Wrap"
                                Foreground="{DynamicResource KrosteTextBrush}"/>
                   </Grid>
                   <Grid ColumnDefinitions="88,*" IsVisible="{Binding HasMac}">
-                    <TextBlock Grid.Column="0" Text="MAC" FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"/>
+                    <TextBlock Grid.Column="0" Text="{loc:Tr Main_Mac}" FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"/>
                     <TextBlock Grid.Column="1" Text="{Binding MacAddress}" FontSize="12"
                                FontFamily="Cascadia Code,Consolas,monospace"
                                Foreground="{DynamicResource KrosteTextBrush}"/>
                   </Grid>
                   <Grid ColumnDefinitions="88,*" IsVisible="{Binding Ttl, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <TextBlock Grid.Column="0" Text="TTL" FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"/>
+                    <TextBlock Grid.Column="0" Text="{loc:Tr Main_Ttl}" FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"/>
                     <TextBlock Grid.Column="1" Text="{Binding Ttl}" FontSize="12"
                                Foreground="{DynamicResource KrosteTextBrush}"/>
                   </Grid>
                   <Grid ColumnDefinitions="88,*">
-                    <TextBlock Grid.Column="0" Text="Antwortzeit" FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"/>
+                    <TextBlock Grid.Column="0" Text="{loc:Tr Main_Latency}" FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"/>
                     <TextBlock Grid.Column="1" Text="{Binding LatencyDisplay}" FontSize="12"
                                Foreground="{DynamicResource KrosteTextBrush}"/>
                   </Grid>
@@ -333,7 +338,7 @@
                 <!-- Discovery -->
                 <StackPanel Spacing="7" IsVisible="{Binding HasDiscovery}">
                   <Rectangle Classes="divider-h"/>
-                  <TextBlock Text="DISCOVERY" Classes="section-label"/>
+                  <TextBlock Text="{loc:Tr Main_Discovery}" Classes="section-label"/>
                   <TextBlock Text="{Binding DiscoveryDisplay}" FontSize="12" TextWrapping="Wrap"
                              Foreground="{DynamicResource KrosteGoldBrush}"/>
                   <TextBlock Text="{Binding UpnpServer}" FontSize="11" TextWrapping="Wrap"
@@ -352,7 +357,7 @@
                 <!-- Ports -->
                 <StackPanel Spacing="7">
                   <Rectangle Classes="divider-h"/>
-                  <TextBlock Text="OFFENE PORTS" Classes="section-label"/>
+                  <TextBlock Text="{loc:Tr Main_OpenPorts}" Classes="section-label"/>
                   <ItemsControl ItemsSource="{Binding OpenPorts}">
                     <ItemsControl.ItemsPanel>
                       <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
@@ -377,7 +382,7 @@
                 <Border Background="{DynamicResource NetVulnSoftBrush}" BorderBrush="{DynamicResource NetVulnBorderBrush}" BorderThickness="1"
                         CornerRadius="8" Padding="12,9" IsVisible="{Binding HasVulnBadge}">
                   <StackPanel Spacing="3">
-                    <TextBlock Text="⚠  SCHWACHSTELLE" FontSize="10" FontWeight="Bold"
+                    <TextBlock Text="{loc:Tr Main_Vulnerability}" FontSize="10" FontWeight="Bold"
                                Foreground="{DynamicResource NetVulnBrush}"/>
                     <TextBlock Text="{Binding VulnBadge}" FontSize="12" TextWrapping="Wrap"
                                Foreground="{DynamicResource KrosteTextBrush}"/>
@@ -391,15 +396,15 @@
                              FontFamily="Cascadia Code,Consolas,monospace"
                              Foreground="{DynamicResource KrosteMutedTextBrush}"
                              IsVisible="{Binding HasRtspUri}"/>
-                  <Button Classes="stream" Content="▶  Stream öffnen" HorizontalAlignment="Left"
+                  <Button Classes="stream" Content="{loc:Tr Main_OpenStream}" HorizontalAlignment="Left"
                           Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).OpenStreamCommand}"
                           CommandParameter="{Binding}"/>
                 </StackPanel>
 
                 <!-- Kopier-Aktionen -->
                 <WrapPanel Margin="0,2,0,0">
-                  <Button Classes="ghost" Content="IP kopieren" Click="OnHostCopyIp" Margin="0,0,6,6"/>
-                  <Button Classes="ghost" Content="MAC kopieren" Click="OnHostCopyMac" Margin="0,0,6,6"
+                  <Button Classes="ghost" Content="{loc:Tr Common_CopyIp}" Click="OnHostCopyIp" Margin="0,0,6,6"/>
+                  <Button Classes="ghost" Content="{loc:Tr Common_CopyMac}" Click="OnHostCopyMac" Margin="0,0,6,6"
                           IsVisible="{Binding HasMac}"/>
                 </WrapPanel>
 
@@ -429,13 +434,13 @@
                 Background="{DynamicResource NetVideoBackgroundBrush}" ClipToBounds="True"
                 IsVisible="{Binding ShowVlcMissingHint}">
           <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10" Margin="24">
-            <TextBlock Text="Eingebettete Vorschau benötigt VLC"
+            <TextBlock Text="{loc:Tr Main_VlcRequired}"
                        Foreground="{DynamicResource KrosteTextBrush}" FontSize="15" FontWeight="SemiBold"
                        HorizontalAlignment="Center"/>
             <TextBlock TextWrapping="Wrap" TextAlignment="Center" MaxWidth="430"
                        Foreground="{DynamicResource KrosteMutedTextBrush}" FontSize="12"
                        Text="{Binding VlcHintText}"/>
-            <Button Classes="stream" Content="VLC herunterladen" HorizontalAlignment="Center"
+            <Button Classes="stream" Content="{loc:Tr Main_DownloadVlc}" HorizontalAlignment="Center"
                     Click="OnDownloadVlc"/>
           </StackPanel>
         </Border>

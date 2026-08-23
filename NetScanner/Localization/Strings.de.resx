@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Deutsch. Muss dieselben Keys tragen wie die neutrale Strings.resx.
+  Kein Strings.Designer.cs: der ResX-Generator laeuft nur unter Visual Studio
+  zuverlaessig. Der LocalizationService greift direkt per ResourceManager zu.
+-->
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <!-- ============ Fenstertitel / Window titles ============ -->
+  <data name="Window_Main" xml:space="preserve"><value>NetScanner  ·  LAN · Ports · ONVIF/RTSP</value></data>
+  <data name="Window_Map" xml:space="preserve"><value>NetScanner  ·  Netzwerkkarte</value></data>
+  <data name="Window_Exposure" xml:space="preserve"><value>NetScanner  ·  Expositions-Prüfung</value></data>
+  <data name="Window_PwCheck" xml:space="preserve"><value>NetScanner  ·  Passwort-Leak-Check</value></data>
+  <data name="Window_About" xml:space="preserve"><value>NetScanner  ·  Über</value></data>
+
+  <!-- ============ Allgemeine Aktionen / Common actions ============ -->
+  <data name="Common_Close" xml:space="preserve"><value>Schließen</value></data>
+  <data name="Common_Cancel" xml:space="preserve"><value>Abbrechen</value></data>
+  <data name="Common_Refresh" xml:space="preserve"><value>Aktualisieren</value></data>
+  <data name="Common_Check" xml:space="preserve"><value>Prüfen</value></data>
+  <data name="Common_Minimize" xml:space="preserve"><value>Minimieren</value></data>
+  <data name="Common_Maximize" xml:space="preserve"><value>Maximieren</value></data>
+  <data name="Common_CopyIp" xml:space="preserve"><value>IP kopieren</value></data>
+  <data name="Common_CopyMac" xml:space="preserve"><value>MAC kopieren</value></data>
+  <data name="Common_CopyName" xml:space="preserve"><value>Name kopieren</value></data>
+
+  <!-- ============ Hauptfenster / Main window ============ -->
+  <data name="Main_Hosts" xml:space="preserve"><value>Hosts</value></data>
+  <data name="Main_Cameras" xml:space="preserve"><value>Kameras</value></data>
+  <data name="Main_Section_Cidr" xml:space="preserve"><value>NETZBEREICH (CIDR)</value></data>
+  <data name="Main_Cidr_Placeholder" xml:space="preserve"><value>192.168.10.0/24</value></data>
+  <data name="Main_Section_OnvifWait" xml:space="preserve"><value>ONVIF-WARTEZEIT (MS)</value></data>
+  <data name="Main_AllPorts" xml:space="preserve"><value>Alle Ports (1–65535)</value></data>
+  <data name="Main_ProbeRtsp" xml:space="preserve"><value>RTSP prüfen</value></data>
+  <data name="Main_AuditCredentials" xml:space="preserve"><value>Schwachstellen prüfen</value></data>
+  <data name="Main_AuditCredentials_Tip" xml:space="preserve"><value>Testet offene Streams und gängige Werks-Logins (Kamera/Router). Nur im eigenen Netz verwenden.</value></data>
+  <data name="Main_Section_RtspLogin" xml:space="preserve"><value>RTSP-LOGIN (OPTIONAL)</value></data>
+  <data name="Main_User_Placeholder" xml:space="preserve"><value>Benutzer</value></data>
+  <data name="Main_Password_Placeholder" xml:space="preserve"><value>Passwort</value></data>
+  <data name="Main_StartScan" xml:space="preserve"><value>Scan starten</value></data>
+  <data name="Main_ExportCsv" xml:space="preserve"><value>⬇ CSV</value></data>
+  <data name="Main_ExportCsv_Tip" xml:space="preserve"><value>Als CSV exportieren</value></data>
+  <data name="Main_ExportJson" xml:space="preserve"><value>⬇ JSON</value></data>
+  <data name="Main_ExportJson_Tip" xml:space="preserve"><value>Als JSON exportieren</value></data>
+  <data name="Main_Map_Tip" xml:space="preserve"><value>Netzwerkkarte</value></data>
+  <data name="Main_PwCheck_Tip" xml:space="preserve"><value>Passwort-Leak-Check</value></data>
+  <data name="Main_Exposure_Tip" xml:space="preserve"><value>Expositions-Prüfung – was ist von außen erreichbar?</value></data>
+  <data name="Main_About_Tip" xml:space="preserve"><value>Information / Über</value></data>
+  <data name="Main_Update" xml:space="preserve"><value>⬇ Update</value></data>
+  <data name="Main_Update_Tip" xml:space="preserve"><value>Neue Version verfügbar — im Über-Fenster installieren</value></data>
+  <data name="Main_SelectHost" xml:space="preserve"><value>Host auswählen für Details</value></data>
+  <data name="Main_RightClickHint" xml:space="preserve"><value>Rechtsklick auf eine Karte für Aktionen</value></data>
+  <data name="Main_Camera" xml:space="preserve"><value>KAMERA</value></data>
+  <data name="Main_Open" xml:space="preserve"><value>⚠ OFFEN</value></data>
+  <data name="Main_Vulnerability" xml:space="preserve"><value>⚠  SCHWACHSTELLE</value></data>
+  <data name="Main_Discovery" xml:space="preserve"><value>DISCOVERY</value></data>
+  <data name="Main_OpenPorts" xml:space="preserve"><value>OFFENE PORTS</value></data>
+  <data name="Main_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Main_Vendor" xml:space="preserve"><value>Hersteller</value></data>
+  <data name="Main_Mac" xml:space="preserve"><value>MAC</value></data>
+  <data name="Main_Ttl" xml:space="preserve"><value>TTL</value></data>
+  <data name="Main_Latency" xml:space="preserve"><value>Antwortzeit</value></data>
+  <data name="Main_Stream" xml:space="preserve"><value>▶  Stream</value></data>
+  <data name="Main_OpenStream" xml:space="preserve"><value>▶  Stream öffnen</value></data>
+  <data name="Main_VlcRequired" xml:space="preserve"><value>Eingebettete Vorschau benötigt VLC</value></data>
+  <data name="Main_DownloadVlc" xml:space="preserve"><value>VLC herunterladen</value></data>
+  <data name="Main_Ctx_OpenWeb" xml:space="preserve"><value>Im Browser öffnen</value></data>
+  <data name="Main_Ctx_Ssh" xml:space="preserve"><value>SSH-Verbindung</value></data>
+  <data name="Main_Ctx_Rdp" xml:space="preserve"><value>Remotedesktop (RDP)</value></data>
+  <data name="Main_Ctx_Smb" xml:space="preserve"><value>Dateifreigabe (SMB)</value></data>
+  <data name="Main_Ctx_Wol" xml:space="preserve"><value>Wake-on-LAN senden</value></data>
+  <data name="Main_Btn_Web" xml:space="preserve"><value>🌐 Web</value></data>
+  <data name="Main_Btn_Ssh" xml:space="preserve"><value>⌨ SSH</value></data>
+  <data name="Main_Btn_Rdp" xml:space="preserve"><value>🖥 RDP</value></data>
+  <data name="Main_Btn_Smb" xml:space="preserve"><value>📁 SMB</value></data>
+  <data name="Main_Btn_Wol" xml:space="preserve"><value>⏻ Wake-on-LAN</value></data>
+
+  <!-- ============ Netzwerkkarte / Network map ============ -->
+  <data name="Map_TraceLabel" xml:space="preserve"><value>Außenpfad (traceroute)</value></data>
+  <data name="Map_TracePlaceholder" xml:space="preserve"><value>Ziel-IP oder Hostname — leer = Gateway</value></data>
+  <data name="Map_TraceStart" xml:space="preserve"><value>Pfad verfolgen</value></data>
+  <data name="Map_Refresh_Tip" xml:space="preserve"><value>Karte aus aktuellem Scan neu zeichnen</value></data>
+  <data name="Map_TraceHint" xml:space="preserve"><value>Verfolgt den Weg vom Gateway nach außen — im flachen LAN nur ein Hop, Richtung Internet die ISP-Stationen.</value></data>
+  <data name="Map_NoHosts" xml:space="preserve"><value>Noch keine Hosts — erst im Hauptfenster scannen, dann „Aktualisieren“.</value></data>
+
+  <!-- ============ Expositions-Prüfung / Exposure check ============ -->
+  <data name="Exp_Heading" xml:space="preserve"><value>Was ist von außen erreichbar?</value></data>
+  <data name="Exp_Intro" xml:space="preserve"><value>NetScanner fragt deinen Router (UPnP-IGD) nach aktiven Portweiterleitungen. Jeder Eintrag ist ein Port, der aus dem Internet auf ein Gerät in deinem LAN zeigt — reine Leseabfrage, es wird nichts geändert.</value></data>
+  <data name="Exp_PublicIp" xml:space="preserve"><value>ÖFFENTLICHE IP</value></data>
+  <data name="Exp_Shodan" xml:space="preserve"><value>Auf Shodan prüfen ↗</value></data>
+  <data name="Exp_Forwardings" xml:space="preserve"><value>AKTIVE PORTWEITERLEITUNGEN</value></data>
+  <data name="Exp_Searching" xml:space="preserve"><value>Suche Router (UPnP) …</value></data>
+  <data name="Exp_NoneActive" xml:space="preserve"><value>✓  Keine Portweiterleitungen aktiv</value></data>
+  <data name="Exp_NoneActive_Detail" xml:space="preserve"><value>Der Router meldet keine offenen Weiterleitungen ins LAN. Beachte: Hersteller-Cloud-/P2P-Zugriff läuft an UPnP vorbei und wäre hier nicht sichtbar — den prüfst du in der Kamera-App selbst.</value></data>
+  <data name="Exp_NoRouter" xml:space="preserve"><value>Kein UPnP-Router gefunden</value></data>
+  <data name="Exp_NoRouter_Detail" xml:space="preserve"><value>Der Router antwortet nicht auf UPnP — oft ist UPnP deaktiviert (sicherheitstechnisch gut). Prüfe Portfreigaben dann direkt im Router-Menü. Die öffentliche IP oben kannst du trotzdem auf Shodan gegenprüfen.</value></data>
+  <data name="Exp_Camera" xml:space="preserve"><value>⚠ KAMERA</value></data>
+
+  <!-- ============ Passwort-Leak-Check / Password leak check ============ -->
+  <data name="Pw_Heading" xml:space="preserve"><value>Passwort gegen Leaks prüfen</value></data>
+  <data name="Pw_Intro" xml:space="preserve"><value>Steht das Passwort deiner Kamera, deines Routers oder eines anderen Geräts in bekannten Daten-Leaks?</value></data>
+  <data name="Pw_Section" xml:space="preserve"><value>PASSWORT</value></data>
+  <data name="Pw_Placeholder" xml:space="preserve"><value>Zu prüfendes Passwort eingeben</value></data>
+  <data name="Pw_Reveal_Tip" xml:space="preserve"><value>Passwort anzeigen</value></data>
+  <data name="Pw_Strength" xml:space="preserve"><value>Passwortstärke</value></data>
+  <data name="Pw_StaysLocal" xml:space="preserve"><value>Dein Passwort verlässt dieses Gerät nicht</value></data>
+  <data name="Pw_Method" xml:space="preserve"><value>Geprüft wird per k-Anonymity gegen die Pwned-Passwords-Datenbank von Have I Been Pwned. Es werden nur die ersten 5 Zeichen des SHA-1-Hashes übertragen — niemals das Passwort und niemals der vollständige Hash. Der Abgleich passiert lokal. Dasselbe Verfahren nutzen Bitwarden, 1Password und Firefox.</value></data>
+  <data name="Pw_Source" xml:space="preserve"><value>Datenquelle:</value></data>
+
+  <!-- ============ Über / About ============ -->
+  <data name="About_Tagline" xml:space="preserve"><value>LAN-Discovery (ICMP + ARP), Portscan und ONVIF/RTSP-Kameraerkennung mit eingebettetem Live-Video.</value></data>
+  <data name="About_Section_Update" xml:space="preserve"><value>AKTUALISIERUNG</value></data>
+  <data name="About_CheckUpdate" xml:space="preserve"><value>Auf Updates prüfen</value></data>
+  <data name="About_InstallUpdate" xml:space="preserve"><value>⬇  Update installieren</value></data>
+  <data name="About_NotChecked" xml:space="preserve"><value>Noch nicht geprüft.</value></data>
+  <data name="About_Checking" xml:space="preserve"><value>Suche nach Updates …</value></data>
+  <data name="About_UpToDate" xml:space="preserve"><value>NetScanner {0} ist aktuell.</value></data>
+  <data name="About_Available" xml:space="preserve"><value>Version {0} ist verfügbar (installiert: {1}).</value></data>
+  <data name="About_NoAsset" xml:space="preserve"><value> Für diese Plattform gibt es kein Paket — bitte manuell von der Release-Seite laden.</value></data>
+  <data name="About_CheckFailed" xml:space="preserve"><value>Update-Prüfung fehlgeschlagen — siehe Log.</value></data>
+  <data name="About_Downloading" xml:space="preserve"><value>Version {0} wird geladen …</value></data>
+  <data name="About_Installing" xml:space="preserve"><value>Update wird installiert, NetScanner startet neu …</value></data>
+  <data name="About_ApplyFailed" xml:space="preserve"><value>Update konnte nicht angewendet werden — siehe Log.</value></data>
+  <data name="About_Section_Project" xml:space="preserve"><value>PROJEKT</value></data>
+  <data name="About_SourceCode" xml:space="preserve"><value>Quellcode:</value></data>
+  <data name="About_LikeIt" xml:space="preserve"><value>Gefällt dir das Tool?</value></data>
+  <data name="About_Coffee" xml:space="preserve"><value>☕  Buy me a coffee</value></data>
+
+  <!-- ============ Einstellungen / Settings ============ -->
+  <data name="Window_Settings" xml:space="preserve"><value>NetScanner  ·  Einstellungen</value></data>
+  <data name="Settings_Open_Tip" xml:space="preserve"><value>Einstellungen</value></data>
+  <data name="Settings_Section_Language" xml:space="preserve"><value>SPRACHE</value></data>
+  <data name="Settings_Language" xml:space="preserve"><value>Anzeigesprache</value></data>
+  <data name="Settings_Language_Hint" xml:space="preserve"><value>Die Umstellung wirkt sofort in allen Fenstern — kein Neustart nötig.</value></data>
+
+  <!-- ============ Gerätetypen / Device types ============ -->
+  <data name="Device_NetworkDevice" xml:space="preserve"><value>Netzwerkgerät</value></data>
+  <data name="Device_IpCamera" xml:space="preserve"><value>IP-Kamera</value></data>
+  <data name="Device_Printer" xml:space="preserve"><value>Drucker</value></data>
+  <data name="Device_SmartHome" xml:space="preserve"><value>Smart-Home-Gerät</value></data>
+  <data name="Device_SmartSpeaker" xml:space="preserve"><value>Smart-Speaker</value></data>
+  <data name="Device_SonosSpeaker" xml:space="preserve"><value>Sonos-Lautsprecher</value></data>
+  <data name="Device_MobileRandomMac" xml:space="preserve"><value>Mobilgerät (rand. MAC)</value></data>
+  <data name="Device_WindowsSamba" xml:space="preserve"><value>Windows-/Samba-Host</value></data>
+  <data name="Device_MediaServerPlex" xml:space="preserve"><value>Media-Server (Plex)</value></data>
+  <data name="Device_RouterSwitch" xml:space="preserve"><value>Router/Switch</value></data>
+  <data name="Device_NetworkHardware" xml:space="preserve"><value>Netzwerk-Hardware</value></data>
+  <data name="Device_WindowsPcServer" xml:space="preserve"><value>Windows-PC/Server</value></data>
+  <data name="Device_LinuxServer" xml:space="preserve"><value>Server (Linux)</value></data>
+  <data name="Device_LinuxHost" xml:space="preserve"><value>Linux-Host</value></data>
+  <data name="Device_AppleDevice" xml:space="preserve"><value>Apple-Gerät</value></data>
+  <data name="Device_WebIotDevice" xml:space="preserve"><value>Web-/IoT-Gerät</value></data>
+
+  <!-- ============ Passwortstärke / Password strength ============ -->
+  <data name="Strength_None" xml:space="preserve"><value>—</value></data>
+  <data name="Strength_Leaked" xml:space="preserve"><value>In Leaks — sofort knackbar</value></data>
+  <data name="Strength_VeryWeak" xml:space="preserve"><value>Sehr schwach</value></data>
+  <data name="Strength_Weak" xml:space="preserve"><value>Schwach</value></data>
+  <data name="Strength_Medium" xml:space="preserve"><value>Mittel</value></data>
+  <data name="Strength_Strong" xml:space="preserve"><value>Stark</value></data>
+  <data name="Strength_VeryStrong" xml:space="preserve"><value>Sehr stark</value></data>
+  <data name="Crack_InWordlists" xml:space="preserve"><value>sofort (steht in Wortlisten)</value></data>
+  <data name="Crack_Instant" xml:space="preserve"><value>sofort</value></data>
+  <data name="Crack_Seconds" xml:space="preserve"><value>{0} Sekunden</value></data>
+  <data name="Crack_Minutes" xml:space="preserve"><value>{0} Minuten</value></data>
+  <data name="Crack_Hours" xml:space="preserve"><value>{0} Stunden</value></data>
+  <data name="Crack_Days" xml:space="preserve"><value>{0} Tage</value></data>
+  <data name="Crack_Months" xml:space="preserve"><value>{0} Monate</value></data>
+  <data name="Crack_Years" xml:space="preserve"><value>{0} Jahre</value></data>
+  <data name="Crack_ThousandYears" xml:space="preserve"><value>{0} Tausend Jahre</value></data>
+  <data name="Crack_MillionYears" xml:space="preserve"><value>{0} Millionen Jahre</value></data>
+  <data name="Crack_Uncrackable" xml:space="preserve"><value>praktisch unknackbar</value></data>
+
+  <!-- ============ Statustexte / Status texts ============ -->
+  <data name="Status_Ready" xml:space="preserve"><value>Bereit.</value></data>
+  <data name="Status_InvalidCidr" xml:space="preserve"><value>Ungültige CIDR-Angabe — erwartet z. B. 192.168.10.0/24.</value></data>
+  <data name="Status_Running" xml:space="preserve"><value>Läuft … {0} Host(s), {1} Kamera(s)</value></data>
+  <data name="Status_Done" xml:space="preserve"><value>Fertig: {0} Host(s), {1} Kamera(s).</value></data>
+  <data name="Status_Cancelled" xml:space="preserve"><value>Abgebrochen. {0} Host(s) gefunden.</value></data>
+  <data name="Status_Error" xml:space="preserve"><value>Fehler: {0}</value></data>
+  <data name="Status_NoRtspUrl" xml:space="preserve"><value>Keine RTSP-URL für diesen Host.</value></data>
+  <data name="Status_Stream" xml:space="preserve"><value>Stream: {0}</value></data>
+  <data name="Status_WolSent" xml:space="preserve"><value>Wake-on-LAN gesendet an {0}</value></data>
+  <data name="Status_WolFailed" xml:space="preserve"><value>Wake-on-LAN fehlgeschlagen (MAC unbekannt?)</value></data>
+  <data name="Status_BrowserOpened" xml:space="preserve"><value>Browser geöffnet: {0}</value></data>
+  <data name="Status_RdpWindowsOnly" xml:space="preserve"><value>RDP-Client nur unter Windows verfügbar</value></data>
+  <data name="Status_ShareOpened" xml:space="preserve"><value>Dateifreigabe geöffnet: {0}</value></data>
+  <data name="Vlc_Broken" xml:space="preserve"><value>VLC wurde gefunden, aber libvlc ließ sich nicht laden. Vermutlich ist die Installation beschädigt — VLC neu installieren.</value></data>
+  <data name="Vlc_Missing" xml:space="preserve"><value>NetScanner bringt libvlc nicht mehr mit. Installiere den VLC media player (64-bit), dann läuft der Stream direkt hier. Ohne VLC die Stream-URL kopieren und extern öffnen.</value></data>
+
+  <!-- ============ Video-Vorschau / Video preview ============ -->
+  <data name="Video_Connecting" xml:space="preserve"><value>Verbinde …</value></data>
+  <data name="Video_Buffering" xml:space="preserve"><value>Verbinde … {0} %</value></data>
+  <data name="Video_Unreachable" xml:space="preserve"><value>Stream nicht erreichbar oder Zugangsdaten falsch.</value></data>
+  <data name="Video_Ended" xml:space="preserve"><value>Stream beendet.</value></data>
+  <data name="Video_Timeout" xml:space="preserve"><value>Zeitüberschreitung – Stream nicht erreichbar.</value></data>
+
+  <!-- ============ Expositions-Prüfung, dynamisch / Exposure check, dynamic ============ -->
+  <data name="Exp_UnknownDevice" xml:space="preserve"><value>unbekanntes Gerät im LAN</value></data>
+  <data name="Exp_NoForwardings" xml:space="preserve"><value>Router gefunden — keine aktiven Weiterleitungen.</value></data>
+  <data name="Exp_WithCameras" xml:space="preserve"><value>{0} Weiterleitung(en) — davon {1} auf eine Kamera!</value></data>
+  <data name="Exp_FoundCount" xml:space="preserve"><value>{0} aktive Weiterleitung(en) gefunden.</value></data>
+  <data name="Exp_Failed" xml:space="preserve"><value>Prüfung fehlgeschlagen.</value></data>
+
+  <!-- ============ Passwort-Check, dynamisch / Password check, dynamic ============ -->
+  <data name="Pw_Checking" xml:space="preserve"><value>Prüfe …</value></data>
+  <data name="Pw_NotPossible" xml:space="preserve"><value>Prüfung nicht möglich</value></data>
+  <data name="Pw_NotPossible_Detail" xml:space="preserve"><value>Die Pwned-Passwords-API ist gerade nicht erreichbar (Internetverbindung?).</value></data>
+  <data name="Pw_Leaked" xml:space="preserve"><value>⚠  In Daten-Leaks gefunden</value></data>
+  <data name="Pw_Leaked_Detail" xml:space="preserve"><value>Dieses Passwort taucht {0}-mal in bekannten Leaks auf. Ändere es auf dem betroffenen Gerät — solche Passwörter stehen in den Listen, die bei automatisierten Angriffen zuerst durchprobiert werden.</value></data>
+  <data name="Pw_Safe" xml:space="preserve"><value>✓  Nicht in Leaks gefunden</value></data>
+  <data name="Pw_Safe_Detail" xml:space="preserve"><value>Dieses Passwort taucht in der Pwned-Passwords-Datenbank nicht auf. Das ist ein gutes Zeichen — die Stärke-Schätzung oben sagt dir zusätzlich, wie es gegen reines Durchprobieren steht.</value></data>
+
+  <!-- ============ Netzwerkkarte, dynamisch / Network map, dynamic ============ -->
+  <data name="Map_TraceIncomplete" xml:space="preserve"><value>Beendet nach {0} Hops — Ziel nicht erreicht oder letzte Hops antworten nicht (häufig: Firewall am Ziel).</value></data>
+  <data name="Map_TraceReached" xml:space="preserve"><value>Ziel {0} erreicht in {1} Hops.</value></data>
+  <data name="Map_TraceCancelled" xml:space="preserve"><value>Traceroute abgebrochen.</value></data>
+  <data name="Pw_CrackFast" xml:space="preserve"><value>Gegen schnellen Hash (MD5 &amp; Co.): {0}</value></data>
+  <data name="Pw_CrackSlow" xml:space="preserve"><value>Gegen langsamen Hash (bcrypt &amp; Co.): {0}</value></data>
+  <data name="Action_BrowserOpened" xml:space="preserve"><value>Browser geöffnet: {0}</value></data>
+  <data name="Action_SshCopied" xml:space="preserve"><value>SSH-Befehl kopiert: ssh {0}</value></data>
+  <data name="Action_SshStarted" xml:space="preserve"><value>SSH zu {0} gestartet</value></data>
+  <data name="Action_SshFailed" xml:space="preserve"><value>SSH-Start fehlgeschlagen</value></data>
+  <data name="Action_RdpWindowsOnly" xml:space="preserve"><value>RDP-Client nur unter Windows verfügbar</value></data>
+  <data name="Action_RdpStarted" xml:space="preserve"><value>RDP zu {0} gestartet</value></data>
+  <data name="Action_ShareOpened" xml:space="preserve"><value>Dateifreigabe geöffnet: {0}</value></data>
+  <data name="Vlc_WrongArchitecture" xml:space="preserve"><value>Es wurde eine 32-bit-VLC gefunden. NetScanner braucht die 64-bit-Version des VLC media player.</value></data>
+  <data name="About_VersionLine" xml:space="preserve"><value>Version {0} · .NET 10 · Avalonia 12</value></data>
+  <data name="About_Title" xml:space="preserve"><value>Über NetScanner · v{0}</value></data>
+</root>

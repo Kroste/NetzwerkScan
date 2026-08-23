@@ -1,4 +1,5 @@
 using System.Net;
+using NetScanner.Localization;
 
 namespace NetScanner.Models;
 
@@ -182,8 +183,10 @@ public sealed class HostResult
         get
         {
             var parts = new List<string>(2);
-            if (!string.IsNullOrWhiteSpace(DeviceType)) parts.Add(DeviceType!);
-            if (!string.IsNullOrWhiteSpace(OsGuess)) parts.Add(OsGuess!);
+            // DeviceClassifier liefert Resource-Keys fuer die uebersetzbaren Typen
+            // und Klartext fuer Produktnamen/UPnP-Angaben -- TOrText behandelt beides.
+            if (!string.IsNullOrWhiteSpace(DeviceType)) parts.Add(L.TOrText(DeviceType));
+            if (!string.IsNullOrWhiteSpace(OsGuess)) parts.Add(L.TOrText(OsGuess));
             return string.Join(" · ", parts);
         }
     }

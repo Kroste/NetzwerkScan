@@ -3,6 +3,8 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NetScanner.Config;
+using NetScanner.Localization;
 using NetScanner.Services;
 using NetScanner.ViewModels;
 using NetScanner.Views;
@@ -24,6 +26,12 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         Services = BuildServices();
+
+        // Sprache setzen, BEVOR das erste Fenster gebaut wird — sonst flackert die UI
+        // beim Start kurz in der Systemsprache.
+        var settings = Services.GetRequiredService<AppSettingsService>();
+        if (settings.Current.UiCulture is { Length: > 0 } iso)
+            LocalizationService.Instance.SetCulture(iso);
 
         // libvlc-Verfuegbarkeit frueh klaeren (laedt aus vorhandener VLC-Installation),
         // damit das ViewModel/die UI sofort wissen, ob die Vorschau angeboten werden kann.
@@ -85,9 +93,11 @@ public partial class App : Application
         sc.AddSingleton<TracerouteService>();
         sc.AddSingleton<IScanOrchestrator, ScanOrchestrator>();
         sc.AddSingleton<UpdateService>();
+        sc.AddSingleton<AppSettingsService>();
 
         // ViewModels
         sc.AddTransient<MainViewModel>();
+        sc.AddTransient<SettingsViewModel>();
 
         return sc.BuildServiceProvider();
     }

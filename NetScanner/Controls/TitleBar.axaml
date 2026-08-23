@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:chrome="using:Avalonia.Controls.Chrome"
+             xmlns:loc="using:NetScanner.Localization"
              x:Class="NetScanner.Controls.TitleBar"
              Height="40">
   <!-- ElementRole ist der Avalonia-12-Mechanismus für Custom-Chrome-Hit-Testing:
@@ -43,11 +44,11 @@
                         VerticalAlignment="Center" Margin="0,0,8,0" />
 
       <StackPanel Grid.Column="4" Orientation="Horizontal">
-        <Button x:Name="MinButton" Classes="chrome" Content="—" ToolTip.Tip="Minimieren"
+        <Button x:Name="MinButton" Classes="chrome" Content="—" ToolTip.Tip="{loc:Tr Common_Minimize}"
                 chrome:WindowDecorationProperties.ElementRole="User" />
-        <Button x:Name="MaxButton" Classes="chrome" Content="❐" ToolTip.Tip="Maximieren"
+        <Button x:Name="MaxButton" Classes="chrome" Content="❐" ToolTip.Tip="{loc:Tr Common_Maximize}"
                 chrome:WindowDecorationProperties.ElementRole="User" />
-        <Button x:Name="CloseButton" Classes="chrome close" Content="✕" ToolTip.Tip="Schließen"
+        <Button x:Name="CloseButton" Classes="chrome close" Content="✕" ToolTip.Tip="{loc:Tr Common_Close}"
                 chrome:WindowDecorationProperties.ElementRole="User" />
       </StackPanel>
     </Grid>

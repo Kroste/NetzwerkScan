@@ -3,6 +3,7 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using NetScanner.Services;
+using NetScanner.Localization;
 
 namespace NetScanner.Views;
 
@@ -20,8 +21,8 @@ public partial class AboutWindow : ChromeWindow
         if (!Design.IsDesignMode)
             _updates = App.Services.GetRequiredService<UpdateService>();
 
-        VersionText.Text = $"Version {AppVersion.Display} · .NET 10 · Avalonia 12";
-        Title = $"Über NetScanner · v{AppVersion.Display}";
+        VersionText.Text = L.F("About_VersionLine", AppVersion.Display);
+        Title = L.F("About_Title", AppVersion.Display);
 
         Opened += (_, _) => WindowSizing.FitToScreen(this);
     }
@@ -30,7 +31,7 @@ public partial class AboutWindow : ChromeWindow
     public void ShowPendingUpdate(UpdateInfo info)
     {
         _pending = info;
-        UpdateStatus.Text = $"Version {info.Version} ist verfügbar (installiert: {AppVersion.Display}).";
+        UpdateStatus.Text = L.F("About_Available", info.Version, AppVersion.Display);
         InstallUpdateButton.IsVisible = info.CanSelfUpdate;
     }
 
@@ -39,13 +40,13 @@ public partial class AboutWindow : ChromeWindow
         if (_updates is null) return;
 
         CheckUpdateButton.IsEnabled = false;
-        UpdateStatus.Text = "Suche nach Updates …";
+        UpdateStatus.Text = L.T("About_Checking");
         try
         {
             var info = await _updates.CheckAsync();
             if (info is null)
             {
-                UpdateStatus.Text = $"NetScanner {AppVersion.Display} ist aktuell.";
+                UpdateStatus.Text = L.F("About_UpToDate", AppVersion.Display);
                 InstallUpdateButton.IsVisible = false;
                 return;
             }
@@ -53,15 +54,14 @@ public partial class AboutWindow : ChromeWindow
             ShowPendingUpdate(info);
             if (!info.CanSelfUpdate)
             {
-                UpdateStatus.Text +=
-                    " Für diese Plattform gibt es kein Paket — bitte manuell von der Release-Seite laden.";
+                UpdateStatus.Text += L.T("About_NoAsset");
             }
         }
         catch (Exception ex)
         {
             // Ein fehlgeschlagener Check ist kein App-Fehler (offline, Proxy, Rate-Limit).
             Log.Warn(ex, "Update-Pruefung im About-Dialog fehlgeschlagen");
-            UpdateStatus.Text = "Update-Prüfung fehlgeschlagen — siehe Log.";
+            UpdateStatus.Text = L.T("About_CheckFailed");
         }
         finally
         {
@@ -77,7 +77,7 @@ public partial class AboutWindow : ChromeWindow
         CheckUpdateButton.IsEnabled = false;
         UpdateProgress.IsVisible = true;
         UpdateProgress.Value = 0;
-        UpdateStatus.Text = $"Version {_pending.Version} wird geladen …";
+        UpdateStatus.Text = L.F("About_Downloading", _pending.Version);
 
         // Fortschritt kommt aus dem Download-Task: explizit auf den UI-Thread
         // dispatchen, sonst sehen die Bindings die Aenderung nicht zuverlaessig.
@@ -89,7 +89,7 @@ public partial class AboutWindow : ChromeWindow
             bool ok = await _updates.DownloadAndApplyAsync(_pending, progress);
             if (!ok)
             {
-                UpdateStatus.Text = "Update konnte nicht angewendet werden — siehe Log.";
+                UpdateStatus.Text = L.T("About_ApplyFailed");
                 UpdateProgress.IsVisible = false;
                 InstallUpdateButton.IsEnabled = true;
                 CheckUpdateButton.IsEnabled = true;
@@ -98,13 +98,13 @@ public partial class AboutWindow : ChromeWindow
 
             // PFLICHT: das Austausch-Skript wartet auf das Prozessende. Ohne dieses
             // Beenden bliebe die Anzeige ewig bei 100 % stehen und nichts passiert.
-            UpdateStatus.Text = "Update wird installiert, NetScanner startet neu …";
+            UpdateStatus.Text = L.T("About_Installing");
             UpdateService.TerminateForUpdate();
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Update-Installation fehlgeschlagen");
-            UpdateStatus.Text = "Update fehlgeschlagen — siehe Log.";
+            UpdateStatus.Text = L.T("About_ApplyFailed");
             UpdateProgress.IsVisible = false;
             InstallUpdateButton.IsEnabled = true;
             CheckUpdateButton.IsEnabled = true;

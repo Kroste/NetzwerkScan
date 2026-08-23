@@ -4,6 +4,7 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using LibVLCSharp.Shared;
 using NetScanner.Services;
+using NetScanner.Localization;
 
 namespace NetScanner.Controls;
 
@@ -96,11 +97,11 @@ public sealed class NativeVideoView : NativeControlHost
         // libvlc feuert diese Events auf eigenen Threads -> UI-Updates ueber den Dispatcher.
         p.Playing          += (_, _) => Ui(() => { StopWatchdog(); PlaybackInfo = null; });
         p.EncounteredError += (_, _) => Ui(() => { StopWatchdog();
-            PlaybackInfo = "Stream nicht erreichbar oder Zugangsdaten falsch."; });
-        p.EndReached       += (_, _) => Ui(() => { StopWatchdog(); PlaybackInfo = "Stream beendet."; });
+            PlaybackInfo = L.T("Video_Unreachable"); });
+        p.EndReached       += (_, _) => Ui(() => { StopWatchdog(); PlaybackInfo = L.T("Video_Ended"); });
         p.Buffering        += (_, e) => Ui(() =>
         {
-            if (e.Cache < 100f) PlaybackInfo = $"Verbinde … {e.Cache:0} %";
+            if (e.Cache < 100f) PlaybackInfo = L.F("Video_Buffering", $"{e.Cache:0}");
         });
     }
 
@@ -120,7 +121,7 @@ public sealed class NativeVideoView : NativeControlHost
     private void Play(string url)
     {
         if (_player is null || VlcLocator.Shared is not { } vlc) return;
-        PlaybackInfo = "Verbinde …";
+        PlaybackInfo = L.T("Video_Connecting");
         StartWatchdog();
         using var media = new Media(vlc, new Uri(url));
         _player.Play(media);
@@ -134,7 +135,7 @@ public sealed class NativeVideoView : NativeControlHost
         _watchdog.Tick += (_, _) =>
         {
             StopWatchdog();
-            PlaybackInfo = "Zeitüberschreitung – Stream nicht erreichbar.";
+            PlaybackInfo = L.T("Video_Timeout");
         };
         _watchdog.Start();
     }

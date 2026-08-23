@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NetScanner.Models;
 using NetScanner.Services;
 using NetScanner.ViewModels;
+using NetScanner.Localization;
 
 namespace NetScanner.Views;
 
@@ -261,11 +262,11 @@ public partial class NetworkMapWindow : ChromeWindow
             var hops = await _trace.TraceAsync(target!, progress: progress, ct: _traceCts.Token);
             bool reached = hops.Count > 0 && hops[^1].Reached;
             TraceStatus.Text = reached
-                ? $"Ziel {target} erreicht in {hops.Count} Hops."
-                : $"Beendet nach {hops.Count} Hops — Ziel nicht erreicht oder letzte Hops antworten nicht (häufig: Firewall am Ziel).";
+                ? L.F("Map_TraceReached", target!, hops.Count)
+                : L.F("Map_TraceIncomplete", hops.Count);
         }
-        catch (OperationCanceledException) { TraceStatus.Text = "Traceroute abgebrochen."; }
-        catch (Exception ex) { TraceStatus.Text = "Fehler: " + ex.Message; }
+        catch (OperationCanceledException) { TraceStatus.Text = L.T("Map_TraceCancelled"); }
+        catch (Exception ex) { TraceStatus.Text = L.F("Status_Error", ex.Message); }
         finally
         {
             TraceBtn.IsEnabled = true;

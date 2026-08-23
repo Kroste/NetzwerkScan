@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using NetScanner.Models;
 using NetScanner.Services;
+using NetScanner.Localization;
 
 namespace NetScanner.ViewModels;
 
@@ -52,12 +53,9 @@ public sealed partial class MainViewModel : ViewModelBase
     /// <summary>Statusabhaengiger Hinweis fuer den Fall ohne (passende) VLC-Installation.</summary>
     public string VlcHintText => VlcLocator.Status switch
     {
-        VlcStatus.WrongArchitecture =>
-            "Es wurde eine 32-bit-VLC gefunden. NetScanner braucht die 64-bit-Version des VLC media player.",
-        VlcStatus.InitFailed =>
-            "VLC wurde gefunden, aber libvlc ließ sich nicht laden. Vermutlich ist die Installation beschädigt — VLC neu installieren.",
-        _ =>
-            "NetScanner bringt libvlc nicht mehr mit. Installiere den VLC media player (64-bit), dann läuft der Stream direkt hier. Ohne VLC die Stream-URL kopieren und extern öffnen."
+        VlcStatus.WrongArchitecture => L.T("Vlc_WrongArchitecture"),
+        VlcStatus.InitFailed => L.T("Vlc_Broken"),
+        _ => L.T("Vlc_Missing")
     };
 
     // Beide abgeleiteten Flags neu auswerten, sobald sich die Stream-URL aendert.
@@ -82,7 +80,7 @@ public sealed partial class MainViewModel : ViewModelBase
         // Eingabe vorab pruefen -> klare Meldung statt generischem Fehler tief im Scan.
         if (!IpRangeHelper.IsValidCidr(Cidr))
         {
-            Status = "Ungültige CIDR-Angabe — erwartet z. B. 192.168.10.0/24.";
+            Status = L.T("Status_InvalidCidr");
             _audit.LogInformation("SCAN_REJECT | ungueltige CIDR: {Cidr}", Cidr);
             return;
         }
@@ -129,20 +127,20 @@ public sealed partial class MainViewModel : ViewModelBase
                         SelectedStreamUrl = host.RtspUri;
                     }
 
-                    Status = $"Läuft … {HostCount} Host(s), {CameraCount} Kamera(s)";
+                    Status = L.F("Status_Running", HostCount, CameraCount);
                 });
             }
-            Status = $"Fertig: {HostCount} Host(s), {CameraCount} Kamera(s).";
+            Status = L.F("Status_Done", HostCount, CameraCount);
         }
         catch (OperationCanceledException)
         {
-            Status = $"Abgebrochen. {Hosts.Count} Host(s) gefunden.";
+            Status = L.F("Status_Cancelled", Hosts.Count);
             _audit.LogInformation("SCAN_CANCEL | gefunden={Count}", Hosts.Count);
         }
         catch (Exception ex)
         {
             _log.LogError(ex, "Scan fehlgeschlagen");
-            Status = $"Fehler: {ex.Message}";
+            Status = L.F("Status_Error", ex.Message);
         }
         finally
         {
@@ -165,7 +163,7 @@ public sealed partial class MainViewModel : ViewModelBase
     private void OpenStream(HostResult? host)
     {
         var uri = host?.Camera?.RtspUri;
-        if (string.IsNullOrWhiteSpace(uri)) { Status = "Keine RTSP-URL fuer diesen Host."; return; }
+        if (string.IsNullOrWhiteSpace(uri)) { Status = L.T("Status_NoRtspUrl"); return; }
 
         // Falls beim Scan keine Credentials gesetzt waren, jetzt einsetzen.
         if (!string.IsNullOrEmpty(RtspUser) && !uri.Contains('@'))
@@ -174,7 +172,7 @@ public sealed partial class MainViewModel : ViewModelBase
         _audit.LogInformation("STREAM_OPEN | ip={Ip} | uriOhneCreds={Uri}",
             host!.Address, MaskCreds(uri));
         SelectedStreamUrl = uri;
-        Status = $"Stream: {host.Address}";
+        Status = L.F("Status_Stream", host.Address);
     }
 
     // OnXChanged-Hooks (CommunityToolkit erzeugt die partiellen Methoden) -> Eingaben loggen.
@@ -189,7 +187,7 @@ public sealed partial class MainViewModel : ViewModelBase
     {
         _audit.LogInformation("WOL | ip={Ip} | mac={Mac}", host.Address, host.MacAddress);
         bool ok = await _wol.SendAsync(host.MacAddress, CancellationToken.None);
-        Status = ok ? $"Wake-on-LAN gesendet an {host.MacAddress}" : "WoL fehlgeschlagen (MAC unbekannt?)";
+        Status = ok ? L.F("Status_WolSent", host.MacAddress) : L.T("Status_WolFailed");
     }
 
     /// <summary>Setzt eine Statusmeldung und protokolliert die Aktion.</summary>

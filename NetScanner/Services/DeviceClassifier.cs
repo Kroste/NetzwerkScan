@@ -59,10 +59,18 @@ public static class DeviceClassifier
         return null;
     }
 
-    /// <summary>Geraetetyp aus Ports, Hersteller und Bannern.</summary>
+    /// <summary>
+    /// Geraetetyp aus Ports, Hersteller und Bannern.
+    /// </summary>
+    /// <remarks>
+    /// Rueckgabe ist entweder ein <b>Resource-Key</b> (Praefix "Device_") oder ein
+    /// sprachneutraler Produktname bzw. ein Text, den das Geraet selbst gemeldet hat
+    /// (UPnP). Die Uebersetzung passiert erst in der UI (siehe DeviceTypeText) --
+    /// der Klassifizierer bleibt so ohne Localization-Abhaengigkeit testbar.
+    /// </remarks>
     private static string? GuessDeviceType(HostResult h)
     {
-        if (h.IsCamera) return "IP-Kamera";
+        if (h.IsCamera) return "Device_IpCamera";
 
         // Discovery-Signale haben hohe Konfidenz und kommen zuerst.
         if (h.UpnpDeviceType is { } up) return up;                 // Router, Media-Server, Smart-TV
@@ -73,10 +81,10 @@ public static class DeviceClassifier
                 case "Chromecast":      return "Chromecast/Google TV";
                 case "AirPlay":
                 case "AirPlay-Audio":   return "Apple TV/AirPlay";
-                case "Drucker":         return "Drucker";
-                case "Sonos":           return "Sonos-Speaker";
-                case "Spotify":         return "Smart-Speaker";
-                case "HomeKit":         return "Smart-Home-Geraet";
+                case "Drucker":         return "Device_Printer";
+                case "Sonos":           return "Device_SonosSpeaker";
+                case "Spotify":         return "Device_SmartSpeaker";
+                case "HomeKit":         return "Device_SmartHome";
                 case "Android TV":      return "Android TV";
             }
         }
@@ -86,35 +94,35 @@ public static class DeviceClassifier
 
         // Randomisierte MAC ohne offene Ports -> sehr wahrscheinlich Smartphone/Tablet.
         if (ports.Count == 0 && OuiLookup.IsRandomizedMac(h.MacAddress))
-            return "Mobilgerät (rand. MAC)";
+            return "Device_MobileRandomMac";
 
         // NetBIOS-Name vorhanden, aber sonst wenig -> Windows-Rechner/Samba.
         if (!string.IsNullOrWhiteSpace(h.NetbiosName) && ports.Count == 0)
-            return "Windows/Samba-Host";
+            return "Device_WindowsSamba";
 
         // Drucker
-        if (ports.Contains(9100) || ports.Contains(515) || ports.Contains(631)) return "Drucker";
+        if (ports.Contains(9100) || ports.Contains(515) || ports.Contains(631)) return "Device_Printer";
         // NAS
         if (ports.Contains(5000) && ports.Contains(5001)) return "NAS (Synology)";
-        if (ports.Contains(32400)) return "Media-Server (Plex)";
+        if (ports.Contains(32400)) return "Device_MediaServerPlex";
         if (vendor.Contains("Synology", StringComparison.OrdinalIgnoreCase)
             || vendor.Contains("QNAP", StringComparison.OrdinalIgnoreCase)) return "NAS";
         // Mobilgeraete
         if (ports.Contains(62078)) return "iPhone/iPad";
         // Router/Gateway: HTTP/HTTPS offen + hoher TTL, oft kein anderer Dienst
-        if (h.Ttl is > 200) return "Router/Switch";
+        if (h.Ttl is > 200) return "Device_RouterSwitch";
         if (vendor.Contains("Ubiquiti", StringComparison.OrdinalIgnoreCase)
             || vendor.Contains("Aruba", StringComparison.OrdinalIgnoreCase)
-            || vendor.Contains("Cisco", StringComparison.OrdinalIgnoreCase)) return "Netzwerk-Hardware";
+            || vendor.Contains("Cisco", StringComparison.OrdinalIgnoreCase)) return "Device_NetworkHardware";
         // Server vs. Workstation
-        if (ports.Contains(3389)) return "Windows-PC/Server";
-        if (ports.Contains(22) && (ports.Contains(80) || ports.Contains(443))) return "Server (Linux)";
-        if (ports.Contains(22)) return "Linux-Host";
+        if (ports.Contains(3389)) return "Device_WindowsPcServer";
+        if (ports.Contains(22) && (ports.Contains(80) || ports.Contains(443))) return "Device_LinuxServer";
+        if (ports.Contains(22)) return "Device_LinuxHost";
         if (vendor.Contains("Raspberry", StringComparison.OrdinalIgnoreCase)) return "Raspberry Pi";
-        if (vendor.Contains("Apple", StringComparison.OrdinalIgnoreCase)) return "Apple-Geraet";
+        if (vendor.Contains("Apple", StringComparison.OrdinalIgnoreCase)) return "Device_AppleDevice";
 
         // Reiner Web-Dienst
-        if (ports.Contains(80) || ports.Contains(443)) return "Web-/IoT-Geraet";
+        if (ports.Contains(80) || ports.Contains(443)) return "Device_WebIotDevice";
         return null;
     }
 }
