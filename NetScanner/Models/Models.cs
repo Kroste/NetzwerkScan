@@ -92,29 +92,58 @@ public sealed class HostResult
 
     /// <summary>Ergebnis des optionalen Web-Login-Audits (Router/Gerät-Webinterface).</summary>
     public AuthFinding WebAudit { get; set; } = AuthFinding.NotChecked;
-    /// <summary>Funktionierender Werks-Login als "user/pass" (nur Anzeige), falls gefunden.</summary>
+    /// <summary>Funktionierender Web-Werks-Login als "user/pass" (nur Anzeige), falls gefunden.</summary>
     public string? WebAuditCred { get; set; }
+
+    /// <summary>Ergebnis des optionalen Telnet-Audits (Port 23, IoT-Weak-Spot).</summary>
+    public AuthFinding TelnetAudit { get; set; } = AuthFinding.NotChecked;
+    /// <summary>Funktionierender Telnet-Werks-Login als "user/pass" (nur Anzeige), falls gefunden.</summary>
+    public string? TelnetAuditCred { get; set; }
+
+    /// <summary>Ergebnis des optionalen FTP-Audits (Port 21, anonym/Werks-Login).</summary>
+    public AuthFinding FtpAudit { get; set; } = AuthFinding.NotChecked;
+    /// <summary>Funktionierender FTP-Werks-Login als "user/pass" (nur Anzeige), falls gefunden.</summary>
+    public string? FtpAuditCred { get; set; }
 
     // --- Verwundbarkeits-Auswertung für die UI ---
     /// <summary>RTSP-Stream ist offen oder per Werks-Login zugänglich.</summary>
     public bool RtspVulnerable =>
         Camera?.RtspAudit is AuthFinding.Open or AuthFinding.DefaultCredentials;
-    /// <summary>Web-Login (Router/Gerät) ist offen oder per Werks-Login zugänglich.</summary>
+    /// <summary>Web-Login (beliebiges Gerät) ist offen oder per Werks-Login zugänglich.</summary>
     public bool WebVulnerable =>
         WebAudit is AuthFinding.Open or AuthFinding.DefaultCredentials;
-    public bool IsVulnerable => RtspVulnerable || WebVulnerable;
+    /// <summary>Telnet ist ohne Login offen oder per Werks-Login zugänglich.</summary>
+    public bool TelnetVulnerable =>
+        TelnetAudit is AuthFinding.Open or AuthFinding.DefaultCredentials;
+    /// <summary>FTP erlaubt anonymen Zugriff oder ein Werks-Login.</summary>
+    public bool FtpVulnerable =>
+        FtpAudit is AuthFinding.Open or AuthFinding.DefaultCredentials;
+    public bool IsVulnerable =>
+        RtspVulnerable || WebVulnerable || TelnetVulnerable || FtpVulnerable;
 
-    /// <summary>Kompakte Badge-Zeile für gefundene Schwachstellen.</summary>
+    /// <summary>
+    /// Kompakte Badge-Zeile für gefundene Schwachstellen. Die Texte kommen aus den
+    /// Ressourcen (der Wert selbst wird beim Scan gesetzt, nicht live umgeschaltet —
+    /// wie bei <see cref="DeviceSummary"/>).
+    /// </summary>
     public string? VulnBadge
     {
         get
         {
             var parts = new List<string>();
-            if (Camera?.RtspAudit == AuthFinding.Open) parts.Add("Stream offen");
-            else if (Camera?.RtspAudit == AuthFinding.DefaultCredentials) parts.Add("Stream: Werks-Login");
-            if (WebAudit == AuthFinding.Open) parts.Add("Web offen");
-            else if (WebAudit == AuthFinding.DefaultCredentials)
-                parts.Add($"Web-Login: {WebAuditCred}");
+
+            if (Camera?.RtspAudit == AuthFinding.Open) parts.Add(L.T("Vuln_StreamOpen"));
+            else if (Camera?.RtspAudit == AuthFinding.DefaultCredentials) parts.Add(L.T("Vuln_StreamDefaultLogin"));
+
+            if (WebAudit == AuthFinding.Open) parts.Add(L.T("Vuln_WebOpen"));
+            else if (WebAudit == AuthFinding.DefaultCredentials) parts.Add(L.F("Vuln_WebDefaultLogin", WebAuditCred ?? "?"));
+
+            if (TelnetAudit == AuthFinding.Open) parts.Add(L.T("Vuln_TelnetOpen"));
+            else if (TelnetAudit == AuthFinding.DefaultCredentials) parts.Add(L.F("Vuln_TelnetDefaultLogin", TelnetAuditCred ?? "?"));
+
+            if (FtpAudit == AuthFinding.Open) parts.Add(L.T("Vuln_FtpAnonymous"));
+            else if (FtpAudit == AuthFinding.DefaultCredentials) parts.Add(L.F("Vuln_FtpDefaultLogin", FtpAuditCred ?? "?"));
+
             return parts.Count == 0 ? null : string.Join("  ·  ", parts);
         }
     }

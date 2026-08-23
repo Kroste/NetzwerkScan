@@ -181,15 +181,21 @@ public sealed class ScanOrchestrator(
             await AuditCredentialsAsync(host, open, opt.PortTimeoutMs, ct);
     }
 
-    /// <summary>Prüft Kamera-Stream und (bei Router/Kamera) das Web-Login auf offene
-    /// Zugänge bzw. dokumentierte Werks-Logins. Nur für das eigene Netz gedacht.</summary>
+    /// <summary>
+    /// Prüft ein Gerät auf offene Zugänge bzw. dokumentierte Werks-Logins über die
+    /// vier häufigsten Angriffsflächen im Heimnetz: RTSP-Stream (Kamera), Web-Login,
+    /// Telnet und FTP. Kein Brute-Force, nur eine kurze kuratierte Liste — und nur
+    /// für das eigene Netz gedacht.
+    /// </summary>
     private async Task AuditCredentialsAsync(
         HostResult host, IReadOnlyList<PortResult> open, int timeoutMs, CancellationToken ct)
     {
-        // 1) RTSP-Stream der Kamera.
+        var ports = open.Select(p => p.Port).ToHashSet();
+
+        // 1) RTSP-Stream — nur bei erkannten Kameras (RTSP ist ein Kamera-Protokoll).
         if (host.Camera is { } cam)
         {
-            int rtspPort = open.Select(p => p.Port).FirstOrDefault(RtspPorts.Contains, 554);
+            int rtspPort = ports.FirstOrDefault(RtspPorts.Contains, 554);
             var path = RtspProbe.PathsForVendor(cam.Vendor).First();
             var (finding, user, pass) = await auditor.AuditRtspAsync(host.Address, rtspPort, path, timeoutMs, ct);
             cam.RtspAudit = finding;
@@ -205,23 +211,40 @@ public sealed class ScanOrchestrator(
                 log.LogWarning("SCHWACHSTELLE RTSP {Ip}: {Finding}", host.Address, finding);
         }
 
-        // 2) Web-Login von Router/Kamera (HTTP Basic/Digest).
-        if (host.WebUrl is { } web && ShouldAuditWeb(host))
+        // 2) Web-Login (HTTP Basic/Digest) — bei JEDEM Gerät mit Webinterface, nicht
+        //    mehr nur Kamera/Router. NAS, Drucker, PDU, Switch, IoT-Hub: alle haben
+        //    oft ein admin/admin-Weblogin. Der Check ist selbstbegrenzend — ohne
+        //    401-Antwort läuft nur eine einzige Anfrage.
+        if (host.WebUrl is { } web)
         {
             var (finding, cred) = await auditor.AuditHttpAsync(web, timeoutMs, ct);
             host.WebAudit = finding;
             host.WebAuditCred = cred;
+            if (finding is AuthFinding.Open or AuthFinding.DefaultCredentials)
+                log.LogWarning("SCHWACHSTELLE Web-Login {Ip}: {Finding}", host.Address, finding);
+        }
+
+        // 3) Telnet (Port 23) — der klassische IoT-/Mirai-Weak-Spot.
+        if (ports.Contains(23))
+        {
+            var (finding, user, pass) = await auditor.AuditTelnetAsync(host.Address, 23, timeoutMs, ct);
+            host.TelnetAudit = finding;
             if (finding == AuthFinding.DefaultCredentials)
-                log.LogWarning("SCHWACHSTELLE Web-Login {Ip}: {Cred}", host.Address, cred);
+                host.TelnetAuditCred = $"{user}/{(string.IsNullOrEmpty(pass) ? "(leer)" : pass)}";
+            if (finding is AuthFinding.Open or AuthFinding.DefaultCredentials)
+                log.LogWarning("SCHWACHSTELLE Telnet {Ip}: {Finding}", host.Address, finding);
+        }
+
+        // 4) FTP (Port 21) — anonymer Zugriff oder Werks-Login.
+        if (ports.Contains(21))
+        {
+            var (finding, cred) = await auditor.AuditFtpAsync(host.Address, 21, timeoutMs, ct);
+            host.FtpAudit = finding;
+            host.FtpAuditCred = cred;
+            if (finding is AuthFinding.Open or AuthFinding.DefaultCredentials)
+                log.LogWarning("SCHWACHSTELLE FTP {Ip}: {Finding}", host.Address, finding);
         }
     }
-
-    /// <summary>Web-Audit nur für Kameras und Router/Gateways (fokussiert, nicht jeder Host).</summary>
-    private static bool ShouldAuditWeb(HostResult host) =>
-        host.IsCamera
-        || string.Equals(host.DeviceType, "Router", StringComparison.OrdinalIgnoreCase)
-        || (host.UpnpDeviceType?.Contains("Router", StringComparison.OrdinalIgnoreCase) ?? false)
-        || (host.UpnpDeviceType?.Contains("Gateway", StringComparison.OrdinalIgnoreCase) ?? false);
 
     private static async Task<string?> ReverseDnsAsync(IPAddress ip, CancellationToken ct)
     {

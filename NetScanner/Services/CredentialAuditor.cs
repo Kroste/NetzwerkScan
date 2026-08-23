@@ -182,6 +182,261 @@ public sealed class CredentialAuditor(ILogger<CredentialAuditor> log)
         catch { return -1; }
     }
 
+    // ----------------------------------------------------------------- Telnet
+
+    /// <summary>
+    /// Prüft ein Telnet-Login (Port 23) — der klassische IoT-/Mirai-Weak-Spot.
+    /// Findet drei Fälle: direkter Shell-Zugriff ohne Login (Open), ein wirkender
+    /// Werks-Login (DefaultCredentials) oder gesichert.
+    ///
+    /// Telnet ist textbasiert und uneinheitlich, deshalb bewusst konservativ: ein
+    /// Werks-Login gilt nur als wirksam, wenn die Antwort einen Shell-Indikator zeigt
+    /// UND weder eine erneute Login-Aufforderung noch ein Fehlerwort enthält. Lieber
+    /// ein echter Fund weniger als ein falscher Alarm.
+    /// </summary>
+    public async Task<(AuthFinding Finding, string? User, string? Pass)> AuditTelnetAsync(
+        IPAddress ip, int port, int timeoutMs, CancellationToken ct)
+    {
+        try
+        {
+            using var probe = new TcpClient(ip.AddressFamily);
+            using var pcts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            pcts.CancelAfter(timeoutMs);
+            await probe.ConnectAsync(ip, port, pcts.Token);
+            await using var pstream = probe.GetStream();
+
+            string greeting = await ReadTelnetAsync(pstream, timeoutMs, pcts.Token);
+
+            // Kein Login-Prompt, aber direkt eine Shell -> offen ohne Anmeldung.
+            if (!LooksLikeLoginPrompt(greeting) && LooksLikeShell(greeting))
+                return (AuthFinding.Open, null, null);
+
+            // Ohne erkennbaren Login-Prompt lässt sich nichts Verlässliches sagen.
+            if (!LooksLikeLoginPrompt(greeting))
+                return (AuthFinding.NotChecked, null, null);
+
+            foreach (var (user, pass) in CommonDefaults)
+            {
+                ct.ThrowIfCancellationRequested();
+                if (await TryTelnetLoginAsync(ip, port, user, pass, timeoutMs, ct))
+                {
+                    log.LogWarning("Telnet-Werks-Login wirksam auf {Ip}:{Port} (Benutzer {User})", ip, port, user);
+                    return (AuthFinding.DefaultCredentials, user, pass);
+                }
+            }
+            return (AuthFinding.Secured, null, null);
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex)
+        {
+            log.LogDebug(ex, "Telnet-Audit {Ip}:{Port} fehlgeschlagen", ip, port);
+            return (AuthFinding.NotChecked, null, null);
+        }
+    }
+
+    private static async Task<bool> TryTelnetLoginAsync(
+        IPAddress ip, int port, string user, string pass, int timeoutMs, CancellationToken ct)
+    {
+        using var client = new TcpClient(ip.AddressFamily);
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(timeoutMs);
+        await client.ConnectAsync(ip, port, cts.Token);
+        await using var stream = client.GetStream();
+
+        string prompt = await ReadTelnetAsync(stream, timeoutMs, cts.Token);
+        if (!LooksLikeLoginPrompt(prompt)) return false;
+
+        await stream.WriteAsync(Encoding.ASCII.GetBytes(user + "\r\n"), cts.Token);
+        string afterUser = await ReadTelnetAsync(stream, timeoutMs, cts.Token);
+
+        // Manche Geräte fragen erst nach dem Benutzernamen nach dem Passwort.
+        if (LooksLikePasswordPrompt(afterUser) || LooksLikePasswordPrompt(prompt))
+        {
+            await stream.WriteAsync(Encoding.ASCII.GetBytes(pass + "\r\n"), cts.Token);
+            string afterPass = await ReadTelnetAsync(stream, timeoutMs, cts.Token);
+            return TelnetLoginSucceeded(afterPass);
+        }
+
+        // Kein Passwort-Prompt: entweder passwortloser Login (Shell da) oder Ablehnung.
+        return TelnetLoginSucceeded(afterUser);
+    }
+
+    /// <summary>
+    /// Liest eine Telnet-Antwort und entfernt die IAC-Optionsverhandlung (Bytes ab
+    /// 0xFF). Wir verhandeln bewusst nichts aus — die meisten Geräte fahren trotzdem
+    /// bis zum Login-Prompt fort, und ein stiller Client vermeidet Nebenwirkungen.
+    /// </summary>
+    private static async Task<string> ReadTelnetAsync(NetworkStream stream, int timeoutMs, CancellationToken ct)
+    {
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(Math.Min(timeoutMs, 1500));
+        var buf = new byte[2048];
+        try
+        {
+            int n = await stream.ReadAsync(buf, cts.Token);
+            return n <= 0 ? string.Empty : StripTelnetIac(buf.AsSpan(0, n));
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            return string.Empty;   // nur der Lese-Timeout, nicht der Abbruch von aussen
+        }
+    }
+
+    /// <summary>Entfernt IAC-Kommandos (0xFF + 2 Folgebytes, bzw. Subnegotiation bis IAC SE).</summary>
+    internal static string StripTelnetIac(ReadOnlySpan<byte> data)
+    {
+        var sb = new StringBuilder(data.Length);
+        for (int i = 0; i < data.Length; i++)
+        {
+            byte b = data[i];
+            if (b == 0xFF)  // IAC
+            {
+                if (i + 1 >= data.Length) break;
+                byte cmd = data[i + 1];
+                if (cmd == 0xFA)  // SB (Subnegotiation) -> bis IAC SE überspringen
+                {
+                    i += 2;
+                    while (i + 1 < data.Length && !(data[i] == 0xFF && data[i + 1] == 0xF0)) i++;
+                    i++;  // auf SE
+                }
+                else
+                {
+                    i += 2;  // WILL/WONT/DO/DONT + Option
+                }
+                continue;
+            }
+            if (b is >= 0x20 and < 0x7F or (byte)'\r' or (byte)'\n' or (byte)'\t')
+                sb.Append((char)b);
+        }
+        return sb.ToString();
+    }
+
+    internal static bool LooksLikeLoginPrompt(string text)
+        => ContainsAny(text, "login:", "username:", "user name:", "user:");
+
+    internal static bool LooksLikePasswordPrompt(string text)
+        => ContainsAny(text, "password:", "passwort:", "passwd:");
+
+    /// <summary>Positiver Shell-Indikator ODER Prompt-Zeile, die auf # $ &gt; endet.</summary>
+    internal static bool LooksLikeShell(string text)
+    {
+        if (ContainsAny(text, "busybox", "# ", "$ ", "welcome to", "last login"))
+            return true;
+        foreach (var raw in text.Split('\n'))
+        {
+            var line = raw.TrimEnd('\r', ' ', '\t');
+            if (line.Length > 0 && line[^1] is '#' or '$' or '>')
+                return true;
+        }
+        return false;
+    }
+
+    internal static bool LooksLikeAuthFailure(string text)
+        => ContainsAny(text, "incorrect", "invalid", "failed", "failure", "denied",
+                             "fehlgeschlagen", "falsch", "wrong");
+
+    /// <summary>Login gilt nur als erfolgreich mit Shell-Indikator UND ohne Fehlerwort/Re-Prompt.</summary>
+    internal static bool TelnetLoginSucceeded(string afterPass)
+        => LooksLikeShell(afterPass)
+           && !LooksLikeAuthFailure(afterPass)
+           && !LooksLikeLoginPrompt(afterPass)
+           && !LooksLikePasswordPrompt(afterPass);
+
+    // ----------------------------------------------------------------- FTP
+
+    /// <summary>
+    /// Prüft ein FTP-Login (Port 21): erst anonymer Zugriff (Open), dann die
+    /// Werks-Logins (DefaultCredentials). Rein lesend (nur USER/PASS/QUIT), es wird
+    /// nichts übertragen oder geändert.
+    /// </summary>
+    public async Task<(AuthFinding Finding, string? Cred)> AuditFtpAsync(
+        IPAddress ip, int port, int timeoutMs, CancellationToken ct)
+    {
+        try
+        {
+            // Anonymer Zugriff ist der häufigste FTP-Weak-Spot und wird zuerst geprüft.
+            if (await TryFtpLoginAsync(ip, port, "anonymous", "anonymous@netscanner", timeoutMs, ct))
+            {
+                log.LogWarning("FTP erlaubt anonymen Zugriff auf {Ip}:{Port}", ip, port);
+                return (AuthFinding.Open, "anonymous");
+            }
+
+            foreach (var (user, pass) in CommonDefaults)
+            {
+                ct.ThrowIfCancellationRequested();
+                if (await TryFtpLoginAsync(ip, port, user, pass, timeoutMs, ct))
+                {
+                    log.LogWarning("FTP-Werks-Login wirksam auf {Ip}:{Port} (Benutzer {User})", ip, port, user);
+                    return (AuthFinding.DefaultCredentials, $"{user}/{(pass.Length == 0 ? "(leer)" : pass)}");
+                }
+            }
+            return (AuthFinding.Secured, null);
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex)
+        {
+            log.LogDebug(ex, "FTP-Audit {Ip}:{Port} fehlgeschlagen", ip, port);
+            return (AuthFinding.NotChecked, null);
+        }
+    }
+
+    private static async Task<bool> TryFtpLoginAsync(
+        IPAddress ip, int port, string user, string pass, int timeoutMs, CancellationToken ct)
+    {
+        using var client = new TcpClient(ip.AddressFamily);
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(timeoutMs);
+        await client.ConnectAsync(ip, port, cts.Token);
+        await using var stream = client.GetStream();
+
+        string greeting = await ReadLineAsync(stream, timeoutMs, cts.Token);
+        if (FtpCode(greeting) != 220) return false;   // kein FTP-Dienst
+
+        await stream.WriteAsync(Encoding.ASCII.GetBytes($"USER {user}\r\n"), cts.Token);
+        string afterUser = await ReadLineAsync(stream, timeoutMs, cts.Token);
+        int userCode = FtpCode(afterUser);
+        if (userCode == 230) return true;             // ohne Passwort eingeloggt
+        if (userCode != 331) return false;            // 331 = Passwort erwartet
+
+        await stream.WriteAsync(Encoding.ASCII.GetBytes($"PASS {pass}\r\n"), cts.Token);
+        string afterPass = await ReadLineAsync(stream, timeoutMs, cts.Token);
+
+        bool ok = FtpCode(afterPass) == 230;
+        try { await stream.WriteAsync(Encoding.ASCII.GetBytes("QUIT\r\n"), cts.Token); } catch { /* egal */ }
+        return ok;
+    }
+
+    /// <summary>FTP-Status-Code aus der ersten Antwortzeile ("230 Login successful" -> 230).</summary>
+    internal static int FtpCode(string line)
+    {
+        if (line.Length < 3) return -1;
+        return int.TryParse(line.AsSpan(0, 3), out int code) ? code : -1;
+    }
+
+    private static async Task<string> ReadLineAsync(NetworkStream stream, int timeoutMs, CancellationToken ct)
+    {
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(Math.Min(timeoutMs, 1500));
+        var buf = new byte[512];
+        try
+        {
+            int n = await stream.ReadAsync(buf, cts.Token);
+            return n <= 0 ? string.Empty : Encoding.ASCII.GetString(buf, 0, n).TrimStart();
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            return string.Empty;
+        }
+    }
+
+    private static bool ContainsAny(string haystack, params string[] needles)
+    {
+        foreach (var n in needles)
+            if (haystack.Contains(n, StringComparison.OrdinalIgnoreCase))
+                return true;
+        return false;
+    }
+
     // ----------------------------------------------------------------- Helpers
 
     private static string RtspUrl(IPAddress ip, int port, string path) =>

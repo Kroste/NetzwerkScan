@@ -48,7 +48,7 @@ A lean desktop tool that makes your own network visible: which devices are onlin
 | **Name resolution** | Reverse DNS, mDNS/Bonjour, NetBIOS and SSDP/UPnP — the best available name is shown. |
 | **Camera detection** | ONVIF WS-Discovery + port heuristics (554/8554) + an RTSP `OPTIONS` probe. Optionally with RTSP credentials for the stream URL. |
 | **Live video** | RTSP stream embedded directly in the window via LibVLC (`NativeControlHost`). |
-| **Weak-spot audit** *(opt-in)* | Checks detected cameras and routers for **open streams** and common **factory logins** (default credentials). On a hit the device is flagged and — for a camera — the picture is shown straight away. Your own network only. |
+| **Weak-spot audit** *(opt-in)* | Checks every device for common **factory logins** (default credentials) across four surfaces — RTSP streams, HTTP Basic/Digest web logins, **Telnet** and **FTP** — plus **open** streams, **anonymous FTP** and passwordless Telnet. On a hit the device is flagged and — for a camera — the picture is shown straight away. Your own network only. |
 | **Password leak check** | Uses *Have I Been Pwned* (k-anonymity) to check whether a device password appears in known data leaks — **without transmitting the password** — plus a local strength and crack-time estimate against fast (MD5) and slow (bcrypt) hashes. |
 | **Exposure check** | Asks the router (UPnP IGD) for active **port forwardings** and the public IP — showing what can be reached from the internet and whether a forwarding points at a camera. Includes a Shodan self-check. |
 | **Host actions** | Per device: open the web interface, SSH, RDP, SMB share, copy IP/MAC/name, **Wake-on-LAN**. |
@@ -195,12 +195,15 @@ At the bottom is the **path to the outside (traceroute)** bar: enter a target (d
 
 ## Weak-spot audit
 
-Optionally (the **Check for weak spots** checkbox) NetScanner tests detected **cameras** and **routers** for two common weaknesses:
+Optionally (the **Check for weak spots** checkbox) NetScanner tests **every** device for the four most common weak spots in a home network. Each is only probed when the relevant port is open, so a device is never hammered for services it does not run:
 
-- **Open RTSP stream:** the stream answers without credentials. The camera is flagged and the preview opens automatically.
-- **Factory login (default credentials):** a curated list of the most common factory accounts (such as `admin/admin`, `admin/12345`, `root/root`) is tried against the RTSP stream and the web login (HTTP basic/digest). If one works, a red warning badge appears with the login found; for a camera the picture is shown as well.
+- **Open RTSP stream** *(cameras)* — the stream answers without credentials. The camera is flagged and the preview opens automatically.
+- **RTSP factory login** *(cameras)* — a factory account works against the authenticated stream; the preview then plays with those credentials.
+- **Web login** *(any device with a web interface, ports 80/443/8080/8443/…)* — factory credentials against HTTP basic/digest. This is where a NAS, printer, PDU, switch or IoT hub with `admin/admin` gets caught. Form-based logins (status 200 instead of 401) are left alone — only basic and digest.
+- **Telnet** *(port 23)* — the classic IoT/Mirai weak spot: a passwordless shell, or a factory login such as `root/root`. Reported conservatively, only when the response clearly shows a shell and no re-prompt or error.
+- **FTP** *(port 21)* — anonymous access, or a factory login. Read-only (only `USER`/`PASS`/`QUIT`), nothing is transferred or changed.
 
-Only cameras and routers/gateways are checked, not every host. Form-based web logins (status 200 instead of 401) are left alone — only HTTP basic and digest. This is **not brute force**, but a fixed, short list of documented factory logins. The password found is shown in the interface and **never written to the log**.
+The credential list is a fixed, short set of documented factory logins (`admin/admin`, `admin/12345`, `root/root`, `supervisor/supervisor`, …) — this is **not brute force**. A hit shows a red warning badge with the login found; that login is shown in the interface and **never written to the log** (only the fact of the hit is logged, with the user name at most).
 
 > ⚠ **Your own network only.** Default-credential checks against systems you do not own, without explicit permission, can have legal consequences (in Germany §202c StGB among others). The feature is therefore off by default and has to be enabled deliberately. Use it only to secure your own devices.
 
@@ -327,7 +330,7 @@ Flat structure, no `src/` folder: the app in `NetScanner/`, the tests in `NetSca
 ## Deliberate limits
 
 - **TCP connect scan instead of SYN scan** — no raw socket, therefore no elevated privileges (and no nmap-grade OS fingerprinting).
-- **No password guessing.** You supply ONVIF `GetStreamUri` and RTSP credentials yourself — this is meant for devices on **your own** network. The weak-spot audit tries a short, documented list of factory logins and nothing else; there are no word lists and no brute force, and there never will be.
+- **No password guessing.** You supply ONVIF `GetStreamUri` and RTSP credentials yourself — this is meant for devices on **your own** network. The weak-spot audit tries a short, documented list of factory logins across RTSP, HTTP, Telnet and FTP and nothing else; there are no word lists and no brute force, and there never will be.
 - **Traceroute shows no LAN topology**, only the path outwards — within a single subnet there are no hops.
 
 ---

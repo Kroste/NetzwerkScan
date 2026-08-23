@@ -36,8 +36,11 @@ Feature-Ideen, keine offenen Standard-Lücken mehr.
   Live-Vorschau über eine vorhandene VLC-Installation (`VlcLocator` — libvlc wird
   **nicht** gebündelt, das spart ~85 MB pro Windows-Build).
 - Optionaler Credential-Audit (`CredentialAuditor`): kuratierte, öffentlich
-  dokumentierte Werks-Logins, **kein Brute-Force**, opt-in. Das gefundene Passwort
-  wird **nie** geloggt, nur der Benutzername.
+  dokumentierte Werks-Logins über **vier** Angriffsflächen — RTSP-Stream (nur
+  Kameras), HTTP-Basic/Digest-Web-Login (**jedes** Gerät mit Webinterface),
+  Telnet (Port 23) und FTP (Port 21, inkl. anonymem Zugriff). Jede Prüfung feuert
+  nur, wenn der zugehörige Port offen ist. **Kein Brute-Force**, opt-in. Das
+  gefundene Passwort wird **nie** geloggt, nur der Fund als solcher.
 - Exposure-Check (`UpnpExposureProbe`), Traceroute, Wake-on-LAN,
   Passwortstärke + HIBP-k-Anonymity-Abfrage (`PwnedPasswordChecker`).
 - Fenster: MainWindow, NetworkMapWindow, ExposureWindow, PasswordCheckWindow,
@@ -89,6 +92,17 @@ Offene Feature-Ideen, keine Standard-Lücken mehr:
   NetScanner ist strikt auf vom Betreiber kontrollierte Netze beschränkt; der
   Credential-Audit prüft nur eine kurze, kuratierte Liste dokumentierter Werks-Logins
   und ist opt-in.
+- **Der Web-Audit läuft auf ALLE Geräte mit Webinterface**, nicht mehr nur
+  Kamera/Router. Der frühere Filter `host.DeviceType == "Router"` war nach der
+  Localization-Umstellung toter Code — der Classifier gibt für Router den Key
+  `Device_RouterSwitch` zurück, nie mehr den String `"Router"`. Statt den String zu
+  korrigieren, ist der Filter ganz entfallen: der Check ist selbstbegrenzend (ohne
+  401-Antwort nur eine Anfrage), und „andere Geräte" sind gerade das Ziel.
+- **Telnet-Funde konservativ bewerten.** Telnet ist textbasiert und uneinheitlich;
+  ein Werks-Login gilt nur als wirksam, wenn die Antwort einen Shell-Indikator zeigt
+  UND weder Login-/Passwort-Prompt noch ein Fehlerwort enthält
+  (`CredentialAuditor.TelnetLoginSucceeded`). Die Parser sind `internal` und in
+  `CredentialAuditorTests` abgedeckt — dort sitzt das Fehlalarm-Risiko.
 - **Secrets nie ins Log.** Der Credential-Audit findet *wirksame* Logins für reale
   Geräte. Geloggt wird nur der Benutzername; das vollständige Paar bleibt im
   Rückgabewert und damit in der UI. `${masked:inner=…}` liegt zusätzlich in jedem
