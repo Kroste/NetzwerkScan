@@ -77,3 +77,9 @@ Thumbs.db
 # Falls du internalLogFile o. Ä. ins Projekt umlenkst:
 *.log
 nlog-internal.log
+
+# ---- Release-/Packaging-Artefakte ----
+publish/
+AppDir/
+appimagetool
+*.AppImage

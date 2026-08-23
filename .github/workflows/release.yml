@@ -21,10 +21,14 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # MinVer braucht die Historie inklusive Tags
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
+          cache: true
+          cache-dependency-path: Directory.Packages.props
 
       - name: Version aus Tag ableiten
         id: ver
@@ -37,6 +41,9 @@ jobs:
             echo "v=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Tests
+        run: dotnet test NetScanner.Tests/NetScanner.Tests.csproj -c Release
+
       - name: Publish (win-x64, framework-dependent)
         # Framework-dependent: die .NET-Runtime wird NICHT gebundelt (~80 MB kleiner).
         # Der Installer (Setup.exe) zieht die .NET 10 Desktop Runtime bei Bedarf nach.
@@ -45,8 +52,8 @@ jobs:
         # Paket von ~116 MB auf ~30 MB. Kein PublishSingleFile (NativeControlHost +
         # native Handles laufen ausgepackt am verlaesslichsten).
         run: >
-          dotnet publish NetScanner.csproj -c Release -r win-x64 --no-self-contained
-          -p:Version=${{ steps.ver.outputs.v }} -p:DebugType=none -p:DebugSymbols=false -o publish/win
+          dotnet publish NetScanner/NetScanner.csproj -c Release -r win-x64 --no-self-contained
+          -p:MinVerVersionOverride=${{ steps.ver.outputs.v }} -p:DebugType=none -p:DebugSymbols=false -o publish/win
 
       - name: ZIP packen
         shell: pwsh
@@ -108,10 +115,14 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # MinVer braucht die Historie inklusive Tags
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
+          cache: true
+          cache-dependency-path: Directory.Packages.props
 
       - name: Version aus Tag ableiten
         id: ver
@@ -123,12 +134,15 @@ jobs:
             echo "v=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Tests
+        run: dotnet test NetScanner.Tests/NetScanner.Tests.csproj -c Release
+
       - name: Publish (linux-x64, self-contained)
         # libvlc ist hier KEINE Build-Abhaengigkeit; zur Laufzeit wird System-libvlc
         # erwartet (Paket vlc / libvlc5) — oder in der AppImage gebuendelt.
         run: >
-          dotnet publish NetScanner.csproj -c Release -r linux-x64 --self-contained
-          -p:Version=${{ steps.ver.outputs.v }} -p:DebugType=none -p:DebugSymbols=false -o publish/linux
+          dotnet publish NetScanner/NetScanner.csproj -c Release -r linux-x64 --self-contained
+          -p:MinVerVersionOverride=${{ steps.ver.outputs.v }} -p:DebugType=none -p:DebugSymbols=false -o publish/linux
 
       - name: Tarball packen
         run: tar -czf "NetScanner-v${{ steps.ver.outputs.v }}-linux-x64.tar.gz" -C publish/linux .

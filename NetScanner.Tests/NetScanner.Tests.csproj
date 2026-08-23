@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- xunit.v3 generiert einen eigenen Entry-Point: das Testprojekt ist eine Exe.
+         Ohne das bricht der Build mit "xUnit.net v3 test projects must be executable". -->
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- xunit.v3 bringt den Microsoft.Testing.Platform-Runner selbst mit.
+         Microsoft.NET.Test.Sdk und xunit.runner.visualstudio gehören zum alten
+         VSTest-Pfad, den das .NET-10-SDK nicht mehr unterstützt. Sie hier zu
+         referenzieren reaktiviert ihn und "dotnet test" bricht ab. -->
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="FluentAssertions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../NetScanner/NetScanner.csproj" />
+  </ItemGroup>
+</Project>

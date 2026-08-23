@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="NetScanner/NetScanner.csproj" />
+  <Project Path="NetScanner.Tests/NetScanner.Tests.csproj" />
+</Solution>

@@ -1,19 +1,30 @@
 #!/usr/bin/env bash
 #
-# Liest <Version> aus NetScanner.csproj, erstellt das Tag vX.Y.Z und pusht es.
-# Der Tag-Push triggert die GitHub-Action (release.yml) -> Build + Release.
+# Erstellt das Tag vX.Y.Z und pusht es. Der Tag-Push triggert die GitHub-Action
+# (release.yml) -> Build + Release.
 #
-# Aufruf:  bash scripts/release.sh          (interaktiv, mit Sicherheitsfragen)
-#          bash scripts/release.sh --yes     (ohne Rueckfragen, fuer ganz Faule)
+# Versionsquelle ist MinVer: der letzte Tag wird gelesen, der Patch-Stand
+# vorgeschlagen. Es gibt bewusst KEINE <Version> mehr in der csproj — der Tag
+# ist die einzige Versionsquelle, damit Assembly-Version und Release-Name nicht
+# auseinanderlaufen können.
+#
+# Aufruf:  bash scripts/release.sh               (interaktiv)
+#          bash scripts/release.sh --yes         (Patch-Bump ohne Rückfragen)
+#          bash scripts/release.sh 1.6.0         (Version explizit vorgeben)
 #
 set -euo pipefail
 
 # Immer aus dem Projekt-Root arbeiten, egal von wo aufgerufen.
 cd "$(dirname "$0")/.."
 
-CSPROJ="NetScanner.csproj"
 AUTO=0
-[[ "${1:-}" == "--yes" || "${1:-}" == "-y" ]] && AUTO=1
+VERSION=""
+for arg in "$@"; do
+  case "$arg" in
+    --yes|-y) AUTO=1 ;;
+    *)        VERSION="$arg" ;;
+  esac
+done
 
 ask() {  # ask "Frage" "Default(Y/N)"  -> 0 = ja
   local prompt="$1" def="${2:-N}"
@@ -24,18 +35,31 @@ ask() {  # ask "Frage" "Default(Y/N)"  -> 0 = ja
   [[ "$a" == [yY] ]]
 }
 
-# 1) Version aus dem <Version>-Element ziehen (PackageReference-Attribute matchen nicht).
-VERSION="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' "$CSPROJ" | head -1 | tr -d '[:space:]')"
+# 1) Version bestimmen: letzter Tag + Patch-Bump als Vorschlag.
 if [[ -z "$VERSION" ]]; then
-  echo "FEHLER: keine <Version> in $CSPROJ gefunden." >&2
+  LAST="$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || echo v0.0.0)"
+  LAST="${LAST#v}"
+  IFS=. read -r MA MI PA <<< "$LAST"
+  SUGGEST="${MA}.${MI}.$((PA + 1))"
+  if [[ "$AUTO" == 1 ]]; then
+    VERSION="$SUGGEST"
+  else
+    echo "Letzter Tag: v${LAST}"
+    read -rp "Neue Version [${SUGGEST}]: " VERSION
+    VERSION="${VERSION:-$SUGGEST}"
+  fi
+fi
+
+if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "FEHLER: '$VERSION' ist keine gültige SemVer-Version (X.Y.Z)." >&2
   exit 1
 fi
 TAG="v$VERSION"
-echo "Version aus $CSPROJ:  $VERSION   ->   Tag $TAG"
+echo "Release-Tag: $TAG"
 
-# 2) Uncommittete Aenderungen? (Tag wuerde auf den letzten Commit zeigen, nicht auf sie.)
+# 2) Uncommittete Änderungen? (Tag würde auf den letzten Commit zeigen, nicht auf sie.)
 if [[ -n "$(git status --porcelain)" ]]; then
-  echo "Achtung: es gibt uncommittete Aenderungen:"
+  echo "Achtung: es gibt uncommittete Änderungen:"
   git status --short
   ask "Trotzdem fortfahren?" "N" || { echo "Abgebrochen."; exit 1; }
 fi
@@ -45,15 +69,15 @@ fi
 if git rev-parse '@{u}' >/dev/null 2>&1; then
   if [[ -n "$(git log '@{u}..HEAD' --oneline)" ]]; then
     echo "Es gibt lokale Commits, die noch nicht gepusht sind."
-    if ask "Erst 'git push' ausfuehren?" "Y"; then git push; fi
+    if ask "Erst 'git push' ausführen?" "Y"; then git push; fi
   fi
 fi
 
-# 4) Tag schon vorhanden? -> auf Wunsch loeschen und neu auf HEAD setzen.
+# 4) Tag schon vorhanden? -> auf Wunsch löschen und neu auf HEAD setzen.
 if git rev-parse "$TAG" >/dev/null 2>&1; then
   echo "Tag $TAG existiert bereits."
-  ask "Altes Tag (lokal + remote) loeschen und neu auf HEAD setzen?" "N" \
-    || { echo "Abgebrochen - Version in $CSPROJ erhoehen oder Tag manuell pflegen."; exit 1; }
+  ask "Altes Tag (lokal + remote) löschen und neu auf HEAD setzen?" "N" \
+    || { echo "Abgebrochen - höhere Version wählen oder Tag manuell pflegen."; exit 1; }
   git tag -d "$TAG"
   git push origin ":refs/tags/$TAG" 2>/dev/null || true   # remote ggf. nicht vorhanden -> egal
 fi

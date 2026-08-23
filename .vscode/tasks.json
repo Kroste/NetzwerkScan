@@ -7,7 +7,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/NetScanner.csproj",
+        "${workspaceFolder}/NetScanner.slnx",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -15,10 +15,39 @@
       "group": { "kind": "build", "isDefault": true }
     },
     {
+      "label": "build-release",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/NetScanner.slnx",
+        "-c", "Release",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "test",
+      "command": "dotnet",
+      "type": "process",
+      "args": [ "test", "${workspaceFolder}/NetScanner.Tests/NetScanner.Tests.csproj" ],
+      "problemMatcher": "$msCompile",
+      "group": { "kind": "test", "isDefault": true }
+    },
+    {
+      "label": "watch",
+      "command": "dotnet",
+      "type": "process",
+      "args": [ "watch", "--project", "${workspaceFolder}/NetScanner/NetScanner.csproj", "run" ],
+      "problemMatcher": "$msCompile",
+      "isBackground": true
+    },
+    {
       "label": "clean",
       "command": "dotnet",
       "type": "process",
-      "args": [ "clean", "${workspaceFolder}/NetScanner.csproj" ],
+      "args": [ "clean", "${workspaceFolder}/NetScanner.slnx" ],
       "problemMatcher": "$msCompile"
     },
     {
@@ -28,21 +57,56 @@
       "problemMatcher": []
     },
     {
-      // Loescht bin/ und obj/ wirklich vom Datentraeger — noetig, wenn die
-      // vorkompilierte Avalonia-XAML im obj/-Cache haengt. Cross-platform.
+      // Löscht bin/ und obj/ wirklich vom Datenträger — nötig, wenn die
+      // vorkompilierte Avalonia-XAML im obj/-Cache hängt. Cross-platform.
       "label": "clean-hard",
       "type": "shell",
-      "command": "rm -rf bin obj",
+      "command": "find . -type d \\( -name bin -o -name obj \\) -not -path './.git/*' -exec rm -rf {} +",
       "windows": {
-        "command": "Remove-Item -Recurse -Force bin, obj -ErrorAction SilentlyContinue"
+        "command": "Get-ChildItem -Recurse -Directory -Include bin,obj | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue"
       },
       "options": { "cwd": "${workspaceFolder}" },
       "problemMatcher": []
     },
     {
-      // Liest die <Version> aus der csproj, taggt vX.Y.Z und pusht -> loest das
-      // GitHub-Release aus. Interaktiv (Terminal sichtbar) fuer die Sicherheitsfragen;
-      // fuer "ganz faul" das Skript direkt mit --yes / -Yes aufrufen.
+      // Aktuelles Logfile öffnen. NLog schreibt nach %AppData%/NetScanner/logs
+      // bzw. ~/.config/NetScanner/logs (siehe NetScanner/nlog.config).
+      "label": "Logfile öffnen",
+      "type": "shell",
+      "command": "ls -t \"${XDG_CONFIG_HOME:-$HOME/.config}/NetScanner/logs/\"netscanner-*.log | head -1 | xargs -r ${EDITOR:-xdg-open}",
+      "windows": {
+        "command": "Get-ChildItem \"$env:APPDATA/NetScanner/logs/netscanner-*.log\" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | Invoke-Item"
+      },
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "silent", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "publish-win-x64",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish", "${workspaceFolder}/NetScanner/NetScanner.csproj",
+        "-c", "Release", "-r", "win-x64", "--no-self-contained",
+        "-o", "${workspaceFolder}/publish/win"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "publish-linux-x64",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish", "${workspaceFolder}/NetScanner/NetScanner.csproj",
+        "-c", "Release", "-r", "linux-x64", "--self-contained",
+        "-o", "${workspaceFolder}/publish/linux"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      // Prüft den Git-Zustand, bestimmt die nächste Version, taggt vX.Y.Z und
+      // pusht -> löst das GitHub-Release aus. Interaktiv für die Sicherheitsfragen;
+      // für "ganz faul" das Skript direkt mit --yes / -Yes aufrufen.
       "label": "release (tag + push)",
       "type": "shell",
       "command": "bash scripts/release.sh",

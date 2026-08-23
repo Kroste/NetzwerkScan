@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\netscanner.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <AssemblyName>NetScanner</AssemblyName>
+    <RootNamespace>NetScanner</RootNamespace>
+    <!-- Version kommt aus dem Git-Tag (MinVer, Präfix "v"). Kein manuelles
+         Hochzählen mehr — ein Tag vX.Y.Z ist die einzige Versionsquelle. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- UI -->
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <!-- DevTools (F12). In Avalonia 12 wurde Avalonia.Diagnostics entfernt und durch
+         AvaloniaUI.DiagnosticsSupport ersetzt. Nur im Debug-Build. -->
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport"
+                      Condition="'$(Configuration)' == 'Debug'" />
+
+    <!-- MVVM -->
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+
+    <!-- DI + Logging -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="NLog" />
+    <PackageReference Include="NLog.Extensions.Logging" />
+
+    <!-- Video: NUR der UI-neutrale Core. KEIN LibVLCSharp.Avalonia (hängt an Avalonia 11).
+         libvlc selbst wird NICHT gebundelt (spart ~85 MB pro Windows-Build) — die
+         Vorschau nutzt zur Laufzeit eine vorhandene VLC-Installation (siehe VlcLocator).
+         Windows: VLC 64-bit unter %ProgramFiles%\VideoLAN\VLC; Linux: System-libvlc. -->
+    <PackageReference Include="LibVLCSharp" />
+    <!-- Microsoft.Win32.Registry: KEIN PackageReference noetig. Die Typen liegen seit
+         .NET 5 im Framework selbst; das Kompatibilitaets-Paket loest nur NU1510 aus
+         ("wird nicht gekuerzt"), was mit TreatWarningsAsErrors den Build bricht.
+         Der Zugriff in VlcLocator ist ohnehin mit [SupportedOSPlatform("windows")]
+         abgesichert. -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets/**" />
+    <None Update="nlog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- Testprojekt darf auf internal-Typen zugreifen (Masking-Renderer, Helfer). -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="NetScanner.Tests" />
+  </ItemGroup>
+
+</Project>

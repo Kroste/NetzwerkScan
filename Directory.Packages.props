@@ -1,0 +1,38 @@
+<Project>
+  <!-- Central Package Management: EINZIGER Ort für Paketversionen.
+       PackageReference in den csproj-Dateien steht ohne Version-Attribut. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Avalonia: ab 12.1 mit nativem Wayland-Backend (Entwicklung läuft auf KDE Wayland).
+         DiagnosticsSupport folgt NICHT der Avalonia-Version (eigene 2.x-Reihe). -->
+    <PackageVersion Include="Avalonia" Version="12.1.1" />
+    <PackageVersion Include="Avalonia.Desktop" Version="12.1.1" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.1" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.1.1" />
+    <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" />
+
+    <!-- MVVM & DI -->
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+
+    <!-- Logging -->
+    <PackageVersion Include="NLog" Version="5.5.1" />
+    <PackageVersion Include="NLog.Extensions.Logging" Version="5.5.0" />
+
+    <!-- Kamera-Vorschau: NUR der UI-neutrale Core, libvlc kommt aus der
+         System-Installation (siehe Services/VlcLocator.cs). -->
+    <PackageVersion Include="LibVLCSharp" Version="3.9.4" />
+
+    <!-- Versionierung -->
+    <PackageVersion Include="MinVer" Version="7.0.0" />
+
+    <!-- Tests: xunit.v3 (nicht das deprecated xunit-v2-Paket).
+         FluentAssertions NICHT auf 8.x heben — kommerzielle Xceed-Lizenz. -->
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+    <PackageVersion Include="FluentAssertions" Version="[7.2.2,8.0.0)" />
+  </ItemGroup>
+</Project>
