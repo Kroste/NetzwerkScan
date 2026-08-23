@@ -45,9 +45,9 @@ internal static class Program
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
         .UsePlatformDetect()
         .WithInterFont()
-        // Nur die fuer die Entwicklung nuetzlichen Avalonia-Log-Bereiche ins Trace-Output:
+        // Nur die für die Entwicklung nuetzlichen Avalonia-Log-Bereiche ins Trace-Output:
         // Binding-Fehler (MVVM), Layout- und Property-Warnungen. Das rauschige [Control]/
-        // [Visual]-Framework-Logging (z. B. "PlatformImpl is null" beim Fensterschliessen)
+        // [Visual]-Framework-Logging (z. B. "PlatformImpl is null" beim Fensterschließen)
         // bleibt damit aussen vor. Ohne Argumente wuerde LogToTrace() alle Bereiche loggen.
         .LogToTrace(Avalonia.Logging.LogEventLevel.Warning,
             Avalonia.Logging.LogArea.Binding,

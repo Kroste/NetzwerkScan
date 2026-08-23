@@ -15,7 +15,7 @@ public partial class PasswordCheckWindow : ChromeWindow
 
     private enum ResultKind { Leaked, Safe, Neutral }
 
-    // Parameterloser Konstruktor nur fuer den XAML-Designer.
+    // Parameterloser Konstruktor nur für den XAML-Designer.
     public PasswordCheckWindow() : this(
         new PwnedPasswordChecker(
             Microsoft.Extensions.Logging.Abstractions.NullLogger<PwnedPasswordChecker>.Instance))
@@ -39,7 +39,7 @@ public partial class PasswordCheckWindow : ChromeWindow
         if (e.Key == Key.Enter) OnCheckClick(sender, e);
     }
 
-    // --- Pruefung ---
+    // --- Prüfung ---
     private async void OnCheckClick(object? sender, RoutedEventArgs e)
     {
         var pw = PwBox.Text;
@@ -97,7 +97,7 @@ public partial class PasswordCheckWindow : ChromeWindow
             segs[i].Background = i <= score ? on : off;
 
         // PasswordStrength liefert Resource-Keys (teils mit "Key|Zahl"), damit die
-        // Klasse ohne Localization-Abhaengigkeit testbar bleibt.
+        // Klasse ohne Localization-Abhängigkeit testbar bleibt.
         StrengthLabel.Text = L.TOrText(r.Label);
         StrengthLabel.Foreground = on;
         CrackFast.Text = L.F("Pw_CrackFast", L.TOrText(r.CrackTimeFast));

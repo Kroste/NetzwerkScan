@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace NetScanner.Services;
 
 /// <summary>
-/// Liest Dienst-Banner zur Geraeteidentifikation — ohne erhoehte Rechte:
+/// Liest Dienst-Banner zur Geräteidentifikation — ohne erhöhte Rechte:
 ///   - SSH: der Server sendet beim Connect sofort eine Kennung ("SSH-2.0-OpenSSH_9.6 Ubuntu").
 ///   - HTTP: aus der Antwort wird der "Server:"-Header gezogen (nginx, Microsoft-IIS, Boa, ...).
 /// </summary>

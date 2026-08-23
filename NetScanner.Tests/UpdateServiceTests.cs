@@ -6,7 +6,7 @@ namespace NetScanner.Tests;
 
 /// <summary>
 /// Versionsvergleich des Update-Checks. Ein Stringvergleich wuerde hier 1.10.0
-/// fuer kleiner als 1.9.0 halten — genau deshalb gibt es ParseVersion.
+/// für kleiner als 1.9.0 halten — genau deshalb gibt es ParseVersion.
 /// </summary>
 public class UpdateServiceTests
 {

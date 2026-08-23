@@ -60,7 +60,7 @@ public partial class AboutWindow : ChromeWindow
         catch (Exception ex)
         {
             // Ein fehlgeschlagener Check ist kein App-Fehler (offline, Proxy, Rate-Limit).
-            Log.Warn(ex, "Update-Pruefung im About-Dialog fehlgeschlagen");
+            Log.Warn(ex, "Update-Prüfung im About-Dialog fehlgeschlagen");
             UpdateStatus.Text = L.T("About_CheckFailed");
         }
         finally
@@ -80,7 +80,7 @@ public partial class AboutWindow : ChromeWindow
         UpdateStatus.Text = L.F("About_Downloading", _pending.Version);
 
         // Fortschritt kommt aus dem Download-Task: explizit auf den UI-Thread
-        // dispatchen, sonst sehen die Bindings die Aenderung nicht zuverlaessig.
+        // dispatchen, sonst sehen die Bindings die Änderung nicht zuverlässig.
         var progress = new Progress<double>(p =>
             Dispatcher.UIThread.Post(() => UpdateProgress.Value = p));
 
@@ -130,7 +130,7 @@ public partial class AboutWindow : ChromeWindow
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "URL konnte nicht geoeffnet werden: {Url}", url);
+            Log.Error(ex, "URL konnte nicht geöffnet werden: {Url}", url);
         }
     }
 }

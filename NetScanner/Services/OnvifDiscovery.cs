@@ -10,13 +10,13 @@ namespace NetScanner.Services;
 
 public interface ICameraDiscovery
 {
-    /// <summary>Findet ONVIF-Geraete per WS-Discovery (Multicast) ueber alle aktiven Interfaces.</summary>
+    /// <summary>Findet ONVIF-Geräte per WS-Discovery (Multicast) über alle aktiven Interfaces.</summary>
     Task<IReadOnlyList<CameraInfo>> DiscoverAsync(int listenMs, CancellationToken ct);
 }
 
 /// <summary>
-/// ONVIF-Geraeteerkennung nach WS-Discovery: SOAP-"Probe" an die Multicast-Gruppe
-/// 239.255.255.250:3702. Antwortende Geraete ("ProbeMatch") liefern ihre Service-URL
+/// ONVIF-Geräteerkennung nach WS-Discovery: SOAP-"Probe" an die Multicast-Gruppe
+/// 239.255.255.250:3702. Antwortende Geräte ("ProbeMatch") liefern ihre Service-URL
 /// (XAddrs) und Scopes (Hersteller/Modell/Name).
 /// </summary>
 public sealed class OnvifDiscovery(ILogger<OnvifDiscovery> log) : ICameraDiscovery
@@ -30,12 +30,12 @@ public sealed class OnvifDiscovery(ILogger<OnvifDiscovery> log) : ICameraDiscove
         var found = new Dictionary<string, CameraInfo>();   // dedupliziert per Adresse
 
         // Auf JEDEM aktiven IPv4-Interface separat senden/lauschen
-        // (Multicast ist interface-gebunden; ein einzelner Socket reicht nicht zuverlaessig).
+        // (Multicast ist interface-gebunden; ein einzelner Socket reicht nicht zuverlässig).
         var interfaces = LocalUnicastV4().ToList();
         var tasks = interfaces.Select(local => ProbeOnInterfaceAsync(local, listenMs, found, ct));
         await Task.WhenAll(tasks);
 
-        log.LogInformation("WS-Discovery beendet: {Count} ONVIF-Geraet(e)", found.Count);
+        log.LogInformation("WS-Discovery beendet: {Count} ONVIF-Gerät(e)", found.Count);
         return found.Values.ToList();
     }
 
@@ -52,7 +52,7 @@ public sealed class OnvifDiscovery(ILogger<OnvifDiscovery> log) : ICameraDiscove
             string probe = BuildProbe(Guid.NewGuid());
             byte[] data = Encoding.UTF8.GetBytes(probe);
             await udp.SendAsync(data, new IPEndPoint(MulticastAddr, WsdPort), ct);
-            log.LogDebug("Probe gesendet ueber {Local}", local);
+            log.LogDebug("Probe gesendet über {Local}", local);
 
             using var listenCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             listenCts.CancelAfter(listenMs);
@@ -66,7 +66,7 @@ public sealed class OnvifDiscovery(ILogger<OnvifDiscovery> log) : ICameraDiscove
                     if (info is not null)
                     {
                         lock (found) found[info.Address.ToString()] = info;
-                        log.LogInformation("ONVIF-Geraet: {Ip} ({Vendor})", info.Address, info.Vendor ?? "?");
+                        log.LogInformation("ONVIF-Gerät: {Ip} ({Vendor})", info.Address, info.Vendor ?? "?");
                     }
                 }
             }
@@ -78,7 +78,7 @@ public sealed class OnvifDiscovery(ILogger<OnvifDiscovery> log) : ICameraDiscove
         }
     }
 
-    /// <summary>SOAP-Probe-Envelope nach WS-Discovery, Geraetetyp NetworkVideoTransmitter.</summary>
+    /// <summary>SOAP-Probe-Envelope nach WS-Discovery, Gerätetyp NetworkVideoTransmitter.</summary>
     private static string BuildProbe(Guid messageId) =>
         $$"""
         <?xml version="1.0" encoding="UTF-8"?>
@@ -110,7 +110,7 @@ public sealed class OnvifDiscovery(ILogger<OnvifDiscovery> log) : ICameraDiscove
             var scopes = (match.Element(d + "Scopes")?.Value ?? "")
                 .Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            // Adresse bevorzugt aus XAddrs (echte Geraete-IP), sonst Absender.
+            // Adresse bevorzugt aus XAddrs (echte Geräte-IP), sonst Absender.
             IPAddress addr = remote;
             if (Uri.TryCreate(xaddrs, UriKind.Absolute, out var u)
                 && IPAddress.TryParse(u.Host, out var fromXaddr))

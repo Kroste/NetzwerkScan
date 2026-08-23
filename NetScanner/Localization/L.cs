@@ -38,7 +38,7 @@ public static class L
         }
 
         string text = LocalizationService.Instance[value];
-        // Der Service liefert !Key! zurueck, wenn er den Key nicht kennt — dann ist
+        // Der Service liefert !Key! zurück, wenn er den Key nicht kennt — dann ist
         // es Klartext und bleibt, wie es ist.
         return text.StartsWith('!') ? value : text;
     }

@@ -188,7 +188,7 @@
                                  Foreground="{DynamicResource KrosteMutedTextBrush}"/>
                     </StackPanel>
 
-                    <!-- Geraetetyp + OS -->
+                    <!-- Gerätetyp + OS -->
                     <Border Background="{DynamicResource KrosteAccentSoftBrush}" CornerRadius="4" Padding="7,2"
                             HorizontalAlignment="Left" IsVisible="{Binding HasDeviceInfo}">
                       <TextBlock Text="{Binding DeviceSummary}" FontSize="11" FontWeight="SemiBold"
@@ -282,7 +282,7 @@
                   </Border>
                 </StackPanel>
 
-                <!-- Geraete-Badge -->
+                <!-- Geräte-Badge -->
                 <Border Background="{DynamicResource KrosteAccentSoftBrush}" CornerRadius="4" Padding="8,3"
                         HorizontalAlignment="Left" IsVisible="{Binding HasDeviceInfo}">
                   <TextBlock Text="{Binding DeviceSummary}" FontSize="12" FontWeight="SemiBold"
@@ -413,8 +413,8 @@
           </Panel>
         </Border>
 
-        <!-- ===== Video (nur bei aktivem Stream UND verfuegbarem libvlc) ===== -->
-        <!-- Die Statuszeile liegt UNTER dem Video, nicht darueber: NativeControlHost ist
+        <!-- ===== Video (nur bei aktivem Stream UND verfügbarem libvlc) ===== -->
+        <!-- Die Statuszeile liegt UNTER dem Video, nicht darüber: NativeControlHost ist
              ein natives Fenster und wuerde ein Avalonia-Overlay verdecken (Airspace). -->
         <StackPanel Grid.Row="1" Margin="0,12,0,0" IsVisible="{Binding ShowVideoPreview}">
           <Border Height="232" CornerRadius="8,8,0,0" Background="{DynamicResource NetVideoBackgroundBrush}"

@@ -3,7 +3,7 @@ using NetScanner.Models;
 namespace NetScanner.Services;
 
 /// <summary>
-/// Heuristische Geraete-/OS-Erkennung aus passiv/aktiv gesammelten Signalen.
+/// Heuristische Geräte-/OS-Erkennung aus passiv/aktiv gesammelten Signalen.
 /// KEIN nmap-artiges TCP/IP-Stack-Fingerprinting (das braeuchte Raw-Sockets);
 /// stattdessen Kombination aus TTL, offenen Ports, MAC-Hersteller und Bannern.
 /// Ergebnis ist eine Einschaetzung, keine Gewissheit.
@@ -19,7 +19,7 @@ public static class DeviceClassifier
     /// <summary>OS-Familie primaer aus TTL, verfeinert durch Banner/Ports.</summary>
     private static string? GuessOs(HostResult h)
     {
-        // Banner sind am zuverlaessigsten.
+        // Banner sind am zuverlässigsten.
         if (h.SshBanner is { } ssh)
         {
             if (ssh.Contains("Ubuntu", StringComparison.OrdinalIgnoreCase)) return "Linux (Ubuntu)";
@@ -53,20 +53,20 @@ public static class DeviceClassifier
             {
                 <= 64 => "Linux/Unix/Android",
                 <= 128 => "Windows",
-                _ => "Netzwerkgeraet"
+                _ => "Netzwerkgerät"
             };
         }
         return null;
     }
 
     /// <summary>
-    /// Geraetetyp aus Ports, Hersteller und Bannern.
+    /// Gerätetyp aus Ports, Hersteller und Bannern.
     /// </summary>
     /// <remarks>
-    /// Rueckgabe ist entweder ein <b>Resource-Key</b> (Praefix "Device_") oder ein
-    /// sprachneutraler Produktname bzw. ein Text, den das Geraet selbst gemeldet hat
-    /// (UPnP). Die Uebersetzung passiert erst in der UI (siehe DeviceTypeText) --
-    /// der Klassifizierer bleibt so ohne Localization-Abhaengigkeit testbar.
+    /// Rückgabe ist entweder ein <b>Resource-Key</b> (Praefix "Device_") oder ein
+    /// sprachneutraler Produktname bzw. ein Text, den das Gerät selbst gemeldet hat
+    /// (UPnP). Die Übersetzung passiert erst in der UI (siehe DeviceTypeText) --
+    /// der Klassifizierer bleibt so ohne Localization-Abhängigkeit testbar.
     /// </remarks>
     private static string? GuessDeviceType(HostResult h)
     {
@@ -107,7 +107,7 @@ public static class DeviceClassifier
         if (ports.Contains(32400)) return "Device_MediaServerPlex";
         if (vendor.Contains("Synology", StringComparison.OrdinalIgnoreCase)
             || vendor.Contains("QNAP", StringComparison.OrdinalIgnoreCase)) return "NAS";
-        // Mobilgeraete
+        // Mobilgeräte
         if (ports.Contains(62078)) return "iPhone/iPad";
         // Router/Gateway: HTTP/HTTPS offen + hoher TTL, oft kein anderer Dienst
         if (h.Ttl is > 200) return "Device_RouterSwitch";

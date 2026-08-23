@@ -8,8 +8,8 @@ using Xunit;
 namespace NetScanner.Tests;
 
 /// <summary>
-/// Haelt die beiden Sprachdateien synchron. Ein fehlender Key faellt sonst erst
-/// auf, wenn ein Nutzer die andere Sprache waehlt und dort ein "!Key!" steht.
+/// Haelt die beiden Sprachdateien synchron. Ein fehlender Key fällt sonst erst
+/// auf, wenn ein Nutzer die andere Sprache wählt und dort ein "!Key!" steht.
 /// </summary>
 public class LocalizationTests
 {
@@ -18,11 +18,11 @@ public class LocalizationTests
 
     private static IReadOnlyDictionary<string, string> Entries(CultureInfo culture)
     {
-        // createIfNotExists: true, tryParents: false -> nur die Eintraege DIESER
-        // Kultur, ohne Rueckfall auf die neutrale Datei. Sonst waere jeder fehlende
+        // createIfNotExists: true, tryParents: false -> nur die Einträge DIESER
+        // Kultur, ohne Rückfall auf die neutrale Datei. Sonst wäre jeder fehlende
         // deutsche Key durch den englischen Text "abgedeckt" und der Test blind.
         var set = Rm.GetResourceSet(culture, createIfNotExists: true, tryParents: false);
-        set.Should().NotBeNull($"fuer '{culture.Name}' muss eine Strings-Ressource existieren");
+        set.Should().NotBeNull($"für '{culture.Name}' muss eine Strings-Ressource existieren");
 
         return set!.Cast<System.Collections.DictionaryEntry>()
                    .ToDictionary(e => (string)e.Key, e => (string?)e.Value ?? string.Empty);
@@ -35,7 +35,7 @@ public class LocalizationTests
         var de = Entries(CultureInfo.GetCultureInfo("de"));
 
         de.Keys.Except(en.Keys).Should().BeEmpty("kein Key darf nur auf Deutsch existieren");
-        en.Keys.Except(de.Keys).Should().BeEmpty("jeder englische Key braucht eine deutsche Uebersetzung");
+        en.Keys.Except(de.Keys).Should().BeEmpty("jeder englische Key braucht eine deutsche Übersetzung");
     }
 
     [Fact]
@@ -89,8 +89,8 @@ public class LocalizationTests
     [Fact]
     public void LocalizedString_wird_pro_Key_gecacht()
     {
-        // Der Cache ist die Voraussetzung fuer den Live-Sprachwechsel: Avalonia haelt
-        // Binding.Source nicht stark, ein frisch erzeugter Wrapper waere nach dem
+        // Der Cache ist die Voraussetzung für den Live-Sprachwechsel: Avalonia haelt
+        // Binding.Source nicht stark, ein frisch erzeugter Wrapper wäre nach dem
         // ersten Rendering weg und die Benachrichtigung liefe ins Leere.
         LocalizedString.Get("Status_Ready").Should().BeSameAs(LocalizedString.Get("Status_Ready"));
     }

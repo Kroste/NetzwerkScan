@@ -142,7 +142,7 @@ public sealed class UpdateService
             await DownloadAsync(info.AssetUrl, package, progress, ct);
 
             // SelectAsset liefert die Linux-Assets nur unter Linux; der Plattform-Check
-            // hier macht das fuer den Analyzer (CA1416) explizit.
+            // hier macht das für den Analyzer (CA1416) explizit.
             bool started;
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 && info.AssetName.EndsWith(".AppImage", StringComparison.OrdinalIgnoreCase))

@@ -8,20 +8,20 @@ using NetScanner.Models;
 namespace NetScanner.Services;
 
 /// <summary>
-/// Optionales Sicherheits-Audit: prueft, ob ein RTSP-Stream offen ist bzw. ob ein
-/// Geraet (Kamera, Router) mit einem dokumentierten Werks-Login zugaenglich ist.
+/// Optionales Sicherheits-Audit: prüft, ob ein RTSP-Stream offen ist bzw. ob ein
+/// Gerät (Kamera, Router) mit einem dokumentierten Werks-Login zugänglich ist.
 ///
-/// GEDACHT FUER DAS EIGENE NETZ. Default-Credential-Checks sind Standard in
-/// Sicherheits-Audits — gegen fremde Systeme ohne Erlaubnis koennen sie aber rechtlich
+/// GEDACHT FÜR DAS EIGENE NETZ. Default-Credential-Checks sind Standard in
+/// Sicherheits-Audits — gegen fremde Systeme ohne Erlaubnis können sie aber rechtlich
 /// relevant sein (in DE u. a. §202c StGB). Das Feature ist daher bewusst opt-in.
 ///
-/// Die Liste enthaelt nur die gaengigsten, oeffentlich dokumentierten Werks-Logins
+/// Die Liste enthaelt nur die gängigsten, öffentlich dokumentierten Werks-Logins
 /// (kein Brute-Force). RTSP-Auth (Basic/Digest) ist selbst implementiert; HTTP-Auth
-/// (Basic/Digest) uebernimmt der HttpClient.
+/// (Basic/Digest) übernimmt der HttpClient.
 /// </summary>
 public sealed class CredentialAuditor(ILogger<CredentialAuditor> log)
 {
-    /// <summary>Kuratierte, gaengige Werks-Logins (User, Passwort).</summary>
+    /// <summary>Kuratierte, gängige Werks-Logins (User, Passwort).</summary>
     public static readonly IReadOnlyList<(string User, string Pass)> CommonDefaults =
     [
         ("admin", "admin"), ("admin", ""), ("admin", "12345"), ("admin", "123456"),
@@ -33,7 +33,7 @@ public sealed class CredentialAuditor(ILogger<CredentialAuditor> log)
 
     // ----------------------------------------------------------------- RTSP
 
-    /// <summary>Prueft einen RTSP-Endpunkt: offen, per Werks-Login zugaenglich oder gesichert.</summary>
+    /// <summary>Prüft einen RTSP-Endpunkt: offen, per Werks-Login zugänglich oder gesichert.</summary>
     public async Task<(AuthFinding Finding, string? User, string? Pass)> AuditRtspAsync(
         IPAddress ip, int port, string path, int timeoutMs, CancellationToken ct)
     {
@@ -126,7 +126,7 @@ public sealed class CredentialAuditor(ILogger<CredentialAuditor> log)
 
     // ----------------------------------------------------------------- HTTP
 
-    /// <summary>Prueft ein HTTP-Basic/Digest-geschuetztes Web-Login (Router/Kamera).
+    /// <summary>Prüft ein HTTP-Basic/Digest-geschuetztes Web-Login (Router/Kamera).
     /// Form-Logins (Status 200) werden bewusst NICHT auditiert -> NotChecked.</summary>
     public async Task<(AuthFinding Finding, string? Cred)> AuditHttpAsync(
         string baseUrl, int timeoutMs, CancellationToken ct)
@@ -143,9 +143,9 @@ public sealed class CredentialAuditor(ILogger<CredentialAuditor> log)
                 if (s is 200 or 301 or 302)
                 {
                     string cred = $"{user}/{(pass.Length == 0 ? "(leer)" : pass)}";
-                    // NIE das Passwort loggen: es ist ein wirksames Login fuer ein reales
-                    // Geraet im Netz. Nur der Benutzername geht ins Log, das vollstaendige
-                    // Paar bleibt im Rueckgabewert und damit ausschliesslich in der UI.
+                    // NIE das Passwort loggen: es ist ein wirksames Login für ein reales
+                    // Gerät im Netz. Nur der Benutzername geht ins Log, das vollständige
+                    // Paar bleibt im Rückgabewert und damit ausschließlich in der UI.
                     log.LogWarning("Web-Werks-Login wirksam auf {Url} (Benutzer {User})", baseUrl, user);
                     return (AuthFinding.DefaultCredentials, cred);
                 }

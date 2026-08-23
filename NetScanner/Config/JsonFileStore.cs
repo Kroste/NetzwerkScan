@@ -18,12 +18,12 @@ namespace NetScanner.Config;
 ///
 /// 2. <b>Defekte Daten nicht stillschweigend verlieren.</b> Lässt sich die
 ///    Datei nicht deserialisieren, wurde vorher einfach ein leeres Ergebnis
-///    zurueckgegeben — der nächste Save hat die kaputte Datei dann endgueltig
+///    zurückgegeben — der nächste Save hat die kaputte Datei dann endgültig
 ///    überschrieben. Real passiert in DTM: bei <c>connections.json</c> hiess das alle Server samt
 ///    DPAPI-Passwoertern weg, ohne Kopie. Jetzt wandert die kaputte Datei nach
 ///    <c>&lt;datei&gt;.broken</c> und bleibt für Diagnose/Rettung erhalten.
 ///
-/// Bewusst NICHT quarantaenisiert wird bei IO-Fehlern (Datei gesperrt, Netz-
+/// Bewusst NICHT quarantänisiert wird bei IO-Fehlern (Datei gesperrt, Netz-
 /// laufwerk kurz weg): dort ist der Inhalt ja in Ordnung, nur gerade nicht
 /// lesbar. Ein Verschieben würde intakte Daten aus dem Weg raeumen.
 /// </summary>
@@ -47,7 +47,7 @@ internal static class JsonFileStore
         catch
         {
             // Halb geschriebene .tmp nicht liegen lassen — sie würde beim
-            // nächsten Versuch ohnehin überschrieben, aber ein Restmuell im
+            // nächsten Versuch ohnehin überschrieben, aber ein Restmüll im
             // AppData-Ordner verwirrt bei der Fehlersuche.
             TryDeleteTemp(tmp);
             throw;

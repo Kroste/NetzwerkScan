@@ -14,13 +14,13 @@ public sealed record TraceHop(int Ttl, IPAddress? Address, long RoundtripMs, IPS
 }
 
 /// <summary>
-/// Traceroute ohne externes Tool: ICMP-Echo mit schrittweise erhoehter TTL. Jeder Router
+/// Traceroute ohne externes Tool: ICMP-Echo mit schrittweise erhöhter TTL. Jeder Router
 /// auf dem Pfad dekrementiert die TTL und antwortet bei 0 mit "Time Exceeded" — daraus
-/// faellt seine IP. Cross-platform (kein tracert.exe-Parsing).
+/// fällt seine IP. Cross-platform (kein tracert.exe-Parsing).
 ///
 /// Hinweis Linux: Der unprivilegierte ICMP-Pfad liefert die Hop-Adresse bei TtlExpired
-/// nicht immer zurueck (Kernel-Limitierung des Datagram-ICMP-Sockets). Unter Windows ist
-/// die Hop-IP zuverlaessig. Auf Bazzite ggf. als root oder per System-traceroute gegenpruefen.
+/// nicht immer zurück (Kernel-Limitierung des Datagram-ICMP-Sockets). Unter Windows ist
+/// die Hop-IP zuverlässig. Auf Bazzite ggf. als root oder per System-traceroute gegenprüfen.
 /// </summary>
 public sealed class TracerouteService
 {
@@ -66,7 +66,7 @@ public sealed class TracerouteService
         return hops;
     }
 
-    /// <summary>Zielname/-IP zu einer IPv4-Adresse aufloesen.</summary>
+    /// <summary>Zielname/-IP zu einer IPv4-Adresse auflösen.</summary>
     private static async Task<IPAddress> ResolveAsync(string target, CancellationToken ct)
     {
         target = target.Trim();
@@ -76,7 +76,7 @@ public sealed class TracerouteService
         var addrs = await Dns.GetHostAddressesAsync(target, ct);
         return addrs.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork)
                ?? addrs.FirstOrDefault()
-               ?? throw new InvalidOperationException($"Konnte '{target}' nicht aufloesen.");
+               ?? throw new InvalidOperationException($"Konnte '{target}' nicht auflösen.");
     }
 
     /// <summary>Default-Gateway des aktiven Interfaces (oder null, wenn keins gefunden).</summary>

@@ -22,7 +22,7 @@
          AvaloniaUI.DiagnosticsSupport ersetzt. Nur im Debug-Build. -->
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport"
                       Condition="'$(Configuration)' == 'Debug'" />
-    <!-- Explizit, damit die DBus-Version fuer den Linux-Tray nicht driftet. -->
+    <!-- Explizit, damit die DBus-Version für den Linux-Tray nicht driftet. -->
     <PackageReference Include="Tmds.DBus.Protocol" />
 
     <!-- MVVM -->
@@ -39,8 +39,8 @@
          Vorschau nutzt zur Laufzeit eine vorhandene VLC-Installation (siehe VlcLocator).
          Windows: VLC 64-bit unter %ProgramFiles%\VideoLAN\VLC; Linux: System-libvlc. -->
     <PackageReference Include="LibVLCSharp" />
-    <!-- Microsoft.Win32.Registry: KEIN PackageReference noetig. Die Typen liegen seit
-         .NET 5 im Framework selbst; das Kompatibilitaets-Paket loest nur NU1510 aus
+    <!-- Microsoft.Win32.Registry: KEIN PackageReference nötig. Die Typen liegen seit
+         .NET 5 im Framework selbst; das Kompatibilitäts-Paket löst nur NU1510 aus
          ("wird nicht gekuerzt"), was mit TreatWarningsAsErrors den Build bricht.
          Der Zugriff in VlcLocator ist ohnehin mit [SupportedOSPlatform("windows")]
          abgesichert. -->

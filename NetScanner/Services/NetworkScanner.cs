@@ -17,11 +17,11 @@ public interface INetworkScanner
 /// <summary>
 /// Host-Discovery kombiniert ICMP-Echo und ARP:
 ///   - Windows: aktives ARP-Probing (SendARP) ist die Primaerquelle und findet auch
-///     ICMP-stumme Geraete (Handys im Doze, IoT). Ping liefert zusaetzlich die RTT.
-///   - Linux/macOS: Ping-Sweep (loest nebenbei ARP-Requests aus); danach wird die
-///     Neighbor-Tabelle gelesen und ergaenzt Geraete, die zwar per ARP, aber nicht
+///     ICMP-stumme Geräte (Handys im Doze, IoT). Ping liefert zusätzlich die RTT.
+///   - Linux/macOS: Ping-Sweep (löst nebenbei ARP-Requests aus); danach wird die
+///     Neighbor-Tabelle gelesen und ergaenzt Geräte, die zwar per ARP, aber nicht
 ///     per ICMP antworten.
-/// Bewusst ohne Raw-Sockets -> keine erhoehten Rechte noetig.
+/// Bewusst ohne Raw-Sockets -> keine erhöhten Rechte nötig.
 /// </summary>
 public sealed class NetworkScanner(ILogger<NetworkScanner> log) : INetworkScanner
 {
@@ -50,14 +50,14 @@ public sealed class NetworkScanner(ILogger<NetworkScanner> log) : INetworkScanne
                         await channel.Writer.WriteAsync(host, ct);
                 }
                 catch (OperationCanceledException) { }
-                catch (Exception ex) { log.LogWarning(ex, "Probe fehlgeschlagen fuer {Ip}", ip); }
+                catch (Exception ex) { log.LogWarning(ex, "Probe fehlgeschlagen für {Ip}", ip); }
                 finally { gate.Release(); }
             });
             try { await Task.WhenAll(tasks); }
             finally { channel.Writer.TryComplete(); }
         }, ct);
 
-        // Verbrauchen + bei Bedarf MAC aus Neighbor-Tabelle nachziehen (fuer Ping-Treffer ohne MAC).
+        // Verbrauchen + bei Bedarf MAC aus Neighbor-Tabelle nachziehen (für Ping-Treffer ohne MAC).
         IReadOnlyDictionary<string, string>? arp = null;
         await foreach (var host in channel.Reader.ReadAllAsync(ct))
         {
@@ -74,7 +74,7 @@ public sealed class NetworkScanner(ILogger<NetworkScanner> log) : INetworkScanne
         }
         await producer;
 
-        // Nicht-Windows: ICMP-stumme, aber per ARP sichtbare Geraete (z. B. Handys) ergaenzen.
+        // Nicht-Windows: ICMP-stumme, aber per ARP sichtbare Geräte (z. B. Handys) ergaenzen.
         if (!OperatingSystem.IsWindows())
         {
             var table = await IpRangeHelper.ReadArpTableAsync(ct);
@@ -97,10 +97,10 @@ public sealed class NetworkScanner(ILogger<NetworkScanner> log) : INetworkScanne
         log.LogInformation("Sweep beendet: {Cidr} ({Count} Host(s))", cidr, seen.Count);
     }
 
-    /// <summary>Prueft einen einzelnen Host. Liefert HostResult, wenn er per ICMP ODER ARP lebt.</summary>
+    /// <summary>Prüft einen einzelnen Host. Liefert HostResult, wenn er per ICMP ODER ARP lebt.</summary>
     private async Task<HostResult?> ProbeAsync(IPAddress ip, int timeoutMs, CancellationToken ct)
     {
-        // ICMP-Ping (alle Plattformen) — liefert RTT und TTL (Basis fuer OS-Heuristik).
+        // ICMP-Ping (alle Plattformen) — liefert RTT und TTL (Basis für OS-Heuristik).
         long rtt = -1;
         int? ttl = null;
         bool pingOk = false;
@@ -116,15 +116,15 @@ public sealed class NetworkScanner(ILogger<NetworkScanner> log) : INetworkScanne
             }
         }
         catch (OperationCanceledException) { throw; }
-        catch { /* Ping nicht moeglich -> evtl. trotzdem per ARP erreichbar */ }
+        catch { /* Ping nicht möglich -> evtl. trotzdem per ARP erreichbar */ }
 
-        // Windows: aktiver ARP-Request faengt ICMP-stumme Geraete + liefert die MAC.
+        // Windows: aktiver ARP-Request faengt ICMP-stumme Geräte + liefert die MAC.
         string? mac = null;
         if (OperatingSystem.IsWindows())
         {
             try { mac = await ArpResolver.ResolveAsync(ip, ct); }
             catch (OperationCanceledException) { throw; }
-            catch (Exception ex) { log.LogDebug(ex, "SendARP fehlgeschlagen fuer {Ip}", ip); }
+            catch (Exception ex) { log.LogDebug(ex, "SendARP fehlgeschlagen für {Ip}", ip); }
         }
 
         bool alive = pingOk || mac is not null;

@@ -4,14 +4,14 @@ using Avalonia.Controls;
 namespace NetScanner.Views;
 
 /// <summary>
-/// Passt Fenstergroessen an den tatsaechlich verfuegbaren Bildschirmbereich an,
-/// damit Dialoge nie groesser als der Schirm sind (wichtig auf kleinen Displays,
+/// Passt Fenstergrößen an den tatsaechlich verfügbaren Bildschirmbereich an,
+/// damit Dialoge nie größer als der Schirm sind (wichtig auf kleinen Displays,
 /// z. B. Mini-PCs oder Touchscreens). Zusammen mit einem ScrollViewer im Inhalt
 /// kann dadurch nichts mehr abgeschnitten werden.
 /// </summary>
 public static class WindowSizing
 {
-    /// <summary>Begrenzt Breite/Hoehe auf einen Anteil des Arbeitsbereichs (ohne Taskleiste)
+    /// <summary>Begrenzt Breite/Höhe auf einen Anteil des Arbeitsbereichs (ohne Taskleiste)
     /// und zentriert neu. Best-effort — schlaegt nie fehl.</summary>
     public static void FitToScreen(Window w, double fraction = 0.92)
     {

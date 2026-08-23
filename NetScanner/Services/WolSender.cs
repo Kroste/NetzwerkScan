@@ -16,7 +16,7 @@ public sealed class WolSender(ILogger<WolSender> log)
         var addr = ParseMac(mac);
         if (addr is null)
         {
-            log.LogWarning("WoL: ungueltige MAC '{Mac}'", mac);
+            log.LogWarning("WoL: ungültige MAC '{Mac}'", mac);
             return false;
         }
 

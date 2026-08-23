@@ -28,7 +28,7 @@ public partial class MainWindow : ChromeWindow
         InitializeComponent();
 
         // Update-Check bewusst NICHT blockierend beim Start: offline oder ein
-        // zaeher Proxy darf den Fensterstart nicht verzoegern.
+        // zäher Proxy darf den Fensterstart nicht verzoegern.
         Opened += (_, _) => _ = CheckForUpdatesAsync();
     }
 
@@ -48,7 +48,7 @@ public partial class MainWindow : ChromeWindow
             if (_pendingUpdate is null) return;
 
             await Dispatcher.UIThread.InvokeAsync(() => UpdateBadge.IsVisible = true);
-            Log.Info("Update {Version} verfuegbar (installiert {Current})",
+            Log.Info("Update {Version} verfügbar (installiert {Current})",
                 _pendingUpdate.Version, AppVersion.Display);
         }
         catch (Exception ex)
@@ -64,20 +64,20 @@ public partial class MainWindow : ChromeWindow
 
     private async void OnSettingsClick(object? sender, RoutedEventArgs e)
     {
-        Log.Info("Einstellungen werden geoeffnet");
+        Log.Info("Einstellungen werden geöffnet");
         try
         {
             await new SettingsWindow().ShowDialog(this);
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Einstellungen konnten nicht geoeffnet werden");
+            Log.Error(ex, "Einstellungen konnten nicht geöffnet werden");
         }
     }
 
     private async void OnAboutClick(object? sender, RoutedEventArgs e)
     {
-        Log.Info("Info-Button geklickt → About-Dialog wird geoeffnet");
+        Log.Info("Info-Button geklickt → About-Dialog wird geöffnet");
         try
         {
             var about = new AboutWindow();
@@ -87,14 +87,14 @@ public partial class MainWindow : ChromeWindow
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "About-Dialog konnte nicht geoeffnet werden");
+            Log.Error(ex, "About-Dialog konnte nicht geöffnet werden");
         }
     }
 
     // --- Passwort-Leak-Check ---
     private async void OnPwCheckClick(object? sender, RoutedEventArgs e)
     {
-        Log.Info("Passwort-Check-Button geklickt → Dialog wird geoeffnet");
+        Log.Info("Passwort-Check-Button geklickt → Dialog wird geöffnet");
         try
         {
             var checker = App.Services.GetRequiredService<Services.PwnedPasswordChecker>();
@@ -102,14 +102,14 @@ public partial class MainWindow : ChromeWindow
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Passwort-Check-Dialog konnte nicht geoeffnet werden");
+            Log.Error(ex, "Passwort-Check-Dialog konnte nicht geöffnet werden");
         }
     }
 
     // --- Expositions-Prüfung (UPnP-IGD) ---
     private async void OnExposureClick(object? sender, RoutedEventArgs e)
     {
-        Log.Info("Expositions-Button geklickt → Dialog wird geoeffnet");
+        Log.Info("Expositions-Button geklickt → Dialog wird geöffnet");
         try
         {
             var probe = App.Services.GetRequiredService<Services.UpnpExposureProbe>();
@@ -121,7 +121,7 @@ public partial class MainWindow : ChromeWindow
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Expositions-Dialog konnte nicht geoeffnet werden");
+            Log.Error(ex, "Expositions-Dialog konnte nicht geöffnet werden");
         }
     }
 
@@ -136,7 +136,7 @@ public partial class MainWindow : ChromeWindow
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Netzwerkkarte konnte nicht geoeffnet werden");
+            Log.Error(ex, "Netzwerkkarte konnte nicht geöffnet werden");
         }
     }
 
@@ -145,7 +145,7 @@ public partial class MainWindow : ChromeWindow
     private MainViewModel? Vm => DataContext as MainViewModel;
 
     /// <summary>
-    /// Rechtsklick auf eine Host-Karte: ContextMenu selbst oeffnen. In einer ListBox faengt
+    /// Rechtsklick auf eine Host-Karte: ContextMenu selbst öffnen. In einer ListBox faengt
     /// das ListBoxItem den Rechtsklick sonst ab, sodass das Auto-Verhalten nicht greift.
     /// </summary>
     private void OnCardPointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -177,7 +177,7 @@ public partial class MainWindow : ChromeWindow
                 Process.Start(new ProcessStartInfo("cmd.exe", $"/c start ssh {ip}") { UseShellExecute = false });
             else
             {
-                // Linux/macOS: Terminal-Start ist distro-abhaengig -> Befehl in die Zwischenablage.
+                // Linux/macOS: Terminal-Start ist distro-abhängig -> Befehl in die Zwischenablage.
                 GetTopLevel(this)?.Clipboard?.SetTextAsync($"ssh {ip}");
                 Vm?.ReportAction(L.F("Action_SshCopied", ip));
                 return;
@@ -222,7 +222,7 @@ public partial class MainWindow : ChromeWindow
         Vm?.ReportAction($"Kopiert: {text}");
     }
 
-    /// <summary>Oeffnet die VLC-Download-Seite (fuer die eingebettete Kamera-Vorschau).</summary>
+    /// <summary>Öffnet die VLC-Download-Seite (für die eingebettete Kamera-Vorschau).</summary>
     private void OnDownloadVlc(object? sender, RoutedEventArgs e) =>
         GetTopLevel(this)?.Launcher.LaunchUriAsync(new Uri("https://www.videolan.org/vlc/"));
 

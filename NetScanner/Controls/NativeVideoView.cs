@@ -19,7 +19,7 @@ namespace NetScanner.Controls;
 ///   macOS   -> MediaPlayer.NsObject   (NSView)
 ///
 /// libvlc wird NICHT gebundelt, sondern via <see cref="VlcLocator"/> aus einer vorhandenen
-/// VLC-Installation geladen. Der Wiedergabe-Status (Verbinden/Fehler/Timeout) wird ueber
+/// VLC-Installation geladen. Der Wiedergabe-Status (Verbinden/Fehler/Timeout) wird über
 /// <see cref="PlaybackInfo"/> nach aussen gemeldet, damit die UI bei Problemen kein
 /// stummes schwarzes Bild zeigt.
 /// </summary>
@@ -39,8 +39,8 @@ public sealed class NativeVideoView : NativeControlHost
         set => SetValue(MediaUrlProperty, value);
     }
 
-    /// <summary>Wiedergabe-Status oder null, wenn das Video laeuft. Die View blendet
-    /// daraus ein Overlay ein (Verbinden / Fehler / Zeitueberschreitung).</summary>
+    /// <summary>Wiedergabe-Status oder null, wenn das Video läuft. Die View blendet
+    /// daraus ein Overlay ein (Verbinden / Fehler / Zeitüberschreitung).</summary>
     public static readonly StyledProperty<string?> PlaybackInfoProperty =
         AvaloniaProperty.Register<NativeVideoView, string?>(nameof(PlaybackInfo));
 
@@ -66,7 +66,7 @@ public sealed class NativeVideoView : NativeControlHost
         // base erzeugt ein leeres natives Child-Window; dessen Handle nutzt LibVLC.
         _handle = base.CreateNativeControlCore(parent);
 
-        if (VlcLocator.Shared is { } vlc)   // nur wenn libvlc verfuegbar
+        if (VlcLocator.Shared is { } vlc)   // nur wenn libvlc verfügbar
         {
             _player = new MediaPlayer(vlc);
             WireEvents(_player);
@@ -94,7 +94,7 @@ public sealed class NativeVideoView : NativeControlHost
 
     private void WireEvents(MediaPlayer p)
     {
-        // libvlc feuert diese Events auf eigenen Threads -> UI-Updates ueber den Dispatcher.
+        // libvlc feuert diese Events auf eigenen Threads -> UI-Updates über den Dispatcher.
         p.Playing          += (_, _) => Ui(() => { StopWatchdog(); PlaybackInfo = null; });
         p.EncounteredError += (_, _) => Ui(() => { StopWatchdog();
             PlaybackInfo = L.T("Video_Unreachable"); });
@@ -127,7 +127,7 @@ public sealed class NativeVideoView : NativeControlHost
         _player.Play(media);
     }
 
-    // --- Watchdog: meldet einen haengenden Connect (es kommt kein Playing-/Error-Event). ---
+    // --- Watchdog: meldet einen hängenden Connect (es kommt kein Playing-/Error-Event). ---
     private void StartWatchdog()
     {
         StopWatchdog();

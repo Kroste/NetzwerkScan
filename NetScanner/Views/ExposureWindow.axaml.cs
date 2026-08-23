@@ -15,7 +15,7 @@ public partial class ExposureWindow : ChromeWindow
     private readonly IReadOnlyList<HostResult> _hosts;
     private string? _publicIp;
 
-    // Parameterloser Konstruktor nur fuer den XAML-Designer.
+    // Parameterloser Konstruktor nur für den XAML-Designer.
     public ExposureWindow() : this(
         new UpnpExposureProbe(
             Microsoft.Extensions.Logging.Abstractions.NullLogger<UpnpExposureProbe>.Instance),

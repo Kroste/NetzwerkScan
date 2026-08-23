@@ -22,8 +22,8 @@ public partial class NetworkMapWindow : ChromeWindow
     private CancellationTokenSource? _traceCts;
     private Border? _selectedNode;
 
-    // --- Farben: ausschliesslich aus der Palette in App.axaml (siehe Palette.cs).
-    //     Lazy ueber Properties, weil die Application-Resources beim Laden der
+    // --- Farben: ausschließlich aus der Palette in App.axaml (siehe Palette.cs).
+    //     Lazy über Properties, weil die Application-Resources beim Laden der
     //     statischen Felder eines Fensters noch nicht zwingend stehen. ---
     private static IBrush SurfaceBrush     => Palette.Brush("KrosteSurfaceBrush");
     private static IBrush AccentSoftBrush  => Palette.Brush("KrosteAccentSoftBrush");

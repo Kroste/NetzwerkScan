@@ -5,19 +5,19 @@ using Microsoft.Extensions.Logging;
 namespace NetScanner.Services;
 
 /// <summary>
-/// Prueft ein Passwort gegen die "Pwned Passwords"-Datenbank von Have I Been Pwned
+/// Prüft ein Passwort gegen die "Pwned Passwords"-Datenbank von Have I Been Pwned
 /// (https://haveibeenpwned.com/Passwords) per k-Anonymity-Verfahren:
 ///
-/// Es wird NUR das 5-stellige Praefix des SHA-1-Hashes uebertragen — niemals das
-/// Passwort und niemals der vollstaendige Hash. Die API liefert alle Hash-Endungen
-/// zu diesem Praefix (typ. mehrere hundert) samt Leak-Haeufigkeit; der eigentliche
+/// Es wird NUR das 5-stellige Praefix des SHA-1-Hashes übertragen — niemals das
+/// Passwort und niemals der vollständige Hash. Die API liefert alle Hash-Endungen
+/// zu diesem Praefix (typ. mehrere hundert) samt Leak-Häufigkeit; der eigentliche
 /// Abgleich passiert lokal. Die API kann daraus nicht ableiten, welches Passwort
-/// geprueft wurde. Genau dieses Verfahren nutzen Bitwarden, 1Password, Google und
-/// Firefox Monitor fuer ihre Leak-Warnungen.
+/// geprüft wurde. Genau dieses Verfahren nutzen Bitwarden, 1Password, Google und
+/// Firefox Monitor für ihre Leak-Warnungen.
 /// </summary>
 public sealed class PwnedPasswordChecker(ILogger<PwnedPasswordChecker> log)
 {
-    // Static -> ein Socket-Pool, kein Exhaustion bei wiederholten Pruefungen.
+    // Static -> ein Socket-Pool, kein Exhaustion bei wiederholten Prüfungen.
     private static readonly HttpClient Http = CreateClient();
 
     private static HttpClient CreateClient()
@@ -32,8 +32,8 @@ public sealed class PwnedPasswordChecker(ILogger<PwnedPasswordChecker> log)
     public sealed record Result(bool Found, long Count);
 
     /// <summary>
-    /// Prueft das Passwort. Liefert null, wenn die Pruefung nicht moeglich war
-    /// (z. B. offline / API nicht erreichbar). Das Passwort verlaesst das Geraet nicht.
+    /// Prüft das Passwort. Liefert null, wenn die Prüfung nicht möglich war
+    /// (z. B. offline / API nicht erreichbar). Das Passwort verlaesst das Gerät nicht.
     /// </summary>
     public async Task<Result?> CheckAsync(string password, CancellationToken ct)
     {
@@ -47,8 +47,8 @@ public sealed class PwnedPasswordChecker(ILogger<PwnedPasswordChecker> log)
 
             using var req = new HttpRequestMessage(
                 HttpMethod.Get, $"https://api.pwnedpasswords.com/range/{prefix}");
-            // Padding fuellt die Antwort mit Dummy-Eintraegen (Count 0) auf, sodass die
-            // Antwortgroesse nicht verraet, ob ein Treffer dabei ist.
+            // Padding fuellt die Antwort mit Dummy-Einträgen (Count 0) auf, sodass die
+            // Antwortgröße nicht verraet, ob ein Treffer dabei ist.
             req.Headers.Add("Add-Padding", "true");
 
             using var resp = await Http.SendAsync(req, HttpCompletionOption.ResponseContentRead, ct);

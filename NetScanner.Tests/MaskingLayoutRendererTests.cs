@@ -9,7 +9,7 @@ namespace NetScanner.Tests;
 /// <summary>
 /// Der masked-Renderer ist die letzte Verteidigungslinie gegen Secrets im Log.
 /// Getestet wird über die echte NLog-Layout-Pipeline und nicht gegen die
-/// Transform-Methode direkt — nur so faellt auf, wenn die Registrierung per
+/// Transform-Methode direkt — nur so fällt auf, wenn die Registrierung per
 /// ModuleInitializer nicht greift (dann bleibt die Message komplett leer).
 /// </summary>
 public class MaskingLayoutRendererTests
@@ -20,7 +20,7 @@ public class MaskingLayoutRendererTests
         // genuegt NICHT: die Laufzeit laedt dabei nur das Typ-Token und ruft den
         // Modul-Konstruktor noch nicht. Ohne diesen Aufruf kennt NLog "masked" beim
         // Parsen des Layouts nicht, die innere Klammer beendet den Renderer vorzeitig
-        // und uebrig bleibt ein einzelnes "}" statt der Message.
+        // und übrig bleibt ein einzelnes "}" statt der Message.
         RuntimeHelpers.RunModuleConstructor(
             typeof(NetScanner.Logging.MaskingLayoutRenderer).Module.ModuleHandle);
 

@@ -8,7 +8,7 @@ namespace NetScanner.Services;
 
 /// <summary>
 /// Hilfsfunktionen rund um IP-Bereiche und die ARP-Tabelle.
-/// Bewusst ohne Raw-Sockets, damit keine erhoehten Rechte noetig sind.
+/// Bewusst ohne Raw-Sockets, damit keine erhöhten Rechte nötig sind.
 /// </summary>
 public static class IpRangeHelper
 {
@@ -21,7 +21,7 @@ public static class IpRangeHelper
         var parts = cidr.Split('/', 2);
         if (parts.Length != 2 || !IPAddress.TryParse(parts[0], out var baseIp)
             || !int.TryParse(parts[1], out var prefix) || prefix is < 0 or > 32)
-            throw new FormatException($"Ungueltige CIDR-Angabe: '{cidr}'");
+            throw new FormatException($"Ungültige CIDR-Angabe: '{cidr}'");
 
         uint baseAddr = ToUInt(baseIp);
         uint mask = prefix == 0 ? 0u : 0xFFFFFFFFu << (32 - prefix);
@@ -39,8 +39,8 @@ public static class IpRangeHelper
         return list;
     }
 
-    /// <summary>Prueft eine CIDR-Angabe (IPv4) auf Gueltigkeit, ohne zu expandieren oder
-    /// zu werfen — fuer die Eingabe-Validierung vor dem Scan-Start.</summary>
+    /// <summary>Prüft eine CIDR-Angabe (IPv4) auf Gültigkeit, ohne zu expandieren oder
+    /// zu werfen — für die Eingabe-Validierung vor dem Scan-Start.</summary>
     public static bool IsValidCidr(string? cidr)
     {
         if (string.IsNullOrWhiteSpace(cidr)) return false;
@@ -77,7 +77,7 @@ public static class IpRangeHelper
     /// <summary>
     /// Liest die ARP-/Neighbor-Tabelle des Systems und liefert IP -> MAC.
     /// Linux: 'ip neigh' (Fallback /proc/net/arp), Windows: 'arp -a'.
-    /// Wird nach dem Ping-Sweep aufgerufen, dann sind die Eintraege gefuellt.
+    /// Wird nach dem Ping-Sweep aufgerufen, dann sind die Einträge gefuellt.
     /// </summary>
     public static async Task<IReadOnlyDictionary<string, string>> ReadArpTableAsync(
         CancellationToken ct = default)
@@ -92,7 +92,7 @@ public static class IpRangeHelper
         }
         catch
         {
-            // ARP ist optional (nur fuer MAC/Vendor); Fehler hier sind nicht fatal.
+            // ARP ist optional (nur für MAC/Vendor); Fehler hier sind nicht fatal.
         }
         return map;
     }

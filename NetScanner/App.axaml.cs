@@ -14,7 +14,7 @@ namespace NetScanner;
 
 public partial class App : Application
 {
-    /// <summary>Globaler DI-Container (einfacher Service-Locator fuer Views/ViewModels).</summary>
+    /// <summary>Globaler DI-Container (einfacher Service-Locator für Views/ViewModels).</summary>
     public static IServiceProvider Services { get; private set; } = default!;
 
     // PFLICHT-Feld: haelt die GC-Referenz auf den Tray. Ohne sie sammelt der GC den
@@ -33,7 +33,7 @@ public partial class App : Application
         if (settings.Current.UiCulture is { Length: > 0 } iso)
             LocalizationService.Instance.SetCulture(iso);
 
-        // libvlc-Verfuegbarkeit frueh klaeren (laedt aus vorhandener VLC-Installation),
+        // libvlc-Verfügbarkeit früh klären (laedt aus vorhandener VLC-Installation),
         // damit das ViewModel/die UI sofort wissen, ob die Vorschau angeboten werden kann.
         NetScanner.Services.VlcLocator.EnsureInitialized();
 
@@ -41,7 +41,7 @@ public partial class App : Application
         {
             var log = Services.GetRequiredService<ILogger<App>>();
             log.LogInformation("Anwendung gestartet (PID {Pid})", Environment.ProcessId);
-            log.LogInformation("Kamera-Vorschau (libvlc) verfuegbar: {Avail}{From}",
+            log.LogInformation("Kamera-Vorschau (libvlc) verfügbar: {Avail}{From}",
                 NetScanner.Services.VlcLocator.IsAvailable,
                 NetScanner.Services.VlcLocator.LoadedFrom is { } p ? $" (aus {p})" : "");
 
@@ -50,7 +50,7 @@ public partial class App : Application
             var main = new MainWindow();
             desktop.MainWindow = main;
 
-            // Minimieren legt das Fenster in den Tray, Schliessen beendet regulaer.
+            // Minimieren legt das Fenster in den Tray, Schließen beendet regulaer.
             _tray = new TrayController(this, main);
             _tray.Install();
             desktop.ShutdownRequested += (_, _) =>

@@ -7,9 +7,9 @@ namespace NetScanner.Services;
 
 /// <summary>
 /// NetBIOS Name Service (NBNS, UDP 137): "Node Status Request" (NBSTAT) an einen Host.
-/// Windows-Geraete und Samba antworten mit ihrer Namenstabelle — daraus lesen wir den
+/// Windows-Geräte und Samba antworten mit ihrer Namenstabelle — daraus lesen wir den
 /// Workstation-Namen (Suffix 0x00, kein Gruppenbit) und die Arbeitsgruppe/Domaene (Gruppenbit).
-/// Reines Unicast, keine erhoehten Rechte noetig.
+/// Reines Unicast, keine erhöhten Rechte nötig.
 /// </summary>
 public sealed class NetBiosProbe(ILogger<NetBiosProbe> log)
 {
@@ -59,10 +59,10 @@ public sealed class NetBiosProbe(ILogger<NetBiosProbe> log)
 
     private static (string?, string?) ParseNbstatResponse(byte[] buf)
     {
-        // Header (12) ueberspringen, dann RR-Name, TYPE/CLASS/TTL/RDLENGTH, dann die Namensliste.
+        // Header (12) überspringen, dann RR-Name, TYPE/CLASS/TTL/RDLENGTH, dann die Namensliste.
         int pos = 12;
 
-        // RR-Name ueberspringen (Labels bis 0x00 oder Compression-Pointer 0xC0).
+        // RR-Name überspringen (Labels bis 0x00 oder Compression-Pointer 0xC0).
         while (pos < buf.Length)
         {
             byte len = buf[pos];

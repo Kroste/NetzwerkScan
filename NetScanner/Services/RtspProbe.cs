@@ -6,8 +6,8 @@ using Microsoft.Extensions.Logging;
 namespace NetScanner.Services;
 
 /// <summary>
-/// Prueft per RTSP-OPTIONS, ob an einem Port ein RTSP-Server lauscht, und
-/// erzeugt Stream-URL-Kandidaten nach oeffentlich dokumentierten Hersteller-Mustern.
+/// Prüft per RTSP-OPTIONS, ob an einem Port ein RTSP-Server lauscht, und
+/// erzeugt Stream-URL-Kandidaten nach öffentlich dokumentierten Hersteller-Mustern.
 /// Diese Klasse raet selbst keine Passwoerter — das optionale Default-Login-Audit
 /// (offene Streams + Werks-Logins) steckt in <see cref="CredentialAuditor"/>.
 /// </summary>

@@ -9,11 +9,11 @@ namespace NetScanner.Services;
 
 /// <summary>
 /// Fragt per UPnP-IGD den Router nach seinen aktiven Portweiterleitungen ab
-/// (GetGenericPortMappingEntry) und nach der oeffentlichen IP (GetExternalIPAddress).
+/// (GetGenericPortMappingEntry) und nach der öffentlichen IP (GetExternalIPAddress).
 ///
 /// Damit wird sichtbar, welche Ports aus dem Internet erreichbar sind und auf welches
-/// interne Geraet sie zeigen — die zentrale Frage fuer "ist meine Kamera von aussen offen?".
-/// Reine Leseabfrage: es werden KEINE Weiterleitungen angelegt oder geaendert.
+/// interne Gerät sie zeigen — die zentrale Frage für "ist meine Kamera von aussen offen?".
+/// Reine Leseabfrage: es werden KEINE Weiterleitungen angelegt oder geändert.
 /// </summary>
 public sealed class UpnpExposureProbe(ILogger<UpnpExposureProbe> log)
 {
@@ -214,7 +214,7 @@ public sealed class UpnpExposureProbe(ILogger<UpnpExposureProbe> log)
         return null;
     }
 
-    /// <summary>Oeffentliche IP ueber einen externen Dienst, falls das IGD keine liefert.</summary>
+    /// <summary>Öffentliche IP über einen externen Dienst, falls das IGD keine liefert.</summary>
     private async Task<string?> PublicIpFallbackAsync(CancellationToken ct)
     {
         try
@@ -225,7 +225,7 @@ public sealed class UpnpExposureProbe(ILogger<UpnpExposureProbe> log)
         }
         catch (Exception ex)
         {
-            log.LogDebug(ex, "Oeffentliche-IP-Fallback fehlgeschlagen");
+            log.LogDebug(ex, "Öffentliche-IP-Fallback fehlgeschlagen");
             return null;
         }
     }

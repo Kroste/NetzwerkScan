@@ -42,15 +42,15 @@ public sealed partial class MainViewModel : ViewModelBase
     /// <summary>True, wenn libvlc (aus einer vorhandenen VLC-Installation) bereitsteht.</summary>
     public bool IsPreviewAvailable => VlcLocator.IsAvailable;
 
-    /// <summary>Eingebettete Vorschau zeigen: Stream gewaehlt UND libvlc verfuegbar.</summary>
+    /// <summary>Eingebettete Vorschau zeigen: Stream gewählt UND libvlc verfügbar.</summary>
     public bool ShowVideoPreview =>
         IsPreviewAvailable && !string.IsNullOrWhiteSpace(SelectedStreamUrl);
 
-    /// <summary>Hinweis "VLC installieren" zeigen: Stream gewaehlt, aber kein libvlc da.</summary>
+    /// <summary>Hinweis "VLC installieren" zeigen: Stream gewählt, aber kein libvlc da.</summary>
     public bool ShowVlcMissingHint =>
         !IsPreviewAvailable && !string.IsNullOrWhiteSpace(SelectedStreamUrl);
 
-    /// <summary>Statusabhaengiger Hinweis fuer den Fall ohne (passende) VLC-Installation.</summary>
+    /// <summary>Statusabhängiger Hinweis für den Fall ohne (passende) VLC-Installation.</summary>
     public string VlcHintText => VlcLocator.Status switch
     {
         VlcStatus.WrongArchitecture => L.T("Vlc_WrongArchitecture"),
@@ -58,7 +58,7 @@ public sealed partial class MainViewModel : ViewModelBase
         _ => L.T("Vlc_Missing")
     };
 
-    // Beide abgeleiteten Flags neu auswerten, sobald sich die Stream-URL aendert.
+    // Beide abgeleiteten Flags neu auswerten, sobald sich die Stream-URL ändert.
     partial void OnSelectedStreamUrlChanged(string? value)
     {
         OnPropertyChanged(nameof(ShowVideoPreview));
@@ -77,15 +77,15 @@ public sealed partial class MainViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanStart))]
     private async Task StartScanAsync()
     {
-        // Eingabe vorab pruefen -> klare Meldung statt generischem Fehler tief im Scan.
+        // Eingabe vorab prüfen -> klare Meldung statt generischem Fehler tief im Scan.
         if (!IpRangeHelper.IsValidCidr(Cidr))
         {
             Status = L.T("Status_InvalidCidr");
-            _audit.LogInformation("SCAN_REJECT | ungueltige CIDR: {Cidr}", Cidr);
+            _audit.LogInformation("SCAN_REJECT | ungültige CIDR: {Cidr}", Cidr);
             return;
         }
 
-        // --- Audit: vollstaendige Eingabe protokollieren ---
+        // --- Audit: vollständige Eingabe protokollieren ---
         _audit.LogInformation(
             "SCAN_START | cidr={Cidr} | fullPorts={Full} | probeRtsp={Rtsp} | audit={Audit} | onvifMs={Onvif} | rtspUser={User}",
             Cidr, ScanFullPorts, ProbeRtsp, AuditCredentials, OnvifListenMs,
@@ -119,8 +119,8 @@ public sealed partial class MainViewModel : ViewModelBase
                     HostCount = Hosts.Count;
                     if (host.IsCamera) CameraCount++;
 
-                    // Offener/per Werks-Login zugaenglicher Stream: erste solche Kamera
-                    // automatisch auswaehlen und die Vorschau oeffnen (Beleg der Schwachstelle).
+                    // Offener/per Werks-Login zugänglicher Stream: erste solche Kamera
+                    // automatisch auswählen und die Vorschau öffnen (Beleg der Schwachstelle).
                     if (host.RtspVulnerable && string.IsNullOrEmpty(SelectedStreamUrl))
                     {
                         SelectedHost = host;
@@ -201,7 +201,7 @@ public sealed partial class MainViewModel : ViewModelBase
     public string BuildCsv()
     {
         var sb = new StringBuilder();
-        sb.AppendLine("IP;Name;MAC;Hersteller;OS;Geraetetyp;TTL;Latenz_ms;Kamera;OffenePorts;mDNS;NetBIOS;Arbeitsgruppe;UPnP;SSH;HTTP");
+        sb.AppendLine("IP;Name;MAC;Hersteller;OS;Gerätetyp;TTL;Latenz_ms;Kamera;OffenePorts;mDNS;NetBIOS;Arbeitsgruppe;UPnP;SSH;HTTP");
         foreach (var h in Hosts)
         {
             string ports = string.Join(" ", h.OpenPorts.Select(p => $"{p.Port}/{p.Service}"));

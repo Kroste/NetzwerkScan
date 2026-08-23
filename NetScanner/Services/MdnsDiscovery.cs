@@ -61,7 +61,7 @@ public sealed class MdnsDiscovery(ILogger<MdnsDiscovery> log)
             udp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             // Bevorzugt auf 5353 binden (empfaengt auch Multicast-Antworten + Announcements).
             // Ist der Port belegt (lokaler avahi/Bonjour), auf einen ephemeren Port ausweichen —
-            // dank QU-Bit in der Query antworten die meisten Geraete dann unicast an uns.
+            // dank QU-Bit in der Query antworten die meisten Geräte dann unicast an uns.
             bool boundOn5353 = true;
             try { udp.Client.Bind(new IPEndPoint(local, Port)); }
             catch (SocketException)

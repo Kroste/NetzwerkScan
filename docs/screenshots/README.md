@@ -13,7 +13,7 @@ automatisch an der richtigen Stelle in der `../../README.md`.
 | `06-kamera-stream.png` | Host mit ONVIF/RTSP-Kamera und eingebettetem Live-Video |
 | `07-netzwerkkarte.png` | Netzwerkkarte (Stern-Topologie) mit Legende |
 | `08-traceroute.png`    | Außenpfad-Leiste mit Hop-Kette (kann Teil von 07 sein) |
-| `09-ueber.png`         | „Über NetScanner“-Dialog (optional) |
+| `09-über.png`         | „Über NetScanner“-Dialog (optional) |
 
 Format: PNG, möglichst in der nativen Fenstergröße. Breite Bilder (Hauptfenster,
 Karte) gern in voller Auflösung — GitHub skaliert sie im Markdown automatisch.

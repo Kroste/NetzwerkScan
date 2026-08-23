@@ -22,12 +22,12 @@ public enum VlcStatus
 /// NetScanner buendelt libvlc bewusst NICHT mehr selbst (spart ~85 MB pro Windows-Build).
 /// Die Kamera-Vorschau nutzt die libvlc der lokalen VLC-Installation:
 ///   Windows: VLC (64-bit) — Suchreihenfolge: NETSCANNER_VLC_DIR, Registry, %ProgramFiles%
-///   Linux:   System-libvlc (Paket vlc / libvlc) ueber den normalen Loader
+///   Linux:   System-libvlc (Paket vlc / libvlc) über den normalen Loader
 ///
 /// Schlaegt die Suche fehl, bleibt <see cref="Status"/> aussagekraeftig (NotFound /
-/// WrongArchitecture / InitFailed) und die App laeuft normal weiter — die UI ersetzt die
+/// WrongArchitecture / InitFailed) und die App läuft normal weiter — die UI ersetzt die
 /// Vorschau durch einen passenden Hinweis. Die Kern-Funktionen (Scan, Portscan, Erkennung)
-/// haengen NICHT von libvlc ab.
+/// hängen NICHT von libvlc ab.
 /// </summary>
 public static class VlcLocator
 {
@@ -42,11 +42,11 @@ public static class VlcLocator
     /// <summary>Verzeichnis, aus dem libvlc geladen wurde (null = System-Pfad). Nur Diagnose.</summary>
     public static string? LoadedFrom { get; private set; }
 
-    /// <summary>Die gemeinsame LibVLC-Instanz oder null, wenn nicht verfuegbar.</summary>
+    /// <summary>Die gemeinsame LibVLC-Instanz oder null, wenn nicht verfügbar.</summary>
     public static LibVLC? Shared { get; private set; }
 
     /// <summary>
-    /// Einmalige, fehlertolerante Initialisierung. Sollte frueh beim App-Start laufen,
+    /// Einmalige, fehlertolerante Initialisierung. Sollte früh beim App-Start laufen,
     /// damit der Status feststeht, bevor die UI dagegen bindet. Mehrfachaufruf ist gefahrlos.
     /// </summary>
     public static void EnsureInitialized()
@@ -68,13 +68,13 @@ public static class VlcLocator
                 Core.Initialize();                // System-Loader (Linux/macOS)
             }
 
-            // Reconnect & geringe Latenz fuer Kamerastreams.
+            // Reconnect & geringe Latenz für Kamerastreams.
             Shared = new LibVLC("--network-caching=300", "--rtsp-tcp", "--no-audio");
             Status = VlcStatus.Available;
         }
         catch
         {
-            // Core.Initialize/new LibVLC schlug fehl (z. B. beschaedigte Installation).
+            // Core.Initialize/new LibVLC schlug fehl (z. B. beschädigte Installation).
             Status = VlcStatus.InitFailed;
             Shared = null;
             LoadedFrom = null;
@@ -89,7 +89,7 @@ public static class VlcLocator
         Shared = null;
     }
 
-    /// <summary>Sucht das VLC-Verzeichnis. Rueckgabe: (Pfad, wrongArch). wrongArch=true,
+    /// <summary>Sucht das VLC-Verzeichnis. Rückgabe: (Pfad, wrongArch). wrongArch=true,
     /// wenn zwar eine VLC gefunden wurde, aber in der falschen Architektur.</summary>
     [SupportedOSPlatform("windows")]
     private static (string? dir, bool wrongArch) FindWindowsVlc()
@@ -109,11 +109,11 @@ public static class VlcLocator
     [SupportedOSPlatform("windows")]
     private static IEnumerable<string> CandidateDirs()
     {
-        // 1) Expliziter Override fuer Custom-/Portable-Installationen.
+        // 1) Expliziter Override für Custom-/Portable-Installationen.
         var env = Environment.GetEnvironmentVariable("NETSCANNER_VLC_DIR");
         if (!string.IsNullOrWhiteSpace(env)) yield return env;
 
-        // 2) Registry (der Standard-Installer schreibt InstallDir) — fuer Pfade abseits
+        // 2) Registry (der Standard-Installer schreibt InstallDir) — für Pfade abseits
         //    der Vorgabe. Beide Views, falls 32/64-bit gemischt registriert ist.
         foreach (var view in new[] { RegistryView.Registry64, RegistryView.Registry32 })
         {
@@ -124,7 +124,7 @@ public static class VlcLocator
                 using var k = bk.OpenSubKey(@"SOFTWARE\VideoLAN\VLC");
                 dir = k?.GetValue("InstallDir") as string;
             }
-            catch { /* Registry nicht lesbar -> ueberspringen */ }
+            catch { /* Registry nicht lesbar -> überspringen */ }
             if (!string.IsNullOrWhiteSpace(dir)) yield return dir;
         }
 
@@ -134,7 +134,7 @@ public static class VlcLocator
     }
 
     /// <summary>
-    /// Liest aus dem PE-Header der DLL das Machine-Feld und prueft auf x64.
+    /// Liest aus dem PE-Header der DLL das Machine-Feld und prüft auf x64.
     /// PE-Layout: an Offset 0x3C steht der Offset der PE-Signatur ("PE\0\0"), danach folgt
     /// im COFF-Header (Offset +4) das 2-Byte-Machine-Feld (0x8664 = AMD64).
     /// So erkennen wir eine 32-bit-VLC, bevor das Laden mit BadImageFormat crasht.

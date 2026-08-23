@@ -29,13 +29,13 @@ public interface IScanOrchestrator
 }
 
 /// <summary>
-/// Fuehrt den kompletten Ablauf zusammen:
+/// Führt den kompletten Ablauf zusammen:
 /// 1) ONVIF WS-Discovery (parallel, kurzes Listen-Fenster)
 /// 2) Ping-Sweep (streamend)
 /// 3) je Host Portscan
 /// 4) Kamera-Klassifizierung: ONVIF-Treffer ODER Port-Heuristik (554/8554/...) ODER Kamera-OUI
 /// 5) bei Kamera: RTSP-OPTIONS-Probe + Stream-URL nach Hersteller-Muster
-/// 6) ONVIF-Geraete, die im Ping nicht auftauchten, werden am Ende ergaenzt.
+/// 6) ONVIF-Geräte, die im Ping nicht auftauchten, werden am Ende ergaenzt.
 /// </summary>
 public sealed class ScanOrchestrator(
     INetworkScanner sweeper,
@@ -57,8 +57,8 @@ public sealed class ScanOrchestrator(
     {
         log.LogInformation("=== Scan-Lauf START === {Opt}", opt);
 
-        // Alle Multicast-Discoverer parallel anstossen. mDNS/SSDP befuellen ihre Sinks
-        // live, sodass spaeter gesweepte Hosts bereits Treffer sehen koennen.
+        // Alle Multicast-Discoverer parallel anstossen. mDNS/SSDP befüllen ihre Sinks
+        // live, sodass später gesweepte Hosts bereits Treffer sehen können.
         var mdnsSink = new ConcurrentDictionary<string, MdnsRecord>();
         var ssdpSink = new ConcurrentDictionary<string, SsdpRecord>();
         var onvifTask = onvif.DiscoverAsync(opt.OnvifListenMs, ct);
@@ -75,7 +75,7 @@ public sealed class ScanOrchestrator(
             yield return host;
         }
 
-        // Alle Discovery-Tasks abwarten -> vollstaendige Sinks fuer die "nur-Discovery"-Hosts.
+        // Alle Discovery-Tasks abwarten -> vollständige Sinks für die "nur-Discovery"-Hosts.
         // Fehler einer Discovery-Quelle duerfen den Scan NICHT abreissen (best effort).
         IReadOnlyList<CameraInfo> cams;
         try { cams = await onvifTask; }
@@ -86,7 +86,7 @@ public sealed class ScanOrchestrator(
         catch (OperationCanceledException) { throw; }
         catch (Exception ex) { log.LogWarning(ex, "mDNS/SSDP-Discovery fehlgeschlagen"); }
 
-        // Geraete, die nicht auf Ping geantwortet haben, aber per ONVIF/mDNS/SSDP sichtbar sind
+        // Geräte, die nicht auf Ping geantwortet haben, aber per ONVIF/mDNS/SSDP sichtbar sind
         // (z. B. ICMP-stumme Kameras, Smart-TVs, Drucker).
         var extra = new HashSet<string>();
         foreach (var ip in cams.Select(c => c.Address.ToString())
@@ -95,7 +95,7 @@ public sealed class ScanOrchestrator(
 
         foreach (var ipStr in extra)
         {
-            if (!IPAddress.TryParse(ipStr, out var ip)) continue;   // defekte Adresse ueberspringen
+            if (!IPAddress.TryParse(ipStr, out var ip)) continue;   // defekte Adresse überspringen
             var cam = cams.FirstOrDefault(c => c.Address.ToString() == ipStr);
             var host = new HostResult { Address = ip, Camera = cam, Vendor = cam?.Vendor };
             await SafeEnrichAsync(host, opt, cams, mdnsSink, ssdpSink, ct);
@@ -108,7 +108,7 @@ public sealed class ScanOrchestrator(
 
     /// <summary>Reichert einen Host an, faengt dabei aber alle nicht-Abbruch-Fehler ab —
     /// ein einzelner defekter Host (Timeout, Socket-Fehler) darf den Scan nicht abreissen.
-    /// Der Host wird trotzdem mit den bis dahin gesammelten Infos zurueckgegeben.</summary>
+    /// Der Host wird trotzdem mit den bis dahin gesammelten Infos zurückgegeben.</summary>
     private async Task SafeEnrichAsync(
         HostResult host, ScanOptions opt, IReadOnlyList<CameraInfo>? onvifMatches,
         ConcurrentDictionary<string, MdnsRecord> mdnsSink,
@@ -122,7 +122,7 @@ public sealed class ScanOrchestrator(
         catch (OperationCanceledException) { throw; }   // Abbruch sauber durchreichen
         catch (Exception ex)
         {
-            log.LogWarning(ex, "Anreicherung fehlgeschlagen fuer {Ip} — Host wird mit Teildaten uebernommen",
+            log.LogWarning(ex, "Anreicherung fehlgeschlagen für {Ip} — Host wird mit Teildaten übernommen",
                 host.Address);
         }
     }
@@ -136,7 +136,7 @@ public sealed class ScanOrchestrator(
         string ipKey = host.Address.ToString();
 
         // Portscan, NetBIOS und Reverse-DNS NEBENLAEUFIG starten — ihre Timeouts
-        // ueberlappen so, statt sich pro Host zu summieren.
+        // überlappen so, statt sich pro Host zu summieren.
         var portTask = portScanner.ScanAsync(host.Address, opt.Ports, opt.PortTimeoutMs, opt.PortParallel, ct);
         var nbTask = netbios.QueryAsync(host.Address, opt.PortTimeoutMs, ct);
         var dnsTask = string.IsNullOrWhiteSpace(host.Hostname)
@@ -146,7 +146,7 @@ public sealed class ScanOrchestrator(
         var open = await portTask;
         host.OpenPorts.AddRange(open);
 
-        // Banner grabben (OS-/Geraete-Hinweise) — nur wenn passende Ports offen sind.
+        // Banner grabben (OS-/Geräte-Hinweise) — nur wenn passende Ports offen sind.
         await GrabBannersAsync(host, open, opt, ct);
 
         // NetBIOS-Ergebnis (Windows/Samba-Hostname + Arbeitsgruppe).
@@ -155,7 +155,7 @@ public sealed class ScanOrchestrator(
         // Reverse-DNS (best effort).
         host.Hostname = await dnsTask;
 
-        // mDNS-/SSDP-Treffer aus den live befuellten Sinks uebernehmen.
+        // mDNS-/SSDP-Treffer aus den live befuellten Sinks übernehmen.
         if (mdnsSink.TryGetValue(ipKey, out var m))
         {
             host.MdnsName = m.Name;
@@ -170,7 +170,7 @@ public sealed class ScanOrchestrator(
         // Kamera-Erkennung (kann ohne Treffer früh aussteigen).
         await ClassifyCameraAsync(host, opt, onvifMatches, open, ct);
 
-        // Geraetetyp + OS einschaetzen (nutzt Ports, TTL, Vendor, Banner, Discovery, IsCamera).
+        // Gerätetyp + OS einschaetzen (nutzt Ports, TTL, Vendor, Banner, Discovery, IsCamera).
         DeviceClassifier.Classify(host);
         if (host.HasDeviceInfo)
             log.LogInformation("{Ip} erkannt als: {Summary} (TTL {Ttl})",
@@ -181,8 +181,8 @@ public sealed class ScanOrchestrator(
             await AuditCredentialsAsync(host, open, opt.PortTimeoutMs, ct);
     }
 
-    /// <summary>Prueft Kamera-Stream und (bei Router/Kamera) das Web-Login auf offene
-    /// Zugaenge bzw. dokumentierte Werks-Logins. Nur fuer das eigene Netz gedacht.</summary>
+    /// <summary>Prüft Kamera-Stream und (bei Router/Kamera) das Web-Login auf offene
+    /// Zugänge bzw. dokumentierte Werks-Logins. Nur für das eigene Netz gedacht.</summary>
     private async Task AuditCredentialsAsync(
         HostResult host, IReadOnlyList<PortResult> open, int timeoutMs, CancellationToken ct)
     {
@@ -216,7 +216,7 @@ public sealed class ScanOrchestrator(
         }
     }
 
-    /// <summary>Web-Audit nur fuer Kameras und Router/Gateways (fokussiert, nicht jeder Host).</summary>
+    /// <summary>Web-Audit nur für Kameras und Router/Gateways (fokussiert, nicht jeder Host).</summary>
     private static bool ShouldAuditWeb(HostResult host) =>
         host.IsCamera
         || string.Equals(host.DeviceType, "Router", StringComparison.OrdinalIgnoreCase)

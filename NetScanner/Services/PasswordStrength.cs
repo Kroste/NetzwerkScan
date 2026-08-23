@@ -5,22 +5,22 @@ namespace NetScanner.Services;
 /// <summary>
 /// Lokale, transparente Schaetzung der Passwortstaerke und der Offline-Crackzeit.
 /// Bewusst keine externe Bibliothek: Zeichenraum × Laenge ergibt eine Entropie-Schaetzung,
-/// die um erkennbare Muster (nur Ziffern, gaengige Woerter, Wiederholungen, Sequenzen)
+/// die um erkennbare Muster (nur Ziffern, gängige Woerter, Wiederholungen, Sequenzen)
 /// reduziert wird. Daraus wird die mittlere Versuchszahl und — geteilt durch typische
 /// Hash-Raten — die Crackzeit gegen einen schnellen (MD5) und einen langsamen (bcrypt) Hash.
 ///
-/// Es ist eine Groessenordnungs-Schaetzung (Sekunden vs. Jahrhunderte), kein Beweis —
-/// fuer die Entscheidung "aendern ja/nein" reicht das.
+/// Es ist eine Größenordnungs-Schaetzung (Sekunden vs. Jahrhunderte), kein Beweis —
+/// für die Entscheidung "ändern ja/nein" reicht das.
 /// </summary>
 public static class PasswordStrength
 {
-    // Grobe Hash-Raten einer einzelnen starken GPU (Groessenordnung):
-    // MD5 = sehr schnell (schlecht fuer Passwoerter), bcrypt(cost 12) = absichtlich langsam.
+    // Grobe Hash-Raten einer einzelnen starken GPU (Größenordnung):
+    // MD5 = sehr schnell (schlecht für Passwoerter), bcrypt(cost 12) = absichtlich langsam.
     private const double Md5HashesPerSec = 1e11;     // ~100 Mrd./s
     private const double BcryptHashesPerSec = 1e4;   // ~10 Tsd./s
 
-    // Kleine Liste sehr haeufiger Basis-Muster — nur fuer den Entropie-Abschlag,
-    // NICHT als Leak-Pruefung (das macht der HIBP-Check).
+    // Kleine Liste sehr häufiger Basis-Muster — nur für den Entropie-Abschlag,
+    // NICHT als Leak-Prüfung (das macht der HIBP-Check).
     private static readonly string[] WeakTokens =
     [
         "password", "passwort", "admin", "qwertz", "qwerty", "letmein", "welcome",
@@ -35,7 +35,7 @@ public static class PasswordStrength
         string CrackTimeSlow);     // gegen bcrypt & Co.
 
     /// <summary>Bewertet ein Passwort. <paramref name="foundInLeaks"/> aus dem HIBP-Check
-    /// uebersteuert alles — ein geleaktes Passwort faellt sofort.</summary>
+    /// übersteuert alles — ein geleaktes Passwort fällt sofort.</summary>
     public static Result Evaluate(string password, bool foundInLeaks)
     {
         if (string.IsNullOrEmpty(password))
@@ -90,7 +90,7 @@ public static class PasswordStrength
         if (digit && !lower && !upper && !symbol)
             entropy *= 0.55;
 
-        // Enthaelt ein gaengiges Wort -> der Wortteil traegt kaum Entropie.
+        // Enthaelt ein gängiges Wort -> der Wortteil trägt kaum Entropie.
         foreach (var t in WeakTokens)
             if (lc.Contains(t)) { entropy -= Math.Log2(pool) * (t.Length - 1); break; }
 
@@ -125,9 +125,9 @@ public static class PasswordStrength
     }
 
     /// <summary>
-    /// Sekunden in eine lesbare Spanne uebersetzen. Rueckgabe ist ein Resource-Key
+    /// Sekunden in eine lesbare Spanne übersetzen. Rückgabe ist ein Resource-Key
     /// mit optionalem Zahl-Platzhalter, formatiert wird erst in der UI -- so bleibt
-    /// die Klasse ohne Localization-Abhaengigkeit testbar.
+    /// die Klasse ohne Localization-Abhängigkeit testbar.
     /// </summary>
     internal static string Humanize(double seconds)
     {

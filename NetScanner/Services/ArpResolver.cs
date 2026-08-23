@@ -5,14 +5,14 @@ using System.Runtime.Versioning;
 namespace NetScanner.Services;
 
 /// <summary>
-/// Aktives ARP-Probing. Findet Geraete auf Layer 2 — auch solche, die ICMP-Echo
-/// ignorieren (Handys im Doze/WLAN-Power-Save, viele IoT-Geraete).
+/// Aktives ARP-Probing. Findet Geräte auf Layer 2 — auch solche, die ICMP-Echo
+/// ignorieren (Handys im Doze/WLAN-Power-Save, viele IoT-Geräte).
 ///
-/// Windows: SendARP() aus iphlpapi.dll. Laeuft OHNE Admin-Rechte, schickt einen
-/// echten ARP-Request und liefert die MAC zurueck.
+/// Windows: SendARP() aus iphlpapi.dll. Läuft OHNE Admin-Rechte, schickt einen
+/// echten ARP-Request und liefert die MAC zurück.
 /// Linux/macOS: kein SendARP-Aequivalent ohne Raw-Sockets — dort wird stattdessen
 /// nach dem Ping-Sweep die Neighbor-Tabelle ausgewertet (siehe NetworkScanner),
-/// weil der Ping bereits einen ARP-Request ausloest.
+/// weil der Ping bereits einen ARP-Request auslöst.
 /// </summary>
 public static class ArpResolver
 {
@@ -26,7 +26,7 @@ public static class ArpResolver
 
     /// <summary>
     /// Schickt einen ARP-Request an <paramref name="ip"/> und liefert die MAC,
-    /// oder null, wenn kein Geraet antwortet. Nur Windows.
+    /// oder null, wenn kein Gerät antwortet. Nur Windows.
     /// </summary>
     [SupportedOSPlatform("windows")]
     public static Task<string?> ResolveAsync(IPAddress ip, CancellationToken ct) =>

@@ -6,7 +6,7 @@ namespace NetScanner.Models;
 /// <summary>Status eines einzelnen Ports nach dem Scan.</summary>
 public sealed record PortResult(int Port, bool IsOpen, string? Banner = null)
 {
-    /// <summary>Bekannter Dienstname (best effort), z. B. "RTSP" fuer 554.</summary>
+    /// <summary>Bekannter Dienstname (best effort), z. B. "RTSP" für 554.</summary>
     public string Service => Port switch
     {
         21 => "FTP", 22 => "SSH", 23 => "Telnet", 53 => "DNS",
@@ -35,22 +35,22 @@ public sealed record CameraInfo
     /// <summary>True, wenn der Stream Zugangsdaten verlangt (401/Beschreibung).</summary>
     public bool RequiresAuth { get; set; }
     /// <summary>Ergebnis des optionalen RTSP-Credential-Audits. Bei Open/DefaultCredentials
-    /// enthaelt <see cref="RtspUri"/> die funktionierenden Zugangsdaten fuer die Vorschau.</summary>
+    /// enthaelt <see cref="RtspUri"/> die funktionierenden Zugangsdaten für die Vorschau.</summary>
     public AuthFinding RtspAudit { get; set; } = AuthFinding.NotChecked;
 }
 
 public enum CameraSource { OnvifDiscovery, PortHeuristic, Both }
 
-/// <summary>Ergebnis einer Credential-Pruefung (Stream oder Web-Login).</summary>
+/// <summary>Ergebnis einer Credential-Prüfung (Stream oder Web-Login).</summary>
 public enum AuthFinding
 {
-    /// <summary>Nicht geprueft (Audit war aus oder nicht anwendbar).</summary>
+    /// <summary>Nicht geprüft (Audit war aus oder nicht anwendbar).</summary>
     NotChecked,
     /// <summary>Ohne Zugangsdaten erreichbar — offen.</summary>
     Open,
-    /// <summary>Zugangsdaten noetig, ein Werks-Login funktioniert.</summary>
+    /// <summary>Zugangsdaten nötig, ein Werks-Login funktioniert.</summary>
     DefaultCredentials,
-    /// <summary>Zugangsdaten noetig, kein getesteter Werks-Login passte.</summary>
+    /// <summary>Zugangsdaten nötig, kein getesteter Werks-Login passte.</summary>
     Secured
 }
 
@@ -63,11 +63,11 @@ public sealed class HostResult
     public string? Vendor { get; set; }
     public long RoundtripMs { get; set; }
 
-    /// <summary>TTL aus dem ICMP-Reply (Basis fuer die OS-Heuristik).</summary>
+    /// <summary>TTL aus dem ICMP-Reply (Basis für die OS-Heuristik).</summary>
     public int? Ttl { get; set; }
-    /// <summary>Geschaetzte OS-Familie (z. B. "Windows", "Linux/Unix", "Netzwerkgeraet").</summary>
+    /// <summary>Geschaetzte OS-Familie (z. B. "Windows", "Linux/Unix", "Netzwerkgerät").</summary>
     public string? OsGuess { get; set; }
-    /// <summary>Geschaetzter Geraetetyp (z. B. "Drucker", "Kamera", "NAS", "Router").</summary>
+    /// <summary>Geschaetzter Gerätetyp (z. B. "Drucker", "Kamera", "NAS", "Router").</summary>
     public string? DeviceType { get; set; }
     /// <summary>HTTP-Server-Header (z. B. "nginx", "Microsoft-IIS/10.0").</summary>
     public string? HttpServer { get; set; }
@@ -84,27 +84,27 @@ public sealed class HostResult
     public string? NetbiosGroup { get; set; }
     /// <summary>UPnP/SSDP-Server-Kennung (enthaelt oft OS + Produkt).</summary>
     public string? UpnpServer { get; set; }
-    /// <summary>Aus SSDP abgeleiteter UPnP-Geraetetyp (z. B. "Router", "Media-Server").</summary>
+    /// <summary>Aus SSDP abgeleiteter UPnP-Gerätetyp (z. B. "Router", "Media-Server").</summary>
     public string? UpnpDeviceType { get; set; }
 
     public List<PortResult> OpenPorts { get; } = [];
     public CameraInfo? Camera { get; set; }
 
-    /// <summary>Ergebnis des optionalen Web-Login-Audits (Router/Geraet-Webinterface).</summary>
+    /// <summary>Ergebnis des optionalen Web-Login-Audits (Router/Gerät-Webinterface).</summary>
     public AuthFinding WebAudit { get; set; } = AuthFinding.NotChecked;
     /// <summary>Funktionierender Werks-Login als "user/pass" (nur Anzeige), falls gefunden.</summary>
     public string? WebAuditCred { get; set; }
 
-    // --- Verwundbarkeits-Auswertung fuer die UI ---
-    /// <summary>RTSP-Stream ist offen oder per Werks-Login zugaenglich.</summary>
+    // --- Verwundbarkeits-Auswertung für die UI ---
+    /// <summary>RTSP-Stream ist offen oder per Werks-Login zugänglich.</summary>
     public bool RtspVulnerable =>
         Camera?.RtspAudit is AuthFinding.Open or AuthFinding.DefaultCredentials;
-    /// <summary>Web-Login (Router/Geraet) ist offen oder per Werks-Login zugaenglich.</summary>
+    /// <summary>Web-Login (Router/Gerät) ist offen oder per Werks-Login zugänglich.</summary>
     public bool WebVulnerable =>
         WebAudit is AuthFinding.Open or AuthFinding.DefaultCredentials;
     public bool IsVulnerable => RtspVulnerable || WebVulnerable;
 
-    /// <summary>Kompakte Badge-Zeile fuer gefundene Schwachstellen.</summary>
+    /// <summary>Kompakte Badge-Zeile für gefundene Schwachstellen.</summary>
     public string? VulnBadge
     {
         get
@@ -132,12 +132,12 @@ public sealed class HostResult
     public bool IsIcmpAlive => RoundtripMs >= 0;
     public string LatencyDisplay => RoundtripMs >= 0 ? $"{RoundtripMs} ms" : "nur ARP";
 
-    /// <summary>Bester verfuegbarer Name: DNS &gt; mDNS &gt; NetBIOS.</summary>
+    /// <summary>Bester verfügbarer Name: DNS &gt; mDNS &gt; NetBIOS.</summary>
     public string? BestName => !string.IsNullOrWhiteSpace(Hostname) ? Hostname
                              : !string.IsNullOrWhiteSpace(MdnsName) ? MdnsName
                              : NetbiosName;
     public bool HasBestName => !string.IsNullOrWhiteSpace(BestName);
-    // Rueckwaertskompatibel zur bestehenden UI-Bindung:
+    // Rückwärtskompatibel zur bestehenden UI-Bindung:
     public bool HasHostname => HasBestName;
 
     public bool HasMac => !string.IsNullOrWhiteSpace(MacAddress);
@@ -156,7 +156,7 @@ public sealed class HostResult
     }
     public bool HasDiscovery => DiscoveryDisplay is not null;
 
-    // --- Aktions-Helfer fuer Kontextmenue/Detail-Panel ---
+    // --- Aktions-Helfer für Kontextmenue/Detail-Panel ---
     /// <summary>Beste Web-URL aus offenen Ports (HTTPS bevorzugt), sonst null.</summary>
     public string? WebUrl
     {
@@ -177,14 +177,14 @@ public sealed class HostResult
     public bool HasSmb => OpenPorts.Any(p => p.Port is 445 or 139);
     public bool HasMacForWol => HasMac;
 
-    /// <summary>Kurze Zusammenfassung "Geraetetyp · OS" fuer die Anzeige.</summary>
+    /// <summary>Kurze Zusammenfassung "Gerätetyp · OS" für die Anzeige.</summary>
     public string DeviceSummary
     {
         get
         {
             var parts = new List<string>(2);
-            // DeviceClassifier liefert Resource-Keys fuer die uebersetzbaren Typen
-            // und Klartext fuer Produktnamen/UPnP-Angaben -- TOrText behandelt beides.
+            // DeviceClassifier liefert Resource-Keys für die übersetzbaren Typen
+            // und Klartext für Produktnamen/UPnP-Angaben -- TOrText behandelt beides.
             if (!string.IsNullOrWhiteSpace(DeviceType)) parts.Add(L.TOrText(DeviceType));
             if (!string.IsNullOrWhiteSpace(OsGuess)) parts.Add(L.TOrText(OsGuess));
             return string.Join(" · ", parts);
@@ -192,7 +192,7 @@ public sealed class HostResult
     }
     public bool HasDeviceInfo => !string.IsNullOrWhiteSpace(DeviceType) || !string.IsNullOrWhiteSpace(OsGuess);
 
-    /// <summary>Banner-Zeile (SSH/HTTP) fuer die Anzeige, falls vorhanden.</summary>
+    /// <summary>Banner-Zeile (SSH/HTTP) für die Anzeige, falls vorhanden.</summary>
     public string? BannerDisplay => SshBanner ?? (HttpServer is not null ? $"HTTP: {HttpServer}" : null);
     public bool HasBanner => !string.IsNullOrWhiteSpace(BannerDisplay);
 }

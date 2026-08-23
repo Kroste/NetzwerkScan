@@ -1,8 +1,8 @@
 namespace NetScanner.Services;
 
 /// <summary>
-/// Minimaler OUI-Lookup (erste 3 MAC-Bytes) fuer haeufige Kamera-/Netzwerk-Hersteller.
-/// Bewusst klein gehalten; fuer Vollstaendigkeit die IEEE-OUI-Datei laden.
+/// Minimaler OUI-Lookup (erste 3 MAC-Bytes) für häufige Kamera-/Netzwerk-Hersteller.
+/// Bewusst klein gehalten; für Vollständigkeit die IEEE-OUI-Datei laden.
 /// Zweck: einen wahrscheinlichen Kamera-Hersteller schon vor dem Portscan erkennen.
 /// </summary>
 public static class OuiLookup
@@ -31,7 +31,7 @@ public static class OuiLookup
         ["00:1A:1E"] = "Aruba",
     };
 
-    /// <summary>Liefert den Hersteller fuer eine MAC (aus den ersten 3 Bytes), oder null.</summary>
+    /// <summary>Liefert den Hersteller für eine MAC (aus den ersten 3 Bytes), oder null.</summary>
     public static string? Resolve(string? mac)
     {
         if (string.IsNullOrWhiteSpace(mac)) return null;
