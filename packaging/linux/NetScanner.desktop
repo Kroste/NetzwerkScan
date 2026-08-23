@@ -1,7 +1,12 @@
 [Desktop Entry]
 Type=Application
 Name=NetScanner
-Comment=LAN-Discovery, Portscan und ONVIF/RTSP-Kameraerkennung
+Comment=LAN discovery, port scanning and ONVIF/RTSP camera detection
+Comment[de]=LAN-Discovery, Portscan und ONVIF/RTSP-Kameraerkennung
+GenericName=Network scanner
+GenericName[de]=Netzwerk-Scanner
+Keywords=network;scan;lan;camera;onvif;rtsp;port;
+Keywords[de]=Netzwerk;Scan;LAN;Kamera;ONVIF;RTSP;Port;
 Exec=NetScanner
 Icon=netscanner
 Categories=Network;Utility;

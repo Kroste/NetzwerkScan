@@ -23,7 +23,9 @@
 
 ## Aktueller Stand
 
-Stand v1.5.x, aktuell in Nacharbeit auf den Kroste-Standard.
+Stand nach dem vollständigen Kroste-Standard-Refresh (2026-08-23). Alle Punkte
+der Definition of Done sind erfüllt; die Roadmap unten enthält nur noch echte
+Feature-Ideen, keine offenen Standard-Lücken mehr.
 
 **Funktioniert:**
 
@@ -41,37 +43,45 @@ Stand v1.5.x, aktuell in Nacharbeit auf den Kroste-Standard.
 - Fenster: MainWindow, NetworkMapWindow, ExposureWindow, PasswordCheckWindow,
   AboutWindow.
 
-**Zuletzt nachgezogen (Standard-Refresh):**
+**Nachgezogen im Standard-Refresh:**
 
-- Secret-Masking im Log (`Logging/MaskingLayoutRenderer`, Registrierung per
-  `[ModuleInitializer]`), Klartext-Passwort aus dem Credential-Audit-Log entfernt.
-- Repo-Struktur auf den Kanon: `NetScanner/` + `NetScanner.Tests/`, `.slnx`, CPM,
-  `Directory.Build.props`, MinVer, `TreatWarningsAsErrors`, LICENSE.
-- CI-Workflow (Build + Tests bei Push/PR) und Dependabot ergänzt; Release-Workflow
-  auf Node-24-Action-Majors gehoben und um Tests erweitert.
-- Avalonia 12.0.4 → 12.1.1 (natives Wayland-Backend, relevant auf Bazzite/KDE).
-- App-Icon reproduzierbar aus `scripts/build_icon.py` (+ PowerShell-Port), jetzt
-  auch als Multi-Res-`.ico` für `<ApplicationIcon>`.
+- **Logging:** `Logging/MaskingLayoutRenderer` (Registrierung per `[ModuleInitializer]`)
+  maskiert Passwörter, Tokens, URL-Credentials und Auth-Header in jedem Target.
+  Der Credential-Audit loggt nur noch den Benutzernamen, nie das Passwort.
+- **Struktur:** `NetScanner/` + `NetScanner.Tests/`, `.slnx`, Central Package
+  Management, `Directory.Build.props`, `TreatWarningsAsErrors`, MinVer, LICENSE.
+- **CI:** `ci.yml` (Build + Tests bei Push/PR), `dependabot.yml`, Release-Workflow
+  auf Node-24-Action-Majors und um Tests erweitert.
+- **Chrome:** `Views/ChromeWindow` als Basisklasse aller Fenster (`BorderOnly`,
+  nicht `None`), `Controls/TitleBar` mit `LandedOnInteractiveChild`-Guard.
+- **Look:** Kroste-Palette und volle Style-Bibliothek in `App.axaml`, Card-Look,
+  keine Farbliterale mehr außerhalb von `App.axaml` (auch nicht im Code-Behind —
+  `Views/Palette.cs` löst Keys auf).
+- **System-Tray:** `Views/TrayController`, Minimieren legt ab, Schließen beendet.
+- **Update:** `Services/UpdateService` mit echtem Self-Update (Windows-ZIP,
+  Linux-tar.gz, AppImage) und Update-Abzeichen in der Titelleiste.
+- **Localization:** EN + DE mit Live-Wechsel, Sprachauswahl im neuen
+  `SettingsWindow`, Persistenz über `Config/AppSettingsService`.
+- **Umlaute:** echte Umlaute statt `ae/oe/ue/ss` im gesamten Repo.
+- **Tests:** 121 Tests (Masking, Update-Versionslogik, Localization-Konsistenz,
+  IpRangeHelper, OuiLookup, PasswordStrength, DeviceClassifier).
+- **Pakete:** Avalonia 12.1.1, CommunityToolkit.Mvvm 8.4.2, Tmds.DBus.Protocol
+  explizit gepinnt; `Microsoft.Win32.Registry` entfernt.
+- **Icon:** reproduzierbar aus `scripts/build_icon.py` (+ PowerShell-Port), jetzt
+  in Kroste-Blau/Gold, inklusive Multi-Res-`.ico`.
 
 ## Roadmap
 
-Offene Punkte aus dem Standard-Abgleich, in dieser Reihenfolge:
+Offene Feature-Ideen, keine Standard-Lücken mehr:
 
-1. `ChromeWindow`-Basisklasse + `Controls/TitleBar` — aktuell setzt jedes Fenster
-   sein Chrome selbst und nutzt `WindowDecorations="None"` (killt die Resize-Griffe;
-   korrekt wäre `BorderOnly`).
-2. Styles zentral nach `App.axaml` (heute pro Fenster dupliziert), Card-Look
-   (`Border.card` / `card-flat`, `h1`/`h2`/`section-label`) einführen und die
-   hardcodeten `#XXXXXX`-Farbliterale in den Views durch Palette-Keys ersetzen.
-3. System-Tray (`TrayController`): Minimieren → Tray, Schließen beendet.
-4. `UpdateService` mit **echtem Self-Update** gegen GitHub Releases (nicht nur
-   Notification) — Referenz: RenPack `Services/UpdateService.cs`.
-5. Localization EN + DE (`Localization/` mit `LocalizationService`,
-   `LocalizedString`, `TrExtension`, Resx) — die UI ist heute hart deutsch.
-6. Umlaute-Sweep: Kommentare, XML-Doc und Log-Texte nutzen teils noch die
-   Ersatzschreibweise `ae/oe/ue/ss`.
-7. Testabdeckung ausbauen — `IpRangeHelper`, `PasswordStrength`, `DeviceClassifier`,
-   `OuiLookup` sind reine Logik und ohne Umbau testbar.
+1. Scan-Ergebnisse persistieren und zwischen Läufen vergleichen („was ist neu im
+   Netz?"). Muster dafür steht in `references/persistence.md`.
+2. Zeitgesteuerter Wiederholungs-Scan mit Tray-Benachrichtigung bei neuen Geräten.
+3. Weitere Sprachen über EN + DE hinaus (die Infrastruktur trägt sie bereits).
+4. IPv6-Discovery — heute ist alles strikt IPv4.
+5. Prüfen, ob eine KI-Auswertung der Scan-Ergebnisse echten Mehrwert bringt
+   (z. B. „welche Geräte fallen aus dem Rahmen?"). Falls ja: Multi-Provider nach
+   Allpaca-Vorbild, Ollama als Default.
 
 ## Referenz
 
@@ -100,4 +110,20 @@ Offene Punkte aus dem Standard-Abgleich, in dieser Reihenfolge:
   löst ihn nicht aus.
 - **`dotnet test` läuft über die Microsoft.Testing.Platform** (Runner-Block in der
   `global.json`). `--nologo` und andere VSTest-Flags werden durchgereicht und
-  brechen den Lauf ab.
+  brechen den Lauf ab. Auch `dotnet test` auf der Solution scheitert — immer das
+  Testprojekt direkt angeben.
+- **Services liefern Resource-Keys, keine fertigen Texte.** `DeviceClassifier`
+  gibt `Device_*`-Keys zurück (und Klartext für Produktnamen und UPnP-Angaben),
+  `PasswordStrength` zusätzlich die Form `Key|Zahl` für Zeitspannen. Übersetzt
+  wird erst in der UI über `L.TOrText`. Damit bleiben die Services ohne
+  Localization-Abhängigkeit testbar — und ein vergessener Key fällt im
+  `DeviceClassifierTests` auf, nicht erst beim Nutzer.
+- **Kein `Classes="…"` ohne Style in `App.axaml`.** Avalonia meldet eine tote
+  Style-Klasse nicht, sie rendert einfach falsch. Nach jedem Style-Refactoring
+  den Abgleich referenzierter gegen definierte Klassen laufen lassen.
+- **Farbliterale gehören ausschließlich in `App.axaml`.** Im Code-Behind löst
+  `Views/Palette.cs` die Keys auf und fällt bei einem Tippfehler sichtbar auf
+  Magenta zurück.
+- **Kein doppelter Bindestrich in XML-Kommentaren** (`Directory.Packages.props`,
+  csproj): das ist ein Parser-Fehler und macht den kompletten umgebenden Block
+  unsichtbar — Symptom war NU1010 für jedes einzelne Paket.
