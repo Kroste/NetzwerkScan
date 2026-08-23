@@ -66,8 +66,6 @@
   <data name="Main_Latency" xml:space="preserve"><value>Response time</value></data>
   <data name="Main_Stream" xml:space="preserve"><value>▶  Stream</value></data>
   <data name="Main_OpenStream" xml:space="preserve"><value>▶  Open stream</value></data>
-  <data name="Main_VlcRequired" xml:space="preserve"><value>Embedded preview needs VLC</value></data>
-  <data name="Main_DownloadVlc" xml:space="preserve"><value>Download VLC</value></data>
   <data name="Main_Ctx_OpenWeb" xml:space="preserve"><value>Open in browser</value></data>
   <data name="Main_Ctx_Ssh" xml:space="preserve"><value>SSH connection</value></data>
   <data name="Main_Ctx_Rdp" xml:space="preserve"><value>Remote desktop (RDP)</value></data>
@@ -189,15 +187,8 @@
   <data name="Status_BrowserOpened" xml:space="preserve"><value>Browser opened: {0}</value></data>
   <data name="Status_RdpWindowsOnly" xml:space="preserve"><value>The RDP client is only available on Windows</value></data>
   <data name="Status_ShareOpened" xml:space="preserve"><value>File share opened: {0}</value></data>
-  <data name="Vlc_Broken" xml:space="preserve"><value>VLC was found but libvlc could not be loaded. The installation is probably damaged — reinstall VLC.</value></data>
-  <data name="Vlc_Missing" xml:space="preserve"><value>NetScanner no longer ships libvlc. Install VLC media player (64-bit) and the stream plays right here. Without VLC, copy the stream URL and open it elsewhere.</value></data>
 
   <!-- ============ Video-Vorschau / Video preview ============ -->
-  <data name="Video_Connecting" xml:space="preserve"><value>Connecting …</value></data>
-  <data name="Video_Buffering" xml:space="preserve"><value>Connecting … {0} %</value></data>
-  <data name="Video_Unreachable" xml:space="preserve"><value>Stream not reachable, or the credentials are wrong.</value></data>
-  <data name="Video_Ended" xml:space="preserve"><value>Stream ended.</value></data>
-  <data name="Video_Timeout" xml:space="preserve"><value>Timed out – stream not reachable.</value></data>
 
   <!-- ============ Expositions-Prüfung, dynamisch / Exposure check, dynamic ============ -->
   <data name="Exp_UnknownDevice" xml:space="preserve"><value>unknown device on the LAN</value></data>
@@ -228,7 +219,6 @@
   <data name="Action_RdpWindowsOnly" xml:space="preserve"><value>The RDP client is only available on Windows</value></data>
   <data name="Action_RdpStarted" xml:space="preserve"><value>RDP session to {0} started</value></data>
   <data name="Action_ShareOpened" xml:space="preserve"><value>File share opened: {0}</value></data>
-  <data name="Vlc_WrongArchitecture" xml:space="preserve"><value>A 32-bit VLC was found. NetScanner needs the 64-bit version of VLC media player.</value></data>
   <data name="About_VersionLine" xml:space="preserve"><value>Version {0} · .NET 10 · Avalonia 12</value></data>
   <data name="About_Title" xml:space="preserve"><value>About NetScanner · v{0}</value></data>
   <data name="Map_ResolveFailed" xml:space="preserve"><value>Could not resolve “{0}”.</value></data>
@@ -242,4 +232,10 @@
   <data name="Vuln_TelnetDefaultLogin" xml:space="preserve"><value>Telnet: factory login {0}</value></data>
   <data name="Vuln_FtpAnonymous" xml:space="preserve"><value>FTP: anonymous access</value></data>
   <data name="Vuln_FtpDefaultLogin" xml:space="preserve"><value>FTP: factory login {0}</value></data>
+
+  <!-- ============ Kamera-Vorschau / Camera preview ============ -->
+  <data name="Main_OpenExternal" xml:space="preserve"><value>▶  Open in external player</value></data>
+  <data name="Preview_Connecting" xml:space="preserve"><value>Connecting to the stream …</value></data>
+  <data name="Preview_NoSignal" xml:space="preserve"><value>No snapshot — the stream may only play in the external player.</value></data>
+  <data name="Preview_FfmpegMissing" xml:space="preserve"><value>ffmpeg not found — the snapshot preview is disabled. The external player still works. (Install: see the README.)</value></data>
 </root>

@@ -33,8 +33,8 @@ Feature-Ideen, keine offenen Standard-Lücken mehr.
   Portscan (`PortScanner`), Banner-Grab, mDNS/SSDP/NetBIOS-Discovery,
   OUI-Herstellerauflösung, Geräteklassifikation (`DeviceClassifier`).
 - ONVIF-Kameraerkennung (`OnvifDiscovery`) + RTSP-Probe (`RtspProbe`) mit
-  Live-Vorschau über eine vorhandene VLC-Installation (`VlcLocator` — libvlc wird
-  **nicht** gebündelt, das spart ~85 MB pro Windows-Build).
+  Standbild-Vorschau per ffmpeg-Frame-Grab (`MediaPreviewService`) und externem
+  Player für flüssiges Live-Video. **Kein eingebettetes LibVLC** mehr.
 - Optionaler Credential-Audit (`CredentialAuditor`): kuratierte, öffentlich
   dokumentierte Werks-Logins über **vier** Angriffsflächen — RTSP-Stream (nur
   Kameras), HTTP-Basic/Digest-Web-Login (**jedes** Gerät mit Webinterface),
@@ -47,6 +47,10 @@ Feature-Ideen, keine offenen Standard-Lücken mehr.
   AboutWindow.
 
 **Nachgezogen im Standard-Refresh:**
+
+- **Kamera-Vorschau von LibVLC auf ffmpeg-Frame-Grab umgestellt**
+  (`MediaPreviewService`, `NativeVideoView`/`VlcLocator` entfernt). Standbild
+  inline + externer Player für Live-Video.
 
 - **Logging:** `Logging/MaskingLayoutRenderer` (Registrierung per `[ModuleInitializer]`)
   maskiert Passwörter, Tokens, URL-Credentials und Auth-Header in jedem Target.
@@ -107,11 +111,14 @@ Offene Feature-Ideen, keine Standard-Lücken mehr:
   Geräte. Geloggt wird nur der Benutzername; das vollständige Paar bleibt im
   Rückgabewert und damit in der UI. `${masked:inner=…}` liegt zusätzlich in jedem
   Log-Target.
-- **libvlc wird nicht gebündelt.** `VlcLocator` sucht zur Laufzeit:
-  `NETSCANNER_VLC_DIR` → Windows-Registry → `%ProgramFiles%\VideoLAN\VLC` bzw.
-  System-libvlc unter Linux. Fehlt VLC, läuft die App weiter, nur ohne Vorschau.
-  `LibVLCSharp.Avalonia` darf **nicht** referenziert werden — das Paket hängt an
-  Avalonia 11.
+- **Kein eingebettetes LibVLC.** Die Kamera-Vorschau ist ein periodischer
+  ffmpeg-Frame-Grab (`MediaPreviewService`), flüssiges Video läuft im externen
+  Player (`Process.Start(url, UseShellExecute=true)`). Das vermeidet das
+  Airspace-Problem und die libvlc-Deployment-Hölle auf Linux/AppImage — Vorgabe
+  aus `kroste-avalonia/references/media-preview.md`, Vorbild Spektiv. ffmpeg wird
+  über `NETSCANNER_FFMPEG` → PATH → typische Pfade gesucht; fehlt es, zeigt die
+  UI einen Hinweis und der externe Player funktioniert weiter. `LibVLCSharp` darf
+  **nicht** wieder rein.
 - **`Microsoft.Win32.Registry` braucht keinen PackageReference.** Die Typen liegen
   seit .NET 5 im Framework; das Kompatibilitätspaket löst NU1510 aus und bricht mit
   `TreatWarningsAsErrors` den Build.

@@ -33,17 +33,10 @@ public partial class App : Application
         if (settings.Current.UiCulture is { Length: > 0 } iso)
             LocalizationService.Instance.SetCulture(iso);
 
-        // libvlc-Verfügbarkeit früh klären (laedt aus vorhandener VLC-Installation),
-        // damit das ViewModel/die UI sofort wissen, ob die Vorschau angeboten werden kann.
-        NetScanner.Services.VlcLocator.EnsureInitialized();
-
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var log = Services.GetRequiredService<ILogger<App>>();
             log.LogInformation("Anwendung gestartet (PID {Pid})", Environment.ProcessId);
-            log.LogInformation("Kamera-Vorschau (libvlc) verfügbar: {Avail}{From}",
-                NetScanner.Services.VlcLocator.IsAvailable,
-                NetScanner.Services.VlcLocator.LoadedFrom is { } p ? $" (aus {p})" : "");
 
             // DataContext setzt das Fenster selbst im Konstruktor (vor dem Baum-Aufbau),
             // damit Bindings wie $parent[Window].DataContext beim Start nicht gegen null laufen.
@@ -56,9 +49,7 @@ public partial class App : Application
             desktop.ShutdownRequested += (_, _) =>
             {
                 log.LogInformation("Anwendung wird beendet");
-                NetScanner.Services.VlcLocator.Shutdown();   // native libvlc-Threads freigeben
                 NLog.LogManager.Shutdown();                  // Logpuffer leeren
-                // Sicherheitsnetz: libvlc kann den Prozess sonst offen halten.
                 Environment.Exit(0);
             };
         }
@@ -90,6 +81,7 @@ public partial class App : Application
         sc.AddSingleton<PwnedPasswordChecker>();
         sc.AddSingleton<UpnpExposureProbe>();
         sc.AddSingleton<WolSender>();
+        sc.AddSingleton<MediaPreviewService>();
         sc.AddSingleton<TracerouteService>();
         sc.AddSingleton<IScanOrchestrator, ScanOrchestrator>();
         sc.AddSingleton<UpdateService>();

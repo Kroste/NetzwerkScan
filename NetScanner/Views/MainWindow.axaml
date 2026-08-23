@@ -413,37 +413,37 @@
           </Panel>
         </Border>
 
-        <!-- ===== Video (nur bei aktivem Stream UND verfügbarem libvlc) ===== -->
-        <!-- Die Statuszeile liegt UNTER dem Video, nicht darüber: NativeControlHost ist
-             ein natives Fenster und wuerde ein Avalonia-Overlay verdecken (Airspace). -->
-        <StackPanel Grid.Row="1" Margin="0,12,0,0" IsVisible="{Binding ShowVideoPreview}">
+        <!-- ===== Kamera-Vorschau (Standbild per ffmpeg-Frame-Grab) ===== -->
+        <!-- Kein eingebettetes Video: ein sich aktualisierendes Standbild, echtes
+             Live-Video läuft über den externen Player. So entfällt das Airspace-
+             Problem und die libvlc-Deployment-Hölle (Kroste-Standard). -->
+        <StackPanel Grid.Row="1" Margin="0,12,0,0" IsVisible="{Binding ShowPreview}">
           <Border Height="232" CornerRadius="8,8,0,0" Background="{DynamicResource NetVideoBackgroundBrush}"
                   BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="1" ClipToBounds="True">
-            <ctrl:NativeVideoView x:Name="VideoView" MediaUrl="{Binding SelectedStreamUrl}"/>
+            <Panel>
+              <Image Source="{Binding PreviewFrame}" Stretch="Uniform" StretchDirection="DownOnly"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+              <!-- Overlay-Status, solange (noch) kein Bild da ist. Über dem Image
+                   erlaubt, weil es ein normales Avalonia-Control ist (kein Airspace). -->
+              <TextBlock Text="{Binding PreviewStatus}"
+                         IsVisible="{Binding PreviewStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                         Foreground="{DynamicResource KrosteMutedTextBrush}"
+                         TextWrapping="Wrap" TextAlignment="Center" MaxWidth="380"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Panel>
           </Border>
-          <Border Background="{DynamicResource KrosteSurfaceBrush}" Padding="12,6" CornerRadius="0,0,8,8"
-                  BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="1,0,1,1"
-                  IsVisible="{Binding #VideoView.PlaybackInfo, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-            <TextBlock Text="{Binding #VideoView.PlaybackInfo}" Foreground="{DynamicResource KrosteMutedTextBrush}"
-                       FontFamily="Cascadia Code,Consolas,monospace" FontSize="12"/>
+          <Border Background="{DynamicResource KrosteSurfaceBrush}" Padding="12,8" CornerRadius="0,0,8,8"
+                  BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="1,0,1,1">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Grid.Column="0" Text="{Binding SelectedStreamUrl}" VerticalAlignment="Center"
+                         Foreground="{DynamicResource KrosteMutedTextBrush}"
+                         FontFamily="Cascadia Code,Consolas,monospace" FontSize="12"
+                         TextTrimming="CharacterEllipsis"/>
+              <Button Grid.Column="1" Classes="stream" Content="{loc:Tr Main_OpenExternal}"
+                      Command="{Binding OpenExternalStreamCommand}"/>
+            </Grid>
           </Border>
         </StackPanel>
-
-        <!-- ===== Hinweis, wenn kein (passendes) VLC installiert ist ===== -->
-        <Border Grid.Row="1" Height="260" Margin="0,12,0,0" Classes="card-flat"
-                Background="{DynamicResource NetVideoBackgroundBrush}" ClipToBounds="True"
-                IsVisible="{Binding ShowVlcMissingHint}">
-          <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10" Margin="24">
-            <TextBlock Text="{loc:Tr Main_VlcRequired}"
-                       Foreground="{DynamicResource KrosteTextBrush}" FontSize="15" FontWeight="SemiBold"
-                       HorizontalAlignment="Center"/>
-            <TextBlock TextWrapping="Wrap" TextAlignment="Center" MaxWidth="430"
-                       Foreground="{DynamicResource KrosteMutedTextBrush}" FontSize="12"
-                       Text="{Binding VlcHintText}"/>
-            <Button Classes="stream" Content="{loc:Tr Main_DownloadVlc}" HorizontalAlignment="Center"
-                    Click="OnDownloadVlc"/>
-          </StackPanel>
-        </Border>
       </Grid>
     </Grid>
 

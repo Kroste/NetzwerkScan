@@ -28,9 +28,6 @@
     <PackageVersion Include="NLog" Version="5.5.1" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.5.0" />
 
-    <!-- Kamera-Vorschau: NUR der UI-neutrale Core, libvlc kommt aus der
-         System-Installation (siehe Services/VlcLocator.cs). -->
-    <PackageVersion Include="LibVLCSharp" Version="3.9.4" />
 
     <!-- Versionierung -->
     <PackageVersion Include="MinVer" Version="7.0.0" />

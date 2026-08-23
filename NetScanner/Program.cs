@@ -12,7 +12,7 @@ internal static class Program
     public static void Main(string[] args)
     {
         // Globale Sicherheitsnetze: nichts soll den Prozess ungeloggt beenden. Gerade
-        // bei viel Netzwerk-I/O und nativem Interop (libvlc) ist das die wichtigste Lücke.
+        // bei viel Netzwerk-I/O ist das die wichtigste Luecke.
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
         {
             Log.Fatal(e.ExceptionObject as Exception,

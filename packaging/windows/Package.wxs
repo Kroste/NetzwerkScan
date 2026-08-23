@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   MSI fuer NetScanner. Packt alle veroeffentlichten Dateien (inkl. der ausgeduennten
-  libvlc-Plugins) nach %ProgramFiles%\NetScanner und legt eine Startmenue-Verknuepfung an.
+  nach %ProgramFiles%\NetScanner und legt eine Startmenue-Verknuepfung an.
   Wird vom Bundle (Bundle.wxs) eingebettet; allein installiert es NICHT die .NET-Runtime.
 
   Build:  wix build packaging\windows\Package.wxs -d Version=1.2.5 -d PublishDir=<abs-pfad-zu-publish\win> -o NetScanner.msi

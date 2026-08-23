@@ -47,8 +47,7 @@ jobs:
       - name: Publish (win-x64, framework-dependent)
         # Framework-dependent: die .NET-Runtime wird NICHT gebundelt (~80 MB kleiner).
         # Der Installer (Setup.exe) zieht die .NET 10 Desktop Runtime bei Bedarf nach.
-        # libvlc wird ebenfalls nicht gebundelt — die Kamera-Vorschau nutzt zur Laufzeit
-        # eine vorhandene VLC-Installation (siehe Services/VlcLocator.cs). Das drückt das
+        # Die Kamera-Vorschau nutzt zur Laufzeit System-ffmpeg (kein Bundling). Das drückt das
         # Paket von ~116 MB auf ~30 MB. Kein PublishSingleFile (NativeControlHost +
         # native Handles laufen ausgepackt am verlaesslichsten).
         run: >
@@ -138,8 +137,7 @@ jobs:
         run: dotnet test NetScanner.Tests/NetScanner.Tests.csproj -c Release
 
       - name: Publish (linux-x64, self-contained)
-        # libvlc ist hier KEINE Build-Abhängigkeit; zur Laufzeit wird System-libvlc
-        # erwartet (Paket vlc / libvlc5) — oder in der AppImage gebuendelt.
+        # Kamera-Vorschau nutzt zur Laufzeit System-ffmpeg (kein Bundling, optional).
         run: >
           dotnet publish NetScanner/NetScanner.csproj -c Release -r linux-x64 --self-contained
           -p:MinVerVersionOverride=${{ steps.ver.outputs.v }} -p:DebugType=none -p:DebugSymbols=false -o publish/linux

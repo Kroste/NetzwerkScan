@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Text.Json;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -15,6 +16,7 @@ public sealed partial class MainViewModel : ViewModelBase
 {
     private readonly IScanOrchestrator _orchestrator;
     private readonly WolSender _wol;
+    private readonly MediaPreviewService _preview;
     private readonly ILogger<MainViewModel> _log;
     private readonly ILogger _audit;            // Logger-Name "UserInput" -> Audit-Datei
     private CancellationTokenSource? _cts;
@@ -36,39 +38,108 @@ public sealed partial class MainViewModel : ViewModelBase
 
     [ObservableProperty] private HostResult? _selectedHost;
 
-    /// <summary>Wird an NativeVideoView.MediaUrl gebunden.</summary>
+    /// <summary>Aktuell für die Vorschau gewählter RTSP-Stream (null = keiner).</summary>
     [ObservableProperty] private string? _selectedStreamUrl;
 
-    /// <summary>True, wenn libvlc (aus einer vorhandenen VLC-Installation) bereitsteht.</summary>
-    public bool IsPreviewAvailable => VlcLocator.IsAvailable;
+    /// <summary>Aktuelles Vorschau-Standbild (ffmpeg-Frame-Grab) oder null.</summary>
+    [ObservableProperty] private Bitmap? _previewFrame;
 
-    /// <summary>Eingebettete Vorschau zeigen: Stream gewählt UND libvlc verfügbar.</summary>
-    public bool ShowVideoPreview =>
-        IsPreviewAvailable && !string.IsNullOrWhiteSpace(SelectedStreamUrl);
+    /// <summary>Statuszeile der Vorschau (Verbinden / kein Bild / ffmpeg fehlt) oder null.</summary>
+    [ObservableProperty] private string? _previewStatus;
 
-    /// <summary>Hinweis "VLC installieren" zeigen: Stream gewählt, aber kein libvlc da.</summary>
-    public bool ShowVlcMissingHint =>
-        !IsPreviewAvailable && !string.IsNullOrWhiteSpace(SelectedStreamUrl);
+    private CancellationTokenSource? _previewCts;
 
-    /// <summary>Statusabhängiger Hinweis für den Fall ohne (passende) VLC-Installation.</summary>
-    public string VlcHintText => VlcLocator.Status switch
-    {
-        VlcStatus.WrongArchitecture => L.T("Vlc_WrongArchitecture"),
-        VlcStatus.InitFailed => L.T("Vlc_Broken"),
-        _ => L.T("Vlc_Missing")
-    };
+    /// <summary>Vorschau-Bereich zeigen, sobald ein Stream gewählt ist.</summary>
+    public bool ShowPreview => !string.IsNullOrWhiteSpace(SelectedStreamUrl);
 
-    // Beide abgeleiteten Flags neu auswerten, sobald sich die Stream-URL ändert.
+    // Vorschau-Schleife starten/stoppen, sobald sich die Stream-URL ändert.
     partial void OnSelectedStreamUrlChanged(string? value)
     {
-        OnPropertyChanged(nameof(ShowVideoPreview));
-        OnPropertyChanged(nameof(ShowVlcMissingHint));
+        OnPropertyChanged(nameof(ShowPreview));
+        OpenExternalStreamCommand.NotifyCanExecuteChanged();
+        RestartPreview(value);
     }
 
-    public MainViewModel(IScanOrchestrator orchestrator, WolSender wol, ILogger<MainViewModel> log, ILoggerFactory factory)
+    /// <summary>
+    /// Startet die Frame-Grab-Schleife neu: alle ~1,5 s ein frisches Standbild aus
+    /// dem RTSP-Stream. Kein flüssiges Video — flüssig läuft der Stream nur im
+    /// externen Player (bewusster Kroste-Standard, siehe MediaPreviewService).
+    /// </summary>
+    private void RestartPreview(string? url)
+    {
+        _previewCts?.Cancel();
+        _previewCts = null;
+        SetPreviewFrame(null);
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            PreviewStatus = null;
+            return;
+        }
+
+        if (!_preview.HasFfmpeg)
+        {
+            PreviewStatus = L.T("Preview_FfmpegMissing");
+            return;   // Externer Player bleibt nutzbar.
+        }
+
+        PreviewStatus = L.T("Preview_Connecting");
+        var cts = new CancellationTokenSource();
+        _previewCts = cts;
+        _ = PreviewLoopAsync(url, cts.Token);
+    }
+
+    private async Task PreviewLoopAsync(string url, CancellationToken ct)
+    {
+        try
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                byte[]? jpeg = await _preview.GrabFrameAsync(url, timeoutMs: 6000, ct);
+                if (ct.IsCancellationRequested) break;
+
+                if (jpeg is { Length: > 0 })
+                {
+                    using var ms = new MemoryStream(jpeg);
+                    var bitmap = new Bitmap(ms);
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        if (ct.IsCancellationRequested) { bitmap.Dispose(); return; }
+                        SetPreviewFrame(bitmap);
+                        PreviewStatus = null;
+                    });
+                }
+                else
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        if (PreviewFrame is null) PreviewStatus = L.T("Preview_NoSignal");
+                    });
+                }
+
+                await Task.Delay(1500, ct);
+            }
+        }
+        catch (OperationCanceledException) { /* Stream gewechselt/geschlossen */ }
+        catch (Exception ex)
+        {
+            _log.LogWarning(ex, "Vorschau-Schleife abgebrochen");
+        }
+    }
+
+    private void SetPreviewFrame(Bitmap? frame)
+    {
+        var old = PreviewFrame;
+        PreviewFrame = frame;
+        old?.Dispose();   // altes Bild freigeben, sonst leckt jeder Frame Speicher
+    }
+
+    public MainViewModel(IScanOrchestrator orchestrator, WolSender wol, MediaPreviewService preview,
+        ILogger<MainViewModel> log, ILoggerFactory factory)
     {
         _orchestrator = orchestrator;
         _wol = wol;
+        _preview = preview;
         _log = log;
         _audit = factory.CreateLogger("UserInput");
         _cidr = IpRangeHelper.LocalSubnets().FirstOrDefault() ?? "192.168.10.0/24";
@@ -174,6 +245,16 @@ public sealed partial class MainViewModel : ViewModelBase
         SelectedStreamUrl = uri;
         Status = L.F("Status_Stream", host.Address);
     }
+
+    /// <summary>Öffnet den aktuell gewählten Stream im System-Default-Player.</summary>
+    [RelayCommand(CanExecute = nameof(CanOpenExternalStream))]
+    private void OpenExternalStream()
+    {
+        if (SelectedStreamUrl is { } url)
+            _preview.OpenExternal(url);
+    }
+
+    private bool CanOpenExternalStream() => !string.IsNullOrWhiteSpace(SelectedStreamUrl);
 
     // OnXChanged-Hooks (CommunityToolkit erzeugt die partiellen Methoden) -> Eingaben loggen.
     partial void OnCidrChanged(string value) => _audit?.LogInformation("INPUT cidr={Cidr}", value);

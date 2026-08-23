@@ -66,8 +66,6 @@
   <data name="Main_Latency" xml:space="preserve"><value>Antwortzeit</value></data>
   <data name="Main_Stream" xml:space="preserve"><value>▶  Stream</value></data>
   <data name="Main_OpenStream" xml:space="preserve"><value>▶  Stream öffnen</value></data>
-  <data name="Main_VlcRequired" xml:space="preserve"><value>Eingebettete Vorschau benötigt VLC</value></data>
-  <data name="Main_DownloadVlc" xml:space="preserve"><value>VLC herunterladen</value></data>
   <data name="Main_Ctx_OpenWeb" xml:space="preserve"><value>Im Browser öffnen</value></data>
   <data name="Main_Ctx_Ssh" xml:space="preserve"><value>SSH-Verbindung</value></data>
   <data name="Main_Ctx_Rdp" xml:space="preserve"><value>Remotedesktop (RDP)</value></data>
@@ -189,15 +187,8 @@
   <data name="Status_BrowserOpened" xml:space="preserve"><value>Browser geöffnet: {0}</value></data>
   <data name="Status_RdpWindowsOnly" xml:space="preserve"><value>RDP-Client nur unter Windows verfügbar</value></data>
   <data name="Status_ShareOpened" xml:space="preserve"><value>Dateifreigabe geöffnet: {0}</value></data>
-  <data name="Vlc_Broken" xml:space="preserve"><value>VLC wurde gefunden, aber libvlc ließ sich nicht laden. Vermutlich ist die Installation beschädigt — VLC neu installieren.</value></data>
-  <data name="Vlc_Missing" xml:space="preserve"><value>NetScanner bringt libvlc nicht mehr mit. Installiere den VLC media player (64-bit), dann läuft der Stream direkt hier. Ohne VLC die Stream-URL kopieren und extern öffnen.</value></data>
 
   <!-- ============ Video-Vorschau / Video preview ============ -->
-  <data name="Video_Connecting" xml:space="preserve"><value>Verbinde …</value></data>
-  <data name="Video_Buffering" xml:space="preserve"><value>Verbinde … {0} %</value></data>
-  <data name="Video_Unreachable" xml:space="preserve"><value>Stream nicht erreichbar oder Zugangsdaten falsch.</value></data>
-  <data name="Video_Ended" xml:space="preserve"><value>Stream beendet.</value></data>
-  <data name="Video_Timeout" xml:space="preserve"><value>Zeitüberschreitung – Stream nicht erreichbar.</value></data>
 
   <!-- ============ Expositions-Prüfung, dynamisch / Exposure check, dynamic ============ -->
   <data name="Exp_UnknownDevice" xml:space="preserve"><value>unbekanntes Gerät im LAN</value></data>
@@ -228,7 +219,6 @@
   <data name="Action_RdpWindowsOnly" xml:space="preserve"><value>RDP-Client nur unter Windows verfügbar</value></data>
   <data name="Action_RdpStarted" xml:space="preserve"><value>RDP zu {0} gestartet</value></data>
   <data name="Action_ShareOpened" xml:space="preserve"><value>Dateifreigabe geöffnet: {0}</value></data>
-  <data name="Vlc_WrongArchitecture" xml:space="preserve"><value>Es wurde eine 32-bit-VLC gefunden. NetScanner braucht die 64-bit-Version des VLC media player.</value></data>
   <data name="About_VersionLine" xml:space="preserve"><value>Version {0} · .NET 10 · Avalonia 12</value></data>
   <data name="About_Title" xml:space="preserve"><value>Über NetScanner · v{0}</value></data>
   <data name="Map_ResolveFailed" xml:space="preserve"><value>Konnte „{0}“ nicht auflösen.</value></data>
@@ -242,4 +232,10 @@
   <data name="Vuln_TelnetDefaultLogin" xml:space="preserve"><value>Telnet: Werks-Login {0}</value></data>
   <data name="Vuln_FtpAnonymous" xml:space="preserve"><value>FTP: anonymer Zugriff</value></data>
   <data name="Vuln_FtpDefaultLogin" xml:space="preserve"><value>FTP: Werks-Login {0}</value></data>
+
+  <!-- ============ Kamera-Vorschau / Camera preview ============ -->
+  <data name="Main_OpenExternal" xml:space="preserve"><value>▶  Im externen Player</value></data>
+  <data name="Preview_Connecting" xml:space="preserve"><value>Verbinde mit dem Stream …</value></data>
+  <data name="Preview_NoSignal" xml:space="preserve"><value>Kein Standbild — der Stream ist evtl. nur im externen Player abspielbar.</value></data>
+  <data name="Preview_FfmpegMissing" xml:space="preserve"><value>ffmpeg nicht gefunden — die Standbild-Vorschau ist deaktiviert. Der externe Player funktioniert trotzdem. (Installation: siehe README)</value></data>
 </root>

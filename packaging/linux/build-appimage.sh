@@ -24,18 +24,8 @@ cp "${HERE}/../../NetScanner/Assets/netscanner.png" "${APPDIR}/netscanner.png"
 cp "${HERE}/AppRun"             "${APPDIR}/AppRun"
 chmod +x "${APPDIR}/AppRun"
 
-# --- OPTIONAL: libvlc + Plugins mitbündeln (auskommentiert) ---------------
-# Ohne diesen Block erwartet die AppImage eine System-libvlc (z. B. Paket "vlc"
-# bzw. "libvlc5"). Zum Bündeln auf einem Ubuntu-Runner etwa:
-#
-#   sudo apt-get update
-#   sudo apt-get install -y vlc libvlc5 libvlc-bin vlc-plugin-base
-#   mkdir -p "${APPDIR}/usr/bin/libvlc/plugins"
-#   cp /usr/lib/x86_64-linux-gnu/libvlc*.so* "${APPDIR}/usr/bin/libvlc/"
-#   cp -r /usr/lib/x86_64-linux-gnu/vlc/plugins/* "${APPDIR}/usr/bin/libvlc/plugins/"
-#
-# AppRun setzt LD_LIBRARY_PATH/VLC_PLUGIN_PATH automatisch, sobald der Ordner existiert.
-# --------------------------------------------------------------------------
+# Hinweis: Die Kamera-Vorschau nutzt System-ffmpeg (kein Bundling). Ohne ffmpeg
+# zeigt die App einen Hinweis, der externe Player funktioniert weiter.
 
 # 3) appimagetool holen (FUSE-frei via --appimage-extract-and-run)
 if [ ! -x appimagetool ]; then

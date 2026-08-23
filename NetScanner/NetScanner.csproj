@@ -34,11 +34,10 @@
     <PackageReference Include="NLog" />
     <PackageReference Include="NLog.Extensions.Logging" />
 
-    <!-- Video: NUR der UI-neutrale Core. KEIN LibVLCSharp.Avalonia (hängt an Avalonia 11).
-         libvlc selbst wird NICHT gebundelt (spart ~85 MB pro Windows-Build) — die
-         Vorschau nutzt zur Laufzeit eine vorhandene VLC-Installation (siehe VlcLocator).
-         Windows: VLC 64-bit unter %ProgramFiles%\VideoLAN\VLC; Linux: System-libvlc. -->
-    <PackageReference Include="LibVLCSharp" />
+    <!-- Kamera-Vorschau: KEIN eingebettetes LibVLC (Airspace + libvlc-Deployment-Hölle
+         auf Linux/AppImage, siehe kroste-avalonia/references/media-preview.md). Die
+         Vorschau ist ein ffmpeg-Frame-Grab (MediaPreviewService), echtes Live-Video
+         läuft im externen Player. ffmpeg ist eine Laufzeit-Abhängigkeit, kein NuGet-Paket. -->
     <!-- Microsoft.Win32.Registry: KEIN PackageReference nötig. Die Typen liegen seit
          .NET 5 im Framework selbst; das Kompatibilitäts-Paket löst nur NU1510 aus
          ("wird nicht gekuerzt"), was mit TreatWarningsAsErrors den Build bricht.

@@ -1,10 +1,10 @@
 # NetScanner
 
-**LAN discovery · port scanning · device fingerprinting · ONVIF/RTSP camera detection with embedded live video — plus an interactive network map.**
+**LAN discovery · port scanning · device fingerprinting · ONVIF/RTSP camera detection with a live snapshot preview — plus an interactive network map.**
 
 A lean desktop tool that makes your own network visible: which devices are online, what they are (router, printer, NAS, camera, phone …), which services they offer — and how the network is exposed to the outside. Cross-platform for **Windows** and **Linux**, with the interface available in **English and German**.
 
-> .NET 10 (C# latest) · Avalonia 12 · LibVLCSharp (Core) · NLog · MVVM (CommunityToolkit)
+> .NET 10 (C# latest) · Avalonia 12 · ffmpeg (snapshot) · NLog · MVVM (CommunityToolkit)
 
 ![NetScanner main window](docs/screenshots/01-hauptfenster.png)
 
@@ -47,7 +47,7 @@ A lean desktop tool that makes your own network visible: which devices are onlin
 | **Device and OS fingerprinting** | Estimates device type (router, printer, NAS, camera, mobile …) and OS family from TTL, open ports, MAC vendor (OUI) and banners. |
 | **Name resolution** | Reverse DNS, mDNS/Bonjour, NetBIOS and SSDP/UPnP — the best available name is shown. |
 | **Camera detection** | ONVIF WS-Discovery + port heuristics (554/8554) + an RTSP `OPTIONS` probe. Optionally with RTSP credentials for the stream URL. |
-| **Live video** | RTSP stream embedded directly in the window via LibVLC (`NativeControlHost`). |
+| **Camera preview** | A refreshing snapshot from the RTSP stream (grabbed with ffmpeg) right in the window, plus a one-click **Open in external player** for smooth live video with sound. No embedded LibVLC. |
 | **Weak-spot audit** *(opt-in)* | Checks every device for common **factory logins** (default credentials) across four surfaces — RTSP streams, HTTP Basic/Digest web logins, **Telnet** and **FTP** — plus **open** streams, **anonymous FTP** and passwordless Telnet. On a hit the device is flagged and — for a camera — the picture is shown straight away. Your own network only. |
 | **Password leak check** | Uses *Have I Been Pwned* (k-anonymity) to check whether a device password appears in known data leaks — **without transmitting the password** — plus a local strength and crack-time estimate against fast (MD5) and slow (bcrypt) hashes. |
 | **Exposure check** | Asks the router (UPnP IGD) for active **port forwardings** and the public IP — showing what can be reached from the internet and whether a forwarding points at a camera. Includes a Shodan self-check. |
@@ -71,7 +71,7 @@ The [releases](../../releases) page carries prebuilt packages produced by the Gi
 - **Windows (portable):** `NetScanner-…-win-x64.zip` — unpack and run `NetScanner.exe`. This package is framework-dependent and therefore requires an installed **.NET 10 Desktop Runtime** (otherwise the app will not start).
 - **Linux:** `NetScanner-…-linux-x64.tar.gz` **or** `NetScanner-…-x86_64.AppImage`.
 
-The embedded camera preview uses an existing **VLC installation** — libvlc is **not** bundled, which keeps the packages small. Scanning, port scanning, detection and the network map work without VLC as well; only the live video stays off and the app shows a hint instead. Details below.
+The camera preview grabs snapshots with **ffmpeg** — nothing video-related is bundled, which keeps the packages small. Scanning, port scanning, detection and the network map work without ffmpeg as well; only the snapshot preview stays off and the app shows a hint instead. Details below.
 
 ### Building from source
 
@@ -89,17 +89,16 @@ Requirement: the **.NET 10 SDK** (pinned in `global.json`). Run the tests with:
 dotnet test NetScanner.Tests/NetScanner.Tests.csproj
 ```
 
-### libvlc / VLC (for the camera preview)
+### ffmpeg (for the camera preview)
 
-NetScanner no longer bundles libvlc itself — that saved roughly 85 MB per Windows package. Instead the app loads libvlc at runtime from an existing VLC installation. If it is missing, everything except the embedded video keeps working and the video area shows a hint with a download link.
+The snapshot preview is grabbed with **ffmpeg**, which is a runtime dependency but optional — without it the preview area shows a hint and the external player still works.
 
-- **Windows:** install [VLC media player](https://www.videolan.org/vlc/) in its **64-bit** variant (the default download). NetScanner looks for it under `%ProgramFiles%\VideoLAN\VLC`. A 32-bit VLC is deliberately ignored because it does not match the 64-bit app. For an installation elsewhere, point the environment variable `NETSCANNER_VLC_DIR` at the VLC directory (the one containing `libvlc.dll`).
-- **Linux:** install the system libvlc. On immutable Fedora/Bazzite that belongs **inside the `dotnet10` distrobox container**, not on the host:
-  ```bash
-  sudo dnf install vlc-libs      # Fedora: provides libvlc.so plus plugins
-  # Debian/Ubuntu:  sudo apt install libvlc-dev vlc-plugin-base
-  ```
-  `Core.Initialize()` then finds the system libvlc automatically.
+- **Bazzite/Fedora:** `rpm-ostree install ffmpeg-free` (on immutable Fedora that belongs on the host, so the app finds it on the `PATH`).
+- **Debian/Ubuntu:** `apt install ffmpeg`.
+- **Windows:** `winget install Gyan.FFmpeg` (or Chocolatey).
+- **macOS:** `brew install ffmpeg`.
+
+NetScanner looks for ffmpeg via the `NETSCANNER_FFMPEG` environment variable first, then the `PATH`, then the usual install locations. Smooth live playback uses whatever player your system associates with `rtsp://` URLs — VLC or mpv work well.
 
 ---
 
@@ -161,11 +160,15 @@ Clicking a card shows all the information gathered on the right, together with t
 
 ### 6. Watching a camera stream
 
-For detected cameras the detail panel shows the **RTSP URL** and an **Open stream** button. The video plays embedded in the window.
+For detected cameras the detail panel shows the **RTSP URL** and, in the preview area, a **refreshing snapshot** of the stream (a fresh frame roughly every 1–2 seconds, grabbed with ffmpeg). Below it, **▶ Open in external player** hands the `rtsp://` URL to your system default player (VLC, mpv, …) for smooth live video with sound in its own window.
 
-![Camera with live video](docs/screenshots/06-kamera-stream.png)
+![Camera with snapshot preview](docs/screenshots/06-kamera-stream.png)
+
+Why a snapshot rather than embedded video: an embedded native video surface brings the *airspace* problem (nothing can be drawn over it) and, on Linux/AppImage, a fragile libvlc dependency. The snapshot-plus-external-player approach is robust everywhere and keeps the package small — smooth playback is one click away in a real player.
 
 > If a camera requires credentials for its stream, enter them under **RTSP login** before scanning. NetScanner never guesses passwords here.
+>
+> **ffmpeg** provides the snapshot. Without it the preview shows a hint instead and the external player still works. Install it with `rpm-ostree install ffmpeg-free` (Bazzite/Fedora), `apt install ffmpeg` (Debian/Ubuntu), `winget install Gyan.FFmpeg` (Windows) or `brew install ffmpeg` (macOS). Point `NETSCANNER_FFMPEG` at the binary if it lives somewhere unusual.
 
 ### 7. Exporting results
 
@@ -284,8 +287,7 @@ The UPnP type and mDNS services carry the highest confidence; TTL, ports and OUI
 
 ## Platform notes
 
-- **Avalonia 12 and video:** `LibVLCSharp.Avalonia` is deliberately **not** used — it is tied to Avalonia 11. Instead `NativeVideoView` hands LibVLC the native window handle directly. Once the official package catches up with 12, `NativeVideoView` can be swapped for it.
-- **Wayland (KDE Plasma on Bazzite):** native embedding is most stable under **X11/XWayland**. Avalonia uses the X11 backend by default on Linux, so the `XID` handle works under Wayland too. If the video stays black, start the app with X11 forced.
+- **Camera preview:** the preview is a periodic ffmpeg frame grab shown in a normal Avalonia `Image` — no native video surface, so there is no airspace problem and status text can sit right over the picture. Smooth playback is delegated to the system default player.
 - **ONVIF multicast and firewalls:** WS-Discovery needs outgoing UDP multicast on port 3702. Restrictive networks may block it — the port heuristic (554/8554) still applies.
 - **Traceroute on Linux:** hop IPs are reliable on **Windows**. On Linux the unprivileged ICMP socket does not always return the address of the router that answered on TTL expiry — then `* * *` appears instead of the hop IP. The star map itself is unaffected.
 - **Multiple interfaces:** the sweep and WS-Discovery run per active IPv4 interface.
@@ -321,7 +323,7 @@ Flat structure, no `src/` folder: the app in `NetScanner/`, the tests in `NetSca
 | Updates | `Services/UpdateService.cs` | GitHub release check plus self-update |
 | Settings | `Config/AppSettings.cs`, `Config/JsonFileStore.cs` | atomic JSON persistence |
 | Localization | `Localization/` | `LocalizationService`, `LocalizedString`, `{loc:Tr}` markup, resx |
-| Video | `Controls/NativeVideoView.cs` | LibVLC in Avalonia 12 via `NativeControlHost` |
+| Camera preview | `Services/MediaPreviewService.cs` | ffmpeg frame grab + external player (no embedded LibVLC) |
 | Chrome | `Views/ChromeWindow.cs`, `Controls/TitleBar.axaml` | custom window chrome shared by every window |
 | UI/state | `ViewModels/MainViewModel.cs`, `Views/*.axaml` | MVVM, audit logging, network map |
 

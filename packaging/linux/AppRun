@@ -3,11 +3,6 @@
 HERE="$(dirname "$(readlink -f "${0}")")"
 APP="${HERE}/usr/bin"
 
-# Falls libvlc + Plugins mitgebündelt wurden (siehe build-appimage.sh, optionaler Block),
-# diese bevorzugen — sonst wird die System-libvlc verwendet.
-if [ -d "${APP}/libvlc" ]; then
-    export LD_LIBRARY_PATH="${APP}/libvlc:${LD_LIBRARY_PATH}"
-    export VLC_PLUGIN_PATH="${APP}/libvlc/plugins"
-fi
-
+# Die Kamera-Vorschau nutzt System-ffmpeg (kein Bundling). Fehlt es, zeigt die
+# App einen Hinweis; der externe Player braucht ohnehin nur eine rtsp://-Assoziation.
 exec "${APP}/NetScanner" "$@"
