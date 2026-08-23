@@ -21,7 +21,44 @@ public sealed partial class MainViewModel : ViewModelBase
     private readonly ILogger _audit;            // Logger-Name "UserInput" -> Audit-Datei
     private CancellationTokenSource? _cts;
 
+    /// <summary>Alle Scan-Ergebnisse (Roh-Liste). <see cref="Hosts"/> ist die gefilterte Sicht.</summary>
+    private readonly List<HostResult> _allHosts = [];
+
+    /// <summary>Gefilterte, in der Liste angezeigte Hosts.</summary>
     public ObservableCollection<HostResult> Hosts { get; } = [];
+
+    /// <summary>Aktiver Kategorie-Filter (Alle / Kameras / Web / Schwachstellen).</summary>
+    [ObservableProperty] private HostFilter _selectedFilter = HostFilter.All;
+
+    /// <summary>Freitext-Filter (IP, Name, Hersteller, Gerätetyp).</summary>
+    [ObservableProperty] private string _filterText = string.Empty;
+
+    partial void OnSelectedFilterChanged(HostFilter value)
+    {
+        _audit?.LogInformation("FILTER category={Filter}", value);
+        RebuildFilteredList();
+    }
+
+    partial void OnFilterTextChanged(string value) => RebuildFilteredList();
+
+    /// <summary>
+    /// Baut die sichtbare <see cref="Hosts"/>-Liste aus der Roh-Liste neu auf.
+    /// Clear+Add ist hier korrekt (einmalige Nutzer-Aktion, kein Background-Takt).
+    /// Die aktuelle Auswahl wird über den Rebuild gerettet: die ListBox nullt
+    /// SelectedItem bei Clear, und das TwoWay-Binding zöge das sonst ins VM.
+    /// </summary>
+    private void RebuildFilteredList()
+    {
+        var keep = SelectedHost;
+
+        Hosts.Clear();
+        foreach (var host in _allHosts)
+            if (HostFilters.Matches(host, SelectedFilter, FilterText))
+                Hosts.Add(host);
+
+        if (keep is not null && Hosts.Contains(keep))
+            SelectedHost = keep;
+    }
 
     [ObservableProperty] private string _cidr;
     [ObservableProperty] private bool _scanFullPorts;
@@ -162,6 +199,7 @@ public sealed partial class MainViewModel : ViewModelBase
             Cidr, ScanFullPorts, ProbeRtsp, AuditCredentials, OnvifListenMs,
             string.IsNullOrEmpty(RtspUser) ? "(leer)" : RtspUser);   // Passwort NICHT loggen
 
+        _allHosts.Clear();
         Hosts.Clear();
         HostCount = 0;
         CameraCount = 0;
@@ -186,8 +224,13 @@ public sealed partial class MainViewModel : ViewModelBase
             {
                 Dispatcher.UIThread.Post(() =>
                 {
-                    Hosts.Add(host);
-                    HostCount = Hosts.Count;
+                    // In die Roh-Liste, in die sichtbare Liste nur wenn der Filter passt.
+                    // Add statt Clear+Refill: kein Flimmern im Streaming-Takt (Skill-Regel).
+                    _allHosts.Add(host);
+                    if (HostFilters.Matches(host, SelectedFilter, FilterText))
+                        Hosts.Add(host);
+
+                    HostCount = _allHosts.Count;
                     if (host.IsCamera) CameraCount++;
 
                     // Offener/per Werks-Login zugänglicher Stream: erste solche Kamera
@@ -205,8 +248,8 @@ public sealed partial class MainViewModel : ViewModelBase
         }
         catch (OperationCanceledException)
         {
-            Status = L.F("Status_Cancelled", Hosts.Count);
-            _audit.LogInformation("SCAN_CANCEL | gefunden={Count}", Hosts.Count);
+            Status = L.F("Status_Cancelled", _allHosts.Count);
+            _audit.LogInformation("SCAN_CANCEL | gefunden={Count}", _allHosts.Count);
         }
         catch (Exception ex)
         {

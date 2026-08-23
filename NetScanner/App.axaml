@@ -203,6 +203,39 @@
       <Setter Property="TextBlock.TextDecorations" Value="Underline" />
     </Style>
 
+    <!-- Filter-Chip: RadioButton als Segment-Schalter (Kreis ausgeblendet). -->
+    <Style Selector="RadioButton.chip-filter">
+      <Setter Property="Background" Value="{DynamicResource KrosteSurfaceBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource KrosteSecondaryTextBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource KrosteBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="14" />
+      <Setter Property="Padding" Value="12,4" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  Padding="{TemplateBinding Padding}">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="RadioButton.chip-filter:pointerover">
+      <Setter Property="BorderBrush" Value="{DynamicResource KrosteBorderStrongBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource KrosteTextBrush}" />
+    </Style>
+    <Style Selector="RadioButton.chip-filter:checked">
+      <Setter Property="Background" Value="{DynamicResource KrosteAccentBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource KrosteAccentBrush}" />
+      <Setter Property="Foreground" Value="#F5F7FA" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
     <!-- ================================================================== -->
     <!-- Cards / Sektionen                                                   -->
     <!-- ================================================================== -->

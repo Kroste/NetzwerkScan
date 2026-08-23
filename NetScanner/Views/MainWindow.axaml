@@ -5,6 +5,7 @@
         xmlns:models="using:NetScanner.Models"
         xmlns:ctrl="using:NetScanner.Controls"
         xmlns:views="using:NetScanner.Views"
+        xmlns:conv="using:NetScanner.Converters"
         x:Class="NetScanner.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Width="1180" Height="760" MinWidth="900" MinHeight="560"
@@ -12,6 +13,10 @@
         Background="{DynamicResource KrosteBackgroundBrush}"
         Title="{loc:Tr Window_Main}">
 
+
+  <Window.Resources>
+    <conv:EnumMatchConverter x:Key="EnumMatch"/>
+  </Window.Resources>
 
   <Grid RowDefinitions="Auto,Auto,*,Auto">
 
@@ -134,7 +139,27 @@
     <!-- ===== Inhalt: Liste | Video ===== -->
     <Grid Grid.Row="2" Margin="20,16,20,0" ColumnDefinitions="*,12,1.05*">
 
-      <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Disabled">
+      <Grid Grid.Column="0" RowDefinitions="Auto,*">
+
+        <!-- ===== Filter-Leiste ===== -->
+        <Border Grid.Row="0" Classes="card" Padding="10,8" Margin="0,0,0,10">
+          <Grid ColumnDefinitions="Auto,*">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+              <RadioButton Classes="chip-filter" GroupName="hostfilter" Content="{loc:Tr Filter_All}"
+                           IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumMatch}, ConverterParameter=All}"/>
+              <RadioButton Classes="chip-filter" GroupName="hostfilter" Content="{loc:Tr Filter_Cameras}"
+                           IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumMatch}, ConverterParameter=Cameras}"/>
+              <RadioButton Classes="chip-filter" GroupName="hostfilter" Content="{loc:Tr Filter_Web}"
+                           IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumMatch}, ConverterParameter=Web}"/>
+              <RadioButton Classes="chip-filter" GroupName="hostfilter" Content="{loc:Tr Filter_Vulnerable}"
+                           IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumMatch}, ConverterParameter=Vulnerable}"/>
+            </StackPanel>
+            <TextBox Grid.Column="1" Text="{Binding FilterText}" Margin="10,0,0,0"
+                     PlaceholderText="{loc:Tr Filter_Search_Placeholder}"/>
+          </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
         <ListBox ItemsSource="{Binding Hosts}" SelectedItem="{Binding SelectedHost}">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="models:HostResult">
@@ -242,7 +267,8 @@
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
-      </ScrollViewer>
+        </ScrollViewer>
+      </Grid>
 
       <GridSplitter Grid.Column="1" Background="Transparent" ResizeDirection="Columns"/>
 

@@ -238,4 +238,11 @@
   <data name="Preview_Connecting" xml:space="preserve"><value>Verbinde mit dem Stream …</value></data>
   <data name="Preview_NoSignal" xml:space="preserve"><value>Kein Standbild — der Stream ist evtl. nur im externen Player abspielbar.</value></data>
   <data name="Preview_FfmpegMissing" xml:space="preserve"><value>ffmpeg nicht gefunden — die Standbild-Vorschau ist deaktiviert. Der externe Player funktioniert trotzdem. (Installation: siehe README)</value></data>
+
+  <!-- ============ Host-Filter / Host filter ============ -->
+  <data name="Filter_All" xml:space="preserve"><value>Alle</value></data>
+  <data name="Filter_Cameras" xml:space="preserve"><value>Kameras</value></data>
+  <data name="Filter_Web" xml:space="preserve"><value>Web</value></data>
+  <data name="Filter_Vulnerable" xml:space="preserve"><value>Schwachstellen</value></data>
+  <data name="Filter_Search_Placeholder" xml:space="preserve"><value>🔍  Filtern (IP, Name, Hersteller …)</value></data>
 </root>

@@ -238,4 +238,11 @@
   <data name="Preview_Connecting" xml:space="preserve"><value>Connecting to the stream …</value></data>
   <data name="Preview_NoSignal" xml:space="preserve"><value>No snapshot — the stream may only play in the external player.</value></data>
   <data name="Preview_FfmpegMissing" xml:space="preserve"><value>ffmpeg not found — the snapshot preview is disabled. The external player still works. (Install: see the README.)</value></data>
+
+  <!-- ============ Host-Filter / Host filter ============ -->
+  <data name="Filter_All" xml:space="preserve"><value>All</value></data>
+  <data name="Filter_Cameras" xml:space="preserve"><value>Cameras</value></data>
+  <data name="Filter_Web" xml:space="preserve"><value>Web</value></data>
+  <data name="Filter_Vulnerable" xml:space="preserve"><value>Weak spots</value></data>
+  <data name="Filter_Search_Placeholder" xml:space="preserve"><value>🔍  Filter (IP, name, vendor …)</value></data>
 </root>
