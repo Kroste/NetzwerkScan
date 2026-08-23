@@ -82,6 +82,7 @@ public partial class App : Application
         sc.AddSingleton<UpnpExposureProbe>();
         sc.AddSingleton<WolSender>();
         sc.AddSingleton<MediaPreviewService>();
+        sc.AddSingleton<WebPageScanner>();
         sc.AddSingleton<TracerouteService>();
         sc.AddSingleton<IScanOrchestrator, ScanOrchestrator>();
         sc.AddSingleton<UpdateService>();

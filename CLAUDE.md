@@ -43,6 +43,11 @@ Feature-Ideen, keine offenen Standard-Lücken mehr.
   gefundene Passwort wird **nie** geloggt, nur der Fund als solcher.
 - Exposure-Check (`UpnpExposureProbe`), Traceroute, Wake-on-LAN,
   Passwortstärke + HIBP-k-Anonymity-Abfrage (`PwnedPasswordChecker`).
+- Host-Liste filterbar (Kategorie-Chips Alle/Kameras/Web/Schwachstellen +
+  Freitext, `HostFilters.Matches`).
+- Seiten-Discovery pro Web-Host (`WebPageScanner` + `WebPagesWindow`): folgt nur
+  den Selbstauskünften des Servers (Links, robots.txt, sitemap.xml), **kein
+  Pfad-Raten**, Same-Origin, begrenzt (Tiefe 2, max 40 Seiten).
 - Fenster: MainWindow, NetworkMapWindow, ExposureWindow, PasswordCheckWindow,
   AboutWindow.
 
@@ -93,6 +98,11 @@ Offene Feature-Ideen, keine Standard-Lücken mehr:
 ## Referenz
 
 - **Kein Brute-Force, keine Wordlists.** Wurde mehrfach abgelehnt und gilt dauerhaft.
+  Das betrifft auch die Seiten-Discovery: `WebPageScanner` rät KEINE Pfade, er
+  folgt nur Links + robots.txt + sitemap.xml (Same-Origin, begrenzt). Ein
+  Directory-Bruteforcer wäre ein Regelverstoss.
+  Der Crawl-HttpClient setzt `UseProxy = false` (internes Ziel, Skill-Regel) und
+  akzeptiert self-signed Zertifikate.
   NetScanner ist strikt auf vom Betreiber kontrollierte Netze beschränkt; der
   Credential-Audit prüft nur eine kurze, kuratierte Liste dokumentierter Werks-Logins
   und ist opt-in.

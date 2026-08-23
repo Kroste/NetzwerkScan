@@ -167,6 +167,22 @@ public partial class MainWindow : ChromeWindow
         }
     }
 
+    private async void OnHostPages(object? sender, RoutedEventArgs e)
+    {
+        if (HostOf(sender) is not { WebUrl: { } url }) return;
+        Log.Info("Seiten-Suche für {Url} geoeffnet", url);
+        try
+        {
+            var scanner = App.Services.GetRequiredService<WebPageScanner>();
+            // Nicht-modal: der Nutzer kann parallel weiterscannen/weiterfiltern.
+            new WebPagesWindow(scanner, url).Show(this);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Seiten-Suche konnte nicht geoeffnet werden");
+        }
+    }
+
     private void OnHostSsh(object? sender, RoutedEventArgs e)
     {
         if (HostOf(sender) is not { } h) return;

@@ -245,4 +245,16 @@
   <data name="Filter_Web" xml:space="preserve"><value>Web</value></data>
   <data name="Filter_Vulnerable" xml:space="preserve"><value>Weak spots</value></data>
   <data name="Filter_Search_Placeholder" xml:space="preserve"><value>🔍  Filter (IP, name, vendor …)</value></data>
+
+  <!-- ============ Seiten-Suche / Page discovery ============ -->
+  <data name="Main_Btn_Pages" xml:space="preserve"><value>🔎 Pages</value></data>
+  <data name="Main_Btn_Pages_Tip" xml:space="preserve"><value>List the web interface's linked pages (robots.txt/sitemap.xml, no guessing)</value></data>
+  <data name="Main_Ctx_Pages" xml:space="preserve"><value>Discover pages</value></data>
+  <data name="WebPages_Title" xml:space="preserve"><value>NetScanner  ·  Pages</value></data>
+  <data name="WebPages_Intro" xml:space="preserve"><value>Only what the server itself exposes is found: linked pages, robots.txt and sitemap.xml. No path guessing. Click a row to open it in the browser.</value></data>
+  <data name="WebPages_Running" xml:space="preserve"><value>Discovering …</value></data>
+  <data name="WebPages_Count" xml:space="preserve"><value>{0} page(s) …</value></data>
+  <data name="WebPages_Done" xml:space="preserve"><value>{0} page(s) found.</value></data>
+  <data name="WebPages_None" xml:space="preserve"><value>No linked pages found.</value></data>
+  <data name="WebPages_Failed" xml:space="preserve"><value>Discovery failed — see the log.</value></data>
 </root>

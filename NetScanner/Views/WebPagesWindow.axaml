@@ -1,0 +1,75 @@
+<views:ChromeWindow xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:NetScanner.Localization"
+        xmlns:ctrl="using:NetScanner.Controls"
+        xmlns:views="using:NetScanner.Views"
+        xmlns:svc="using:NetScanner.Services"
+        x:Class="NetScanner.Views.WebPagesWindow"
+        Width="720" Height="560" MinWidth="480" MinHeight="320"
+        WindowStartupLocation="CenterOwner"
+        RequestedThemeVariant="Dark"
+        Background="{DynamicResource KrosteBackgroundBrush}"
+        Title="{loc:Tr WebPages_Title}">
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+    <ctrl:TitleBar Grid.Row="0" Title="{loc:Tr WebPages_Title}"/>
+
+    <!-- Kopf: Basis-URL + Erklärung -->
+    <StackPanel Grid.Row="1" Margin="24,18,24,10" Spacing="4">
+      <TextBlock x:Name="BaseUrlText" Classes="h2"/>
+      <TextBlock Text="{loc:Tr WebPages_Intro}" Classes="muted" FontSize="12" TextWrapping="Wrap"/>
+    </StackPanel>
+
+    <!-- Ergebnisliste -->
+    <Border Grid.Row="2" Classes="card-flat" Margin="24,0,24,0" ClipToBounds="True">
+      <ScrollViewer>
+        <ItemsControl x:Name="PageList">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="svc:WebPage">
+              <Border BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,0,0,1"
+                      Padding="12,8" Background="Transparent"
+                      PointerReleased="OnPageClick" Cursor="Hand">
+                <Grid ColumnDefinitions="52,*,Auto">
+                  <!-- Status -->
+                  <Border Grid.Column="0" CornerRadius="4" Padding="0,1" Height="20" VerticalAlignment="Center"
+                          HorizontalAlignment="Left" MinWidth="40"
+                          Background="{DynamicResource KrosteSurfaceBrush}">
+                    <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               Foreground="{DynamicResource KrosteSecondaryTextBrush}"/>
+                  </Border>
+                  <!-- Pfad + Titel -->
+                  <StackPanel Grid.Column="1" Spacing="2" Margin="12,0">
+                    <TextBlock Text="{Binding Path}" FontSize="13"
+                               FontFamily="Cascadia Code,Consolas,monospace"
+                               Foreground="{DynamicResource KrosteTextBrush}" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding Title}" FontSize="11" Classes="muted"
+                               TextTrimming="CharacterEllipsis"
+                               IsVisible="{Binding Title, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                  </StackPanel>
+                  <!-- Quelle -->
+                  <Border Grid.Column="2" VerticalAlignment="Center" CornerRadius="4" Padding="6,1"
+                          Background="{DynamicResource KrosteAccentSoftBrush}">
+                    <TextBlock Text="{Binding Source}" FontSize="10" Foreground="{DynamicResource KrosteGoldBrush}"/>
+                  </Border>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Border>
+
+    <!-- Statusleiste -->
+    <Border Grid.Row="3" Padding="24,10" Margin="0,14,0,0"
+            Background="{DynamicResource KrosteTitleBarBrush}"
+            BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,1,0,0">
+      <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+        <ProgressBar x:Name="Busy" IsIndeterminate="True" IsVisible="False"
+                     Width="120" Height="4" VerticalAlignment="Center"/>
+        <TextBlock x:Name="StatusText" Classes="muted" FontSize="12" VerticalAlignment="Center"/>
+      </StackPanel>
+    </Border>
+  </Grid>
+</views:ChromeWindow>

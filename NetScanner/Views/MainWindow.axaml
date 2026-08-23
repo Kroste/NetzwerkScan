@@ -167,6 +167,7 @@
                 <Border.ContextMenu>
                   <ContextMenu>
                     <MenuItem Header="{loc:Tr Main_Ctx_OpenWeb}" Click="OnHostWeb" IsVisible="{Binding HasWebUi}"/>
+                    <MenuItem Header="{loc:Tr Main_Ctx_Pages}" Click="OnHostPages" IsVisible="{Binding HasWebUi}"/>
                     <MenuItem Header="{loc:Tr Main_Ctx_Ssh}" Click="OnHostSsh" IsVisible="{Binding HasSsh}"/>
                     <MenuItem Header="{loc:Tr Main_Ctx_Rdp}" Click="OnHostRdp" IsVisible="{Binding HasRdp}"/>
                     <MenuItem Header="{loc:Tr Main_Ctx_Smb}" Click="OnHostSmb" IsVisible="{Binding HasSmb}"/>
@@ -319,6 +320,9 @@
                 <WrapPanel>
                   <Button Classes="ghost" Content="{loc:Tr Main_Btn_Web}" Click="OnHostWeb" Margin="0,0,6,6"
                           IsVisible="{Binding HasWebUi}"/>
+                  <Button Classes="ghost" Content="{loc:Tr Main_Btn_Pages}" Click="OnHostPages" Margin="0,0,6,6"
+                          IsVisible="{Binding HasWebUi}"
+                          ToolTip.Tip="{loc:Tr Main_Btn_Pages_Tip}"/>
                   <Button Classes="ghost" Content="{loc:Tr Main_Btn_Ssh}" Click="OnHostSsh" Margin="0,0,6,6"
                           IsVisible="{Binding HasSsh}"/>
                   <Button Classes="ghost" Content="{loc:Tr Main_Btn_Rdp}" Click="OnHostRdp" Margin="0,0,6,6"

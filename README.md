@@ -51,7 +51,7 @@ A lean desktop tool that makes your own network visible: which devices are onlin
 | **Weak-spot audit** *(opt-in)* | Checks every device for common **factory logins** (default credentials) across four surfaces — RTSP streams, HTTP Basic/Digest web logins, **Telnet** and **FTP** — plus **open** streams, **anonymous FTP** and passwordless Telnet. On a hit the device is flagged and — for a camera — the picture is shown straight away. Your own network only. |
 | **Password leak check** | Uses *Have I Been Pwned* (k-anonymity) to check whether a device password appears in known data leaks — **without transmitting the password** — plus a local strength and crack-time estimate against fast (MD5) and slow (bcrypt) hashes. |
 | **Exposure check** | Asks the router (UPnP IGD) for active **port forwardings** and the public IP — showing what can be reached from the internet and whether a forwarding points at a camera. Includes a Shodan self-check. |
-| **Host actions** | Per device: open the web interface, SSH, RDP, SMB share, copy IP/MAC/name, **Wake-on-LAN**. |
+| **Host actions** | Per device: open the web interface, **discover its pages**, SSH, RDP, SMB share, copy IP/MAC/name, **Wake-on-LAN**. |
 | **Export** | The host list as **CSV** (semicolon separated, for German Excel) or **JSON**. |
 | **Network map** | Interactive star topology: gateway at the centre, devices around it, coloured by type. |
 | **Path to the outside (traceroute)** | Traces the route from the gateway towards the internet — ICMP with increasing TTL, no external tool. |
@@ -152,11 +152,20 @@ Clicking a card shows all the information gathered on the right, together with t
 | Action | Visible when | Behaviour |
 |---|---|---|
 | **Open in browser** | port 80/443/8080/8443 open | Opens the web interface (HTTPS preferred) |
+| **Discover pages** | web interface present | Lists the pages the server itself exposes (links, robots.txt, sitemap.xml) — see below |
 | **SSH** | port 22 open | Windows: starts `ssh`; Linux/macOS: copies the command |
 | **RDP** | port 3389 open | Windows: `mstsc`; hidden elsewhere |
 | **File share (SMB)** | port 139/445 open | Windows: `\\IP` in Explorer; otherwise `smb://IP` |
 | **Copy IP / MAC / name** | always / when available | To the clipboard |
 | **Wake-on-LAN** | MAC known | Sends a magic packet (UDP broadcast) |
+
+### Discovering a device's pages
+
+For a host with a web interface, **Discover pages** (in the detail panel and the context menu) opens a window that lists the pages the server itself exposes. Each row shows the HTTP status, path, page title and where it came from; clicking a row opens it in the browser.
+
+This is deliberately **not a directory brute-forcer** — NetScanner never guesses paths from a word list. It only follows what the server hands out: links on the pages (`<a href>`, same-origin), plus `robots.txt` and `sitemap.xml`. The crawl is bounded (depth 2, at most 40 pages) and read-only. It is meant to give you a quick overview of a device's admin surface on **your own** network — where the login is, which config pages exist — not to probe someone else's server.
+
+The requests go straight to the device (the corporate proxy is bypassed) and self-signed certificates are accepted, since camera and router web interfaces routinely use them.
 
 ### 6. Watching a camera stream
 
