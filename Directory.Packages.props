@@ -21,8 +21,8 @@
 
     <!-- MVVM & DI -->
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.11" />
 
     <!-- Logging -->
     <PackageVersion Include="NLog" Version="6.2.0" />
@@ -34,7 +34,7 @@
 
     <!-- Tests: xunit.v3 (nicht das deprecated xunit-v2-Paket).
          FluentAssertions NICHT auf 8.x heben — kommerzielle Xceed-Lizenz. -->
-    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+    <PackageVersion Include="xunit.v3" Version="4.0.0" />
     <PackageVersion Include="FluentAssertions" Version="[7.2.2,8.0.0)" />
   </ItemGroup>
 </Project>
