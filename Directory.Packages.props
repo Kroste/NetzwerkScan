@@ -17,7 +17,7 @@
          explizit gepinnt, damit ein Avalonia-Bump die Version nicht still
          verschiebt und das Tray-Icon wegbleibt. Nach jedem Avalonia-Update
          gegenprüfen mit "dotnet list package" samt transitiver Pakete. -->
-    <PackageVersion Include="Tmds.DBus.Protocol" Version="0.94.1" />
+    <PackageVersion Include="Tmds.DBus.Protocol" Version="0.95.0" />
 
     <!-- MVVM & DI -->
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
