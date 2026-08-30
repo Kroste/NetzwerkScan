@@ -28,6 +28,7 @@ public sealed class WebPageScanner(ILogger<WebPageScanner> log)
     private const int MaxPages = 40;
     private const int MaxDepth = 2;
     private const int RequestTimeoutMs = 4000;
+    private const int MaxBodyBytes = 512 * 1024;   // 512 KB reichen für Titel + Links
 
     /// <summary>
     /// Crawlt ab <paramref name="baseUrl"/> und liefert die gefundenen Seiten,
@@ -102,15 +103,18 @@ public sealed class WebPageScanner(ILogger<WebPageScanner> log)
         {
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             cts.CancelAfter(RequestTimeoutMs);
-            using var resp = await http.GetAsync(url, HttpCompletionOption.ResponseContentRead, cts.Token);
+            // ResponseHeadersRead: erst die Header, DANN entscheiden, ob der Body
+            // überhaupt gelesen wird. Mit ResponseContentRead wäre eine verlinkte
+            // Firmware-.bin schon komplett im RAM, bevor der Content-Type geprüft ist.
+            using var resp = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cts.Token);
 
             string? contentType = resp.Content.Headers.ContentType?.MediaType;
             string? body = null;
-            // Body nur bei text/* lesen (kein Download von Binärdateien/Firmware).
+            // Body nur bei text/* bzw. xml lesen (kein Download von Binärdateien/Firmware).
             if (contentType is not null && (contentType.StartsWith("text/", StringComparison.OrdinalIgnoreCase)
                                             || contentType.Contains("xml", StringComparison.OrdinalIgnoreCase)))
             {
-                body = await resp.Content.ReadAsStringAsync(cts.Token);
+                body = await ReadCappedAsync(resp, cts.Token);
             }
 
             string? title = body is not null ? ExtractTitle(body) : null;
@@ -125,6 +129,25 @@ public sealed class WebPageScanner(ILogger<WebPageScanner> log)
             log.LogDebug(ex, "Web-Crawl: {Url} nicht erreichbar", url);
             return (new WebPage(url.ToString(), path, -1, null, null, source), null, null);
         }
+    }
+
+    /// <summary>
+    /// Liest den Body als Text, aber höchstens <see cref="MaxBodyBytes"/> — auch ein
+    /// als text/plain deklariertes Riesen-Log soll den RAM nicht sprengen. Für
+    /// Titel-/Link-Extraktion reichen die ersten Kilobytes ohnehin.
+    /// </summary>
+    private static async Task<string> ReadCappedAsync(HttpResponseMessage resp, CancellationToken ct)
+    {
+        await using var stream = await resp.Content.ReadAsStreamAsync(ct);
+        var buffer = new byte[MaxBodyBytes];
+        int total = 0;
+        int read;
+        while (total < buffer.Length
+               && (read = await stream.ReadAsync(buffer.AsMemory(total, buffer.Length - total), ct)) > 0)
+        {
+            total += read;
+        }
+        return System.Text.Encoding.UTF8.GetString(buffer, 0, total);
     }
 
     private static HttpClient CreateClient()

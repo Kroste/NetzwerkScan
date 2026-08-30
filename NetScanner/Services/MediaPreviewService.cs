@@ -64,6 +64,12 @@ public sealed class MediaPreviewService
             using var proc = new Process { StartInfo = psi };
             proc.Start();
 
+            // stderr SOFORT und nebenläufig leeren. Würde man erst nach WaitForExit
+            // lesen, könnte ffmpeg bei viel Fehlerausgabe den Pipe-Puffer füllen,
+            // beim Schreiben blockieren und nie enden -> der Grab liefe unnötig ins
+            // Timeout statt sofort fehlzuschlagen.
+            var stderrTask = proc.StandardError.ReadToEndAsync(ct);
+
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
             timeout.CancelAfter(timeoutMs);
             try
@@ -81,7 +87,7 @@ public sealed class MediaPreviewService
 
             if (proc.ExitCode != 0 || !File.Exists(tmp))
             {
-                string err = (await proc.StandardError.ReadToEndAsync(ct)).Trim();
+                string err = (await stderrTask).Trim();
                 _log.LogDebug("Frame-Grab fehlgeschlagen (Exit {Code}) für {Url}: {Err}",
                     proc.ExitCode, MaskCredentials(streamUrl), err);
                 return null;

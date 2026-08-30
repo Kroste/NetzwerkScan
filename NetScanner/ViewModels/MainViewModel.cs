@@ -135,10 +135,26 @@ public sealed partial class MainViewModel : ViewModelBase
                 byte[]? jpeg = await _preview.GrabFrameAsync(url, timeoutMs: 6000, ct);
                 if (ct.IsCancellationRequested) break;
 
+                // Decode pro Iteration absichern: ein abgeschnittenes/korruptes JPEG
+                // (kommt bei wackligen RTSP-Streams vor) lässt "new Bitmap" werfen. Ohne
+                // dieses lokale catch würde eine einzelne kaputte Kachel die GANZE
+                // Schleife beenden und die Vorschau bis zur Neuwahl einfrieren.
+                Bitmap? bitmap = null;
                 if (jpeg is { Length: > 0 })
                 {
-                    using var ms = new MemoryStream(jpeg);
-                    var bitmap = new Bitmap(ms);
+                    try
+                    {
+                        using var ms = new MemoryStream(jpeg);
+                        bitmap = new Bitmap(ms);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.LogDebug(ex, "Vorschau-Frame nicht dekodierbar — übersprungen");
+                    }
+                }
+
+                if (bitmap is not null)
+                {
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         if (ct.IsCancellationRequested) { bitmap.Dispose(); return; }

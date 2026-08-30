@@ -192,10 +192,13 @@ public sealed class ScanOrchestrator(
     {
         var ports = open.Select(p => p.Port).ToHashSet();
 
-        // 1) RTSP-Stream — nur bei erkannten Kameras (RTSP ist ein Kamera-Protokoll).
-        if (host.Camera is { } cam)
+        // 1) RTSP-Stream — nur bei erkannten Kameras mit offenem RTSP-Port. Ohne den
+        //    Port-Guard liefe der Audit sonst auf einen Fallback-Port 554 und würde bei
+        //    einer nur per ONVIF/Multicast entdeckten Kamera (RTSP zu) unnötig ins
+        //    Connect-Timeout laufen.
+        if (host.Camera is { } cam && ports.Overlaps(RtspPorts))
         {
-            int rtspPort = ports.FirstOrDefault(RtspPorts.Contains, 554);
+            int rtspPort = ports.First(RtspPorts.Contains);
             var path = RtspProbe.PathsForVendor(cam.Vendor).First();
             var (finding, user, pass) = await auditor.AuditRtspAsync(host.Address, rtspPort, path, timeoutMs, ct);
             cam.RtspAudit = finding;
